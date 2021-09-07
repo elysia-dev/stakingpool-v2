@@ -1,4 +1,7 @@
 {
+  "script":  {
+    "coverage": "yarn hardhat coverage --testfiles 'test/contracts/**/*.test.ts' --solcoverjs ./.solcover.js"
+  },
   "name": "elyfi-stakingpool",
   "version": "1.0.0",
   "main": "index.js",

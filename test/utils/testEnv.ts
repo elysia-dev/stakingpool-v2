@@ -3,8 +3,8 @@ import { ethers } from 'hardhat';
 import {
   StakingAsset,
   RewardAsset,
-  StakingPool,
-  StakingPool__factory,
+  StakingPoolV2,
+  StakingPoolV2__factory,
   StakingAsset__factory,
   RewardAsset__factory,
 } from '../../typechain';
@@ -37,12 +37,12 @@ const setStakingAsset = async (): Promise<StakingAsset> => {
 const setStakingPool = async (
   stakingAsset: StakingAsset,
   rewardAsset: RewardAsset
-): Promise<StakingPool> => {
-  let stakingPool: StakingPool;
+): Promise<StakingPoolV2> => {
+  let stakingPool: StakingPoolV2;
 
   const stakingPoolFactory = (await ethers.getContractFactory(
-    'StakingPool'
-  )) as StakingPool__factory;
+    'StakingPoolV2'
+  )) as StakingPoolV2__factory;
 
   stakingPool = await stakingPoolFactory.deploy(stakingAsset.address, rewardAsset.address);
 

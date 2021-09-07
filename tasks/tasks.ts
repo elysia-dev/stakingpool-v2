@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { StakingAsset, StakingPool } from '../typechain';
+import { StakingAsset, StakingPoolV2 } from '../typechain';
 import * as rounds from '../data/rounds';
 import { getRewardAsset, getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
 import { ethers, utils } from 'ethers';
@@ -13,7 +13,7 @@ interface Args {
 task('testnet:initNewRound', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPool;
+    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
 
     stakingPool = await getStakingPool(hre);
@@ -43,7 +43,7 @@ task('testnet:initNewRound', 'Initiate staking round')
 task('testnet:stake', 'Stake asset')
   .addParam('amount', 'The amount to stake')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPool;
+    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
     const amount = utils.parseEther(args.amount);
 
@@ -73,7 +73,7 @@ task('testnet:withdraw', 'Unstake asset')
   .addParam('amount', 'The amount to withdraw')
   .addParam('round', 'The round to withdraw')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPool;
+    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
 
     stakingPool = await getStakingPool(hre);
@@ -93,7 +93,7 @@ task('testnet:withdraw', 'Unstake asset')
 task('mainnet:initNewRound:elPool', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPool;
+    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
 
     stakingPool = await getStakingPool(hre);
@@ -118,7 +118,7 @@ task('mainnet:initNewRound:elPool', 'Initiate staking round')
 task('mainnet:initNewRound:elyfiPool', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPool;
+    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
 
     stakingPool = await getStakingPool(hre);

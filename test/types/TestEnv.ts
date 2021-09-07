@@ -1,8 +1,8 @@
-import { RewardAsset, StakingAsset, StakingPool } from '../../typechain';
+import { RewardAsset, StakingAsset, StakingPoolV2 } from '../../typechain';
 interface TestEnv {
   stakingAsset: StakingAsset;
   rewardAsset: RewardAsset;
-  stakingPool: StakingPool;
+  stakingPool: StakingPoolV2;
 }
 
 export default TestEnv;

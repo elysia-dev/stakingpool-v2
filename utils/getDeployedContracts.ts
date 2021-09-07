@@ -2,19 +2,19 @@ import { Contract } from 'ethers';
 import { DeployedContract } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import path from 'path';
-import { StakingPool } from '../typechain';
+import { StakingPoolV2 } from '../typechain';
 
-export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<StakingPool> => {
+export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<StakingPoolV2> => {
   let file: DeployedContract;
 
   try {
-    file = require(getDeploymentPath(hre.network.name, stakingPool.StakingPool));
+    file = require(getDeploymentPath(hre.network.name, stakingPool.StakingPoolV2));
   } catch (e) {
     const { deployer } = await hre.getNamedAccounts();
     const { deploy } = hre.deployments;
     const stakingAsset = await getStakingAsset(hre);
     const rewardAsset = await getRewardAsset(hre);
-    const StakingPoolLocalDeploy = await deploy('StakingPool', {
+    const StakingPoolLocalDeploy = await deploy('StakingPoolV2', {
       from: deployer,
       log: true,
       args: [stakingAsset.address, rewardAsset.address],
@@ -22,10 +22,10 @@ export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<St
     return (await hre.ethers.getContractAt(
       StakingPoolLocalDeploy.abi,
       StakingPoolLocalDeploy.address
-    )) as StakingPool;
+    )) as StakingPoolV2;
   }
 
-  return (await hre.ethers.getContractAt(file.abi, file.address)) as StakingPool;
+  return (await hre.ethers.getContractAt(file.abi, file.address)) as StakingPoolV2;
 };
 
 export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
@@ -71,7 +71,7 @@ export const getRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Co
 };
 
 const stakingPool = {
-  StakingPool: 'StakingPool.json',
+  StakingPoolV2: 'StakingPoolV2.json',
   StakingAsset: 'StakingAsset.json',
   RewardAsset: 'RewardAsset.json',
 };
