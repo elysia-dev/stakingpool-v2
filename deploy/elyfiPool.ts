@@ -11,7 +11,7 @@ const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment
 
   const rewardAsset = await getDai(hre);
 
-  const stakingPool = await deploy('StakingPool', {
+  const stakingPool = await deploy('StakingPoolV2', {
     from: deployer,
     args: [stakingAsset.address, rewardAsset.address],
     log: true,

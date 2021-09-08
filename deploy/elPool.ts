@@ -8,10 +8,9 @@ const elPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = hre.deployments;
 
   const stakingAsset = await getElToken(hre);
-
   const rewardAsset = await getElyfi(hre);
 
-  const stakingPool = await deploy('StakingPool', {
+  const stakingPool = await deploy('StakingPoolV2', {
     from: deployer,
     args: [stakingAsset.address, rewardAsset.address],
     log: true,

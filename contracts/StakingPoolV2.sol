@@ -5,7 +5,6 @@ import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -16,7 +15,6 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 /// @author Elysia
 contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   using StakingPoolLogicV2 for PoolData;
-  using SafeERC20 for IERC20;
 
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
@@ -226,7 +224,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     poolData.userPrincipal[msg.sender] -= amountToWithdraw;
     poolData.totalPrincipal -= amountToWithdraw;
 
-    _withdrawTo(msg.sender, amount);
+    _withdrawTo(msg.sender, amountToWithdraw);
 
     emit Withdraw(
       msg.sender,
@@ -249,7 +247,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
 
-    rewardAsset.safeTransfer(user, reward);
+    SafeERC20.safeTransfer(rewardAsset, user, reward);
 
     uint256 rewardLeft = rewardAsset.balanceOf(address(this));
 
@@ -290,7 +288,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   function retrieveResidue() external onlyAdmin {
-    rewardAsset.safeTransfer(_admin, rewardAsset.balanceOf(address(this)));
+    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)));
   }
 
   /***************** Modifier ******************/

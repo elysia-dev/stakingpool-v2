@@ -1,5 +1,6 @@
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
+import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
@@ -10,8 +11,6 @@ import { getPoolData, getUserData } from './utils/helpers';
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
-
-import { expect } from 'chai';
 
 describe('StakingPool.migrate', () => {
   let testEnv: TestEnv;

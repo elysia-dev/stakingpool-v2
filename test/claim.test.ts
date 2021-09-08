@@ -1,25 +1,24 @@
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY } from './utils/constants';
+import { expect } from 'chai';
+import { RAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
+import TestEnv from './types/TestEnv';
 
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
-import { expect } from 'chai';
-
-describe('StakingPool.claim reward', () => {
+describe('StakingPool.claim', () => {
   let testEnv: TestEnv;
   let firstRound: number;
   let secondRound: number;
 
   const provider = waffle.provider;
-  const [deployer, alice, bob, carol] = provider.getWallets();
+  const [deployer, alice, bob] = provider.getWallets();
 
   const firstRoundInit = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),

@@ -1,5 +1,6 @@
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
+import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
@@ -11,13 +12,11 @@ const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
-import { expect } from 'chai';
-
 describe('StakingPool.withdraw', () => {
   let testEnv: TestEnv;
 
   const provider = waffle.provider;
-  const [deployer, alice, bob, carol] = provider.getWallets();
+  const [deployer, alice, bob] = provider.getWallets();
 
   const firstRound = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
@@ -69,8 +68,6 @@ describe('StakingPool.withdraw', () => {
   });
 
   context('when the first round initiated', async () => {
-    const stakeAmount = utils.parseEther('100');
-
     it('reverts if withdrawl amount exceeds principal', async () => {
       const currentRound = await testEnv.stakingPool.currentRound();
       await expect(

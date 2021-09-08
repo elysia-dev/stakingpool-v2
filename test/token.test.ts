@@ -4,15 +4,13 @@ import TestEnv from './types/TestEnv';
 import { MAX_UINT_AMOUNT, RAY, ZERO_ADDRESS } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterStake } from './utils/expect';
-import { getPoolData, getUserData } from './utils/helpers';
+import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
 
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
 import { expect } from 'chai';
-import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
 
 describe('StakingPool.token', () => {
   let testEnv: TestEnv;
