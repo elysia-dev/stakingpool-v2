@@ -25,6 +25,7 @@ export const buildDelegationData = (
       ],
     },
     domain: {
+      // The ERC712 contract name
       name: 'StakedElyfiToken',
       version: '1',
       chainId: chainId,
@@ -34,40 +35,6 @@ export const buildDelegationData = (
       delegatee: delegatee,
       nonce: nonce,
       expiry: expiry,
-    },
-  };
-  return typedData;
-};
-
-export const buildBallotData = (
-  chainId: number,
-  verifyingContract: string,
-  proposalId: BigNumber,
-  support: number
-) => {
-  const typedData: TypedMessage<any> = {
-    primaryType: 'Ballot',
-    types: {
-      EIP712Domain: [
-        { name: 'name', type: 'string' },
-        { name: 'version', type: 'string' },
-        { name: 'chainId', type: 'uint256' },
-        { name: 'verifyingContract', type: 'address' },
-      ],
-      Ballot: [
-        { name: 'proposalId', type: 'uint256' },
-        { name: 'support', type: 'uint8' },
-      ],
-    },
-    domain: {
-      name: 'ElyfiGovernanceCore',
-      version: '1',
-      chainId: chainId,
-      verifyingContract: verifyingContract,
-    },
-    message: {
-      proposalId: proposalId.toString(),
-      support: support,
     },
   };
   return typedData;

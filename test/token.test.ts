@@ -129,7 +129,6 @@ describe('StakingPool.token', () => {
   });
 
   context('ERC20 permit', async () => {
-    const stakeAmount = utils.parseEther('100');
     beforeEach('init the first round and time passes', async () => {
       await testEnv.stakingPool
         .connect(deployer)

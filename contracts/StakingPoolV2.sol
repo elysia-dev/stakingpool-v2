@@ -136,7 +136,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
     poolData.updateStakingPool(currentRound, msg.sender);
 
-    depositFor(msg.sender, amount);
+    _depositFor(msg.sender, amount);
 
     poolData.userPrincipal[msg.sender] += amount;
     poolData.totalPrincipal += amount;
@@ -226,7 +226,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     poolData.userPrincipal[msg.sender] -= amountToWithdraw;
     poolData.totalPrincipal -= amountToWithdraw;
 
-    withdrawTo(msg.sender, amount);
+    _withdrawTo(msg.sender, amount);
 
     emit Withdraw(
       msg.sender,
