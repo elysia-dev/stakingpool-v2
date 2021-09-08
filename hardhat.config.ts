@@ -6,6 +6,7 @@ import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-deploy-ethers';
 import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
+import 'solidity-coverage';
 
 import { HardhatUserConfig } from 'hardhat/types';
 
@@ -64,7 +65,6 @@ const config: HardhatUserConfig = {
     cache: './cache',
   },
   mocha: {
-    reporter: 'eth-gas-reporter',
     reporterOptions: {
       currency: 'KRW',
       showTimeSpent: true,
