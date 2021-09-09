@@ -1,6 +1,6 @@
 import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import TestEnv from './types/TestEnv';
+import TestEnv from './interfaces/TestEnv';
 import { MAX_UINT_AMOUNT, RAY, ZERO_ADDRESS } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';

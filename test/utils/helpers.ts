@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import PoolData from '../types/PoolData';
-import TestEnv from '../types/TestEnv';
+import TestEnv from '../interfaces/TestEnv';
 import UserData from '../types/UserData';
 
 export const getUserData = async (

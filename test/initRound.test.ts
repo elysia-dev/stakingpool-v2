@@ -1,6 +1,6 @@
 import { BigNumber, ContractTransaction, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import TestEnv from './types/TestEnv';
+import TestEnv from './interfaces/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { expect } from 'chai';
