@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+
 interface IStakingPoolV2 {
   error NotInRound();
   error StakingNotInitiated();
@@ -27,10 +29,11 @@ interface IStakingPoolV2 {
     uint8 currentRound
   );
 
-  event Claim(address indexed user, uint256 reward, uint256 rewardLeft, uint8 currentRound);
+  event Claim(address indexed user, uint256 reward, uint256[] rewardLefts, uint8 currentRound);
 
   event InitRound(
-    uint256 rewardPerSecond,
+    IERC20[] rewardAssets,
+    uint256[] ewardPerSeconds,
     uint256 startTimestamp,
     uint256 endTimestamp,
     uint256 currentRound
@@ -50,11 +53,13 @@ interface IStakingPoolV2 {
 
   function getUserReward(address user, uint8 round) external view returns (uint256);
 
+  function getUserRewards(address user, uint8 round) external view returns (uint256[] memory);
+
   function getPoolData(uint8 round)
     external
     view
     returns (
-      uint256 rewardPerSecond,
+      uint256[] memory rewardPerSecond,
       uint256 rewardIndex,
       uint256 startTimestamp,
       uint256 endTimestamp,
@@ -72,10 +77,9 @@ interface IStakingPoolV2 {
     );
 
   function initNewRound(
-    uint256 rewardPerSecond,
-    uint16 year,
-    uint8 month,
-    uint8 day,
-    uint8 duration
+    IERC20[] memory rewardAssets,
+    uint256[] memory rewardPerSeconds,
+    uint256 startTimestamp,
+    uint256 duration
   ) external;
 }

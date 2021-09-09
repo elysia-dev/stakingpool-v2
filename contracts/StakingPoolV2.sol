@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
-import './libraries/TimeConverter.sol';
 import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
@@ -18,14 +17,14 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   using StakingPoolLogicV2 for PoolData;
   using SafeERC20 for IERC20;
 
-  constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
+  constructor(IERC20 stakingAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
-    rewardAsset = rewardAsset_;
     _admin = msg.sender;
   }
 
   struct PoolData {
-    uint256 rewardPerSecond;
+    IERC20[] rewardAssets;
+    uint256[] rewardPerSeconds;
     uint256 rewardIndex;
     uint256 startTimestamp;
     uint256 endTimestamp;
@@ -41,7 +40,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   address internal _admin;
 
   IERC20 public stakingAsset;
-  IERC20 public rewardAsset;
 
   mapping(uint8 => PoolData) internal _rounds;
 
@@ -62,13 +60,17 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     return poolData.getUserReward(user);
   }
 
-  struct PoolDataLocalVars {
-    uint256 rewardPerSecond;
-    uint256 rewardIndex;
-    uint256 startTimestamp;
-    uint256 endTimestamp;
-    uint256 totalPrincipal;
-    uint256 lastUpdateTimestamp;
+  /// @notice Returns user accrued reward index of the round
+  /// @param user The user address
+  /// @param round The round of the pool
+  function getUserRewards(address user, uint8 round)
+    external
+    view
+    override
+    returns (uint256[] memory)
+  {
+    PoolData storage poolData = _rounds[round];
+    return poolData.getUserRewards(user);
   }
 
   /// @notice Returns the state and data of the round
@@ -84,7 +86,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     view
     override
     returns (
-      uint256 rewardPerSecond,
+      uint256[] memory rewardPerSecond,
       uint256 rewardIndex,
       uint256 startTimestamp,
       uint256 endTimestamp,
@@ -95,7 +97,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     PoolData storage poolData = _rounds[round];
 
     return (
-      poolData.rewardPerSecond,
+      poolData.rewardPerSeconds,
       poolData.rewardIndex,
       poolData.startTimestamp,
       poolData.endTimestamp,
@@ -249,48 +251,51 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
 
-    rewardAsset.safeTransfer(user, reward);
+    uint256[] memory rewardLefts = poolData.batchTransferReward(user, address(this));
 
-    uint256 rewardLeft = rewardAsset.balanceOf(address(this));
-
-    emit Claim(user, reward, rewardLeft, round);
+    emit Claim(user, reward, rewardLefts, round);
   }
 
   /***************** Admin Functions ******************/
 
   /// @notice Init the new round. After the round closed, staking is not allowed.
-  /// @param rewardPerSecond The total accrued reward per second in new round
-  /// @param year The round start year
-  /// @param month The round start month
-  /// @param day The round start day
-  /// @param duration The duration of the initiated round
+  /// @param rewardAssets The total accrued reward per second in new round
+  /// @param rewardPerSeconds The total accrued reward per second in new round
+  /// @param startTimestamp The total accrued reward per second in new round
+  /// @param duration The total accrued reward per second in new round
   function initNewRound(
-    uint256 rewardPerSecond,
-    uint16 year,
-    uint8 month,
-    uint8 day,
-    uint8 duration
+    IERC20[] memory rewardAssets,
+    uint256[] memory rewardPerSeconds,
+    uint256 startTimestamp,
+    uint256 duration
   ) external override onlyAdmin {
     PoolData storage poolDataBefore = _rounds[currentRound];
 
-    uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day, 10);
-
-    if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
+    if (startTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
 
     uint8 newRound = currentRound + 1;
-    (uint256 startTimestamp, uint256 endTimestamp) = _rounds[newRound].initRound(
-      rewardPerSecond,
-      roundstartTimestamp,
+
+    (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _rounds[newRound].initRound(
+      rewardAssets,
+      rewardPerSeconds,
+      startTimestamp,
       duration
     );
 
     currentRound = newRound;
 
-    emit InitRound(rewardPerSecond, startTimestamp, endTimestamp, currentRound);
+    emit InitRound(
+      rewardAssets,
+      rewardPerSeconds,
+      newRoundStartTimestamp,
+      newRoundEndTimestamp,
+      currentRound
+    );
   }
 
-  function retrieveResidue() external onlyAdmin {
-    rewardAsset.safeTransfer(_admin, rewardAsset.balanceOf(address(this)));
+  function retrieveResidue(address asset) external onlyAdmin {
+    uint256 balance = IERC20(asset).balanceOf(address(this));
+    IERC20(asset).safeTransfer(_admin, balance);
   }
 
   /***************** Modifier ******************/

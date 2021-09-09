@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
 import '../StakingPoolV2.sol';
-import '../libraries/TimeConverter.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
@@ -30,9 +29,33 @@ library StakingPoolLogicV2 {
       return poolData.rewardIndex;
     }
 
-    uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e9) / totalPrincipal;
+    // 1e27 = 1e18 * 1e9
+    uint256 rewardIndexDiff = (timeDiff * 1e27) / totalPrincipal;
 
     return poolData.rewardIndex + rewardIndexDiff;
+  }
+
+  function getUserRewards(StakingPoolV2.PoolData storage poolData, address user)
+    internal
+    view
+    returns (uint256[] memory)
+  {
+    uint256[] memory results;
+
+    if (poolData.userIndex[user] == 0) {
+      return results;
+    }
+    uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
+    uint256 balance = poolData.userPrincipal[user];
+
+    for (uint8 i = 0; i < poolData.rewardAssets.length; ++i) {
+      uint256 result = poolData.userReward[user] +
+        (((balance * indexDiff * poolData.rewardPerSeconds[i]) / 1e18) / 1e9);
+
+      results[i] = result;
+    }
+
+    return results;
   }
 
   function getUserReward(StakingPoolV2.PoolData storage poolData, address user)
@@ -44,7 +67,6 @@ library StakingPoolLogicV2 {
       return 0;
     }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
-
     uint256 balance = poolData.userPrincipal[user];
 
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e9;
@@ -65,13 +87,36 @@ library StakingPoolLogicV2 {
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal, currentRound);
   }
 
+  function batchTransferReward(
+    StakingPoolV2.PoolData storage poolData,
+    address user,
+    address pool
+  ) internal returns (uint256[] memory) {
+    uint256[] memory rewardLefts;
+    for (uint8 i = 0; i < poolData.rewardAssets.length; ++i) {
+      IERC20 rewardAsset = poolData.rewardAssets[i];
+      uint256 rewardPerSecond = poolData.rewardPerSeconds[i];
+      uint256 reward = (getUserReward(poolData, user) * rewardPerSecond) / 1e18;
+
+      SafeERC20.safeTransfer(rewardAsset, user, reward);
+
+      uint256 rewardLeft = rewardAsset.balanceOf(pool);
+
+      rewardLefts[i] = rewardLeft;
+    }
+
+    return rewardLefts;
+  }
+
   function initRound(
     StakingPoolV2.PoolData storage poolData,
-    uint256 rewardPerSecond,
+    IERC20[] memory rewardAssets,
+    uint256[] memory rewardPerSeconds,
     uint256 roundStartTimestamp,
-    uint8 duration
+    uint256 duration
   ) internal returns (uint256, uint256) {
-    poolData.rewardPerSecond = rewardPerSecond;
+    poolData.rewardAssets = rewardAssets;
+    poolData.rewardPerSeconds = rewardPerSeconds;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
     poolData.lastUpdateTimestamp = roundStartTimestamp;
