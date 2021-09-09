@@ -8,7 +8,8 @@ import {
   StakingAsset__factory,
   RewardAsset__factory,
 } from '../../typechain';
-import TestEnv from '../types/TestEnv';
+import TestEnv from '../interfaces/TestEnv';
+import InitRoundData from '../types/InitRoundData';
 
 const setRewardAsset = async (): Promise<RewardAsset> => {
   let rewardAsset: RewardAsset;
@@ -34,17 +35,14 @@ const setStakingAsset = async (): Promise<StakingAsset> => {
   return stakingAsset;
 };
 
-const setStakingPool = async (
-  stakingAsset: StakingAsset,
-  rewardAsset: RewardAsset
-): Promise<StakingPoolV2> => {
+const setStakingPool = async (stakingAsset: StakingAsset): Promise<StakingPoolV2> => {
   let stakingPool: StakingPoolV2;
 
   const stakingPoolFactory = (await ethers.getContractFactory(
     'StakingPoolV2'
   )) as StakingPoolV2__factory;
 
-  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address, rewardAsset.address);
+  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address);
 
   return stakingPool;
 };
@@ -54,10 +52,11 @@ export const setTestEnv = async (): Promise<TestEnv> => {
     ...(<TestEnv>{}),
   };
 
-  testEnv.rewardAsset = await setRewardAsset();
+  testEnv.rewardAssets = [await setRewardAsset(), await setRewardAsset()];
   testEnv.stakingAsset = await setStakingAsset();
 
-  testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset, testEnv.rewardAsset);
+  testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset);
 
   return testEnv;
 };
+

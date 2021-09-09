@@ -1,7 +1,7 @@
 import { RewardAsset, StakingAsset, StakingPoolV2 } from '../../typechain';
 interface TestEnv {
   stakingAsset: StakingAsset;
-  rewardAsset: RewardAsset;
+  rewardAssets: RewardAsset[];
   stakingPool: StakingPoolV2;
 }
 

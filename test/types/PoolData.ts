@@ -1,7 +1,9 @@
 import { BigNumber } from 'ethers';
+import { RewardAsset } from '../../typechain';
 
-interface PoolData {
-  rewardPerSecond: BigNumber;
+type PoolData = {
+  rewardAssets: RewardAsset[];
+  rewardPerSeconds: BigNumber[];
   rewardIndex: BigNumber;
   startTimestamp: BigNumber;
   endTimestamp: BigNumber;
@@ -9,6 +11,6 @@ interface PoolData {
   lastUpdateTimestamp: BigNumber;
   stakingAssetBalance: BigNumber;
   rewardAssetBalance: BigNumber;
-}
+};
 
 export default PoolData;
