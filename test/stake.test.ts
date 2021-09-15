@@ -2,7 +2,7 @@ import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
-import { RAY } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake } from './utils/expect';
@@ -22,7 +22,7 @@ describe('StakingPool.stake', () => {
   const year = BigNumber.from(2022);
   const month = BigNumber.from(7);
   const day = BigNumber.from(7);
-  const duration = BigNumber.from(30);
+  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
 
@@ -51,7 +51,7 @@ describe('StakingPool.stake', () => {
     beforeEach('init the first round', async () => {
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, year, month, day, duration);
+        .initNewRound(rewardPersecond, startTimestamp, duration);
     });
 
     it('reverts when it is not in round', async () => {
@@ -100,7 +100,7 @@ describe('StakingPool.stake', () => {
     beforeEach('init the first round and time passes', async () => {
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, year, month, day, duration);
+        .initNewRound(rewardPersecond, startTimestamp, duration);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);

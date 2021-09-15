@@ -21,7 +21,7 @@ describe('StakingPool.initRound', () => {
   const year = BigNumber.from(2022);
   const month = BigNumber.from(7);
   const day = BigNumber.from(7);
-  const duration = BigNumber.from(30);
+  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
   const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
@@ -49,14 +49,14 @@ describe('StakingPool.initRound', () => {
       await expect(
         testEnv.stakingPool
           .connect(depositor)
-          .initNewRound(rewardPersecond, year, month, day, duration)
+          .initNewRound(rewardPersecond, startTimestamp, duration)
       ).to.be.revertedWith('OnlyAdmin');
     });
 
     it('success', async () => {
       const initTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, year, month, day, duration);
+        .initNewRound(rewardPersecond, startTimestamp, duration);
 
       const poolData = await testEnv.stakingPool.getPoolData(1);
 
@@ -71,11 +71,11 @@ describe('StakingPool.initRound', () => {
     it('reverts if the next round initiated before the current round is over', async () => {
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, year, month, day, duration);
+        .initNewRound(rewardPersecond, startTimestamp, duration);
       await expect(
         testEnv.stakingPool
           .connect(deployer)
-          .initNewRound(rewardPersecond, year, month, day, duration)
+          .initNewRound(rewardPersecond, startTimestamp, duration)
       ).to.be.revertedWith('RoundConflicted');
     });
   });
@@ -89,14 +89,14 @@ describe('StakingPool.initRound', () => {
     beforeEach('init the first round and time passes', async () => {
       initTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, year, month, day, duration);
+        .initNewRound(rewardPersecond, startTimestamp, duration);
       await advanceTimeTo(await getTimestamp(initTx), endTimestamp);
     });
 
     it('init the next round, success', async () => {
       const secondInitTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, nextYear, month, day, duration);
+        .initNewRound(rewardPersecond, nextStartTimestamp, duration);
 
       const poolData = await testEnv.stakingPool.getPoolData(2);
 

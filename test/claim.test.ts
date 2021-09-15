@@ -1,7 +1,7 @@
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
-import { RAY } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
@@ -25,7 +25,7 @@ describe('StakingPool.claim', () => {
     year: BigNumber.from(2022),
     month: BigNumber.from(7),
     day: BigNumber.from(7),
-    duration: BigNumber.from(30),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
   const firstRoundStartTimestamp = toTimestamp(
     firstRoundInit.year,
@@ -38,7 +38,7 @@ describe('StakingPool.claim', () => {
     year: BigNumber.from(2022),
     month: BigNumber.from(9),
     day: BigNumber.from(7),
-    duration: BigNumber.from(30),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
   const secondRoundStartTimestamp = toTimestamp(
     secondRoundInit.year,
@@ -64,9 +64,7 @@ describe('StakingPool.claim', () => {
       .connect(deployer)
       .initNewRound(
         firstRoundInit.rewardPersecond,
-        firstRoundInit.year,
-        firstRoundInit.month,
-        firstRoundInit.day,
+        firstRoundStartTimestamp,
         firstRoundInit.duration
       );
     await testEnv.stakingAsset.connect(alice).faucet();
@@ -121,9 +119,7 @@ describe('StakingPool.claim', () => {
         .connect(deployer)
         .initNewRound(
           secondRoundInit.rewardPersecond,
-          secondRoundInit.year,
-          secondRoundInit.month,
-          secondRoundInit.day,
+          secondRoundStartTimestamp,
           secondRoundInit.duration
         );
       secondRound = await testEnv.stakingPool.currentRound();

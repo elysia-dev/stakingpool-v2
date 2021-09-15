@@ -23,7 +23,7 @@ describe('StakingPool.withdraw', () => {
     year: BigNumber.from(2022),
     month: BigNumber.from(7),
     day: BigNumber.from(7),
-    duration: BigNumber.from(30),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
 
   const startTimestamp = toTimestamp(
@@ -54,13 +54,7 @@ describe('StakingPool.withdraw', () => {
 
     await testEnv.stakingPool
       .connect(deployer)
-      .initNewRound(
-        firstRound.rewardPersecond,
-        firstRound.year,
-        firstRound.month,
-        firstRound.day,
-        firstRound.duration
-      );
+      .initNewRound(firstRound.rewardPersecond, startTimestamp, firstRound.duration);
     await testEnv.stakingAsset.connect(alice).faucet();
     await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingAsset.connect(bob).faucet();
@@ -202,7 +196,7 @@ describe('StakingPool.withdraw', () => {
       year: BigNumber.from(2023),
       month: BigNumber.from(7),
       day: BigNumber.from(7),
-      duration: BigNumber.from(30),
+      duration: BigNumber.from(30).mul(SECONDSPERDAY),
     };
     const secondRoundStartTimestamp = toTimestamp(
       secondRound.year,
@@ -226,13 +220,7 @@ describe('StakingPool.withdraw', () => {
 
       const initTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(
-          secondRound.rewardPersecond,
-          secondRound.year,
-          secondRound.month,
-          secondRound.day,
-          secondRound.duration
-        );
+        .initNewRound(secondRound.rewardPersecond, secondRoundStartTimestamp, secondRound.duration);
       second = await testEnv.stakingPool.currentRound();
 
       await advanceTimeTo(await getTimestamp(initTx), secondRoundStartTimestamp);
