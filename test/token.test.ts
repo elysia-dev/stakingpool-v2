@@ -47,6 +47,40 @@ describe('StakingPool.token', () => {
     testEnv = await loadFixture(fixture);
   });
 
+  context('ERC20', async () => {
+    beforeEach('deploy staking pool', async () => {
+      await testEnv.stakingAsset.connect(alice).faucet();
+      const tx = await testEnv.stakingAsset
+        .connect(alice)
+        .approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+    });
+
+    it('ERC20 functions are unavailable', async () => {
+      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
+      await expect(
+        testEnv.stakingPool.connect(alice).transfer(bob.address, utils.parseEther('100'))
+      ).to.be.revertedWith('');
+      await expect(
+        testEnv.stakingPool
+          .connect(alice)
+          .transferFrom(alice.address, bob.address, utils.parseEther('100'))
+      ).to.be.revertedWith('');
+      await expect(
+        testEnv.stakingPool.connect(alice).allowance(bob.address, alice.address)
+      ).to.be.revertedWith('');
+      await expect(
+        testEnv.stakingPool.connect(alice).approve(bob.address, utils.parseEther('100'))
+      ).to.be.revertedWith('');
+      await expect(
+        testEnv.stakingPool.connect(alice).increaseAllowance(bob.address, utils.parseEther('100'))
+      ).to.be.revertedWith('');
+      await expect(
+        testEnv.stakingPool.connect(alice).decreaseAllowance(bob.address, utils.parseEther('100'))
+      ).to.be.revertedWith('');
+    });
+  });
+
   context('ERC20Wrapper', async () => {
     beforeEach('deploy staking pool', async () => {
       await testEnv.stakingAsset.connect(alice).faucet();

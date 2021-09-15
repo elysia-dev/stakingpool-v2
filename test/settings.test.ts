@@ -3,7 +3,7 @@ import { waffle } from 'hardhat';
 import { expect } from 'chai';
 
 import TestEnv from './types/TestEnv';
-import { SECONDSPERDAY, WAD } from './utils/constants';
+import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 
@@ -11,7 +11,7 @@ const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
-describe('StakingPool.initRound', () => {
+describe('StakingPool.settings', () => {
   let testEnv: TestEnv;
 
   const provider = waffle.provider;
@@ -24,7 +24,7 @@ describe('StakingPool.initRound', () => {
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
-  const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
+  const endTimestamp = startTimestamp.add(duration);
 
   async function fixture() {
     return await setTestEnv();
@@ -84,7 +84,7 @@ describe('StakingPool.initRound', () => {
     let initTx: ContractTransaction;
     const nextYear = year.add(1);
     const nextStartTimestamp = toTimestamp(nextYear, month, day, BigNumber.from(10));
-    const nextEndTimestamp = nextStartTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
+    const nextEndTimestamp = nextStartTimestamp.add(duration);
 
     beforeEach('init the first round and time passes', async () => {
       initTx = await testEnv.stakingPool
@@ -117,6 +117,23 @@ describe('StakingPool.initRound', () => {
       expect(poolData.endTimestamp).to.be.equal(0);
       expect(poolData.totalPrincipal).to.be.equal(0);
       expect(poolData.lastUpdateTimestamp).to.be.equal(0);
+    });
+  });
+
+  context('retrieveResidue', async () => {
+    beforeEach('set', async () => {
+      await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, RAY);
+    });
+    it('reverts if general account call', async () => {
+      await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
+        'OnlyAdmin'
+      );
+    });
+    it('success', async () => {
+      const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
+      expect(tx)
+        .to.emit(testEnv.rewardAsset, 'Transfer')
+        .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
     });
   });
 });

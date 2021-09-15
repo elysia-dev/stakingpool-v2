@@ -78,10 +78,4 @@ library StakingPoolLogicV2 {
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
-
-  function resetUserData(StakingPoolV2.PoolData storage poolData, address user) internal {
-    poolData.userReward[user] = 0;
-    poolData.userIndex[user] = 0;
-    poolData.userPrincipal[user] = 0;
-  }
 }

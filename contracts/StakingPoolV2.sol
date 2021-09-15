@@ -257,7 +257,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   /// @notice Init the new round. After the round closed, staking is not allowed.
   /// @param rewardPerSecond The total accrued reward per second in new round
-  /// @param startTimestamp The duration of the initiated round
+  /// @param startTimestamp The start timestamp of initiated round
   /// @param duration The duration of the initiated round
   function initNewRound(
     uint256 rewardPerSecond,

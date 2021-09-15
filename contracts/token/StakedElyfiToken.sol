@@ -34,6 +34,74 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
     super._burn(account, amount);
   }
 
+  /// @notice Transfer not supported
+  function transfer(address recipient, uint256 amount)
+    public
+    virtual
+    override(ERC20)
+    returns (bool)
+  {
+    recipient;
+    amount;
+    revert();
+  }
+
+  /// @notice Transfer not supported
+  function transferFrom(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) public virtual override(ERC20) returns (bool) {
+    sender;
+    recipient;
+    amount;
+    revert();
+  }
+
+  /// @notice Approval not supported
+  function approve(address spender, uint256 amount) public virtual override(ERC20) returns (bool) {
+    spender;
+    amount;
+    revert();
+  }
+
+  /// @notice Allownace not supported
+  function allowance(address owner, address spender)
+    public
+    view
+    virtual
+    override(ERC20)
+    returns (uint256)
+  {
+    owner;
+    spender;
+    revert();
+  }
+
+  /// @notice Allownace not supported
+  function increaseAllowance(address spender, uint256 addedValue)
+    public
+    virtual
+    override(ERC20)
+    returns (bool)
+  {
+    spender;
+    addedValue;
+    revert();
+  }
+
+  /// @notice Allownace not supported
+  function decreaseAllowance(address spender, uint256 subtractedValue)
+    public
+    virtual
+    override(ERC20)
+    returns (bool)
+  {
+    spender;
+    subtractedValue;
+    revert();
+  }
+
   /// @dev Allow a user to deposit underlying tokens and mint the corresponding number of wrapped tokens.
   /// @notice This function is based on the openzeppelin ERC20Wrapper
   function _depositFor(address account, uint256 amount) internal virtual returns (bool) {
