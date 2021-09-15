@@ -59,15 +59,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     return poolData.getUserReward(user);
   }
 
-  struct PoolDataLocalVars {
-    uint256 rewardPerSecond;
-    uint256 rewardIndex;
-    uint256 startTimestamp;
-    uint256 endTimestamp;
-    uint256 totalPrincipal;
-    uint256 lastUpdateTimestamp;
-  }
-
   /// @notice Returns the state and data of the round
   /// @param round The round of the pool
   /// @return rewardPerSecond The total reward accrued per second in the round
@@ -90,7 +81,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     )
   {
     PoolData storage poolData = _rounds[round];
-
     return (
       poolData.rewardPerSecond,
       poolData.rewardIndex,
@@ -205,7 +195,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     emit Migrate(msg.sender, amount, round, currentRound);
   }
 
-  /***************** Internal functions ******************/
+  /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount, uint8 round) internal {
     PoolData storage poolData = _rounds[round];

@@ -8,7 +8,6 @@ export interface InitRoundData {
   duration: number;
 }
 
-// It is test data
 export const first: InitRoundData = {
   rewardPerSecond: ethers.utils.parseEther('1'),
   year: 2021,

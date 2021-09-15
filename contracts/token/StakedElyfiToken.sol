@@ -16,24 +16,6 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
     underlying = underlyingToken;
   }
 
-  // The following functions are overrides required by Solidity.
-
-  function _afterTokenTransfer(
-    address from,
-    address to,
-    uint256 amount
-  ) internal override(ERC20, ERC20Votes) {
-    super._afterTokenTransfer(from, to, amount);
-  }
-
-  function _mint(address to, uint256 amount) internal override(ERC20, ERC20Votes) {
-    super._mint(to, amount);
-  }
-
-  function _burn(address account, uint256 amount) internal override(ERC20, ERC20Votes) {
-    super._burn(account, amount);
-  }
-
   /// @notice Transfer not supported
   function transfer(address recipient, uint256 amount)
     public
@@ -116,5 +98,24 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
     _burn(_msgSender(), amount);
     SafeERC20.safeTransfer(underlying, account, amount);
     return true;
+  }
+
+  /// @notice The following functions are overrides required by Solidity.
+  function _afterTokenTransfer(
+    address from,
+    address to,
+    uint256 amount
+  ) internal override(ERC20, ERC20Votes) {
+    super._afterTokenTransfer(from, to, amount);
+  }
+
+  /// @notice The following functions are overrides required by Solidity.
+  function _mint(address to, uint256 amount) internal override(ERC20, ERC20Votes) {
+    super._mint(to, amount);
+  }
+
+  /// @notice The following functions are overrides required by Solidity.
+  function _burn(address account, uint256 amount) internal override(ERC20, ERC20Votes) {
+    super._burn(account, amount);
   }
 }
