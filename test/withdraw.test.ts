@@ -32,26 +32,10 @@ describe('StakingPool.withdraw', () => {
     firstRound.day,
     BigNumber.from(10)
   );
-  const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(firstRound.duration));
-
   const amount = ethers.utils.parseEther('1');
 
   async function fixture() {
-    return await setTestEnv();
-  }
-
-  after(async () => {
-    await loadFixture(fixture);
-  });
-
-  beforeEach('deploy staking pool', async () => {
-    testEnv = await loadFixture(fixture);
-    await testEnv.stakingAsset.connect(alice).faucet();
-  });
-
-  beforeEach('deploy staking pool and init first round', async () => {
-    testEnv = await setTestEnv();
-
+    const testEnv = await setTestEnv();
     await testEnv.stakingPool
       .connect(deployer)
       .initNewRound(firstRound.rewardPersecond, startTimestamp, firstRound.duration);
@@ -59,6 +43,15 @@ describe('StakingPool.withdraw', () => {
     await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingAsset.connect(bob).faucet();
     await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
+    return testEnv;
+  }
+
+  after(async () => {
+    await loadFixture(fixture);
+  });
+
+  beforeEach('deploy staking pool and init first round', async () => {
+    testEnv = await loadFixture(fixture);
   });
 
   context('when the first round initiated', async () => {
@@ -71,7 +64,6 @@ describe('StakingPool.withdraw', () => {
 
     it('reverts if target round is before initiation', async () => {
       const currentRound = await testEnv.stakingPool.currentRound();
-
       await expect(
         testEnv.stakingPool.connect(alice).withdraw(amount, currentRound + 1)
       ).to.be.revertedWith('NotInitiatedRound');

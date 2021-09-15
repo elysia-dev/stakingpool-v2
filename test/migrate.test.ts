@@ -20,7 +20,7 @@ describe('StakingPool.migrate', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const firstRoundInit = {
+  const firstRoundInitData = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
     year: BigNumber.from(2022),
     month: BigNumber.from(7),
@@ -28,7 +28,7 @@ describe('StakingPool.migrate', () => {
     duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
 
-  const secondRoundInit = {
+  const secondRoundInitData = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
     year: BigNumber.from(2022),
     month: BigNumber.from(9),
@@ -37,15 +37,15 @@ describe('StakingPool.migrate', () => {
   };
 
   const firstRoundStartTimestamp = toTimestamp(
-    firstRoundInit.year,
-    firstRoundInit.month,
-    firstRoundInit.day,
+    firstRoundInitData.year,
+    firstRoundInitData.month,
+    firstRoundInitData.day,
     BigNumber.from(10)
   );
   const secondRoundStartTimestamp = toTimestamp(
-    secondRoundInit.year,
-    secondRoundInit.month,
-    secondRoundInit.day,
+    secondRoundInitData.year,
+    secondRoundInitData.month,
+    secondRoundInitData.day,
     BigNumber.from(10)
   ).add(10);
 
@@ -65,9 +65,9 @@ describe('StakingPool.migrate', () => {
     await testEnv.stakingPool
       .connect(deployer)
       .initNewRound(
-        firstRoundInit.rewardPersecond,
+        firstRoundInitData.rewardPersecond,
         firstRoundStartTimestamp,
-        firstRoundInit.duration
+        firstRoundInitData.duration
       );
     await testEnv.stakingAsset.connect(alice).faucet();
     await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -93,9 +93,9 @@ describe('StakingPool.migrate', () => {
       const tx = await testEnv.stakingPool
         .connect(deployer)
         .initNewRound(
-          secondRoundInit.rewardPersecond,
+          secondRoundInitData.rewardPersecond,
           secondRoundStartTimestamp,
-          secondRoundInit.duration
+          secondRoundInitData.duration
         );
       await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
     });

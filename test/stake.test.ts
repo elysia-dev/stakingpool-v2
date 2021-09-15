@@ -59,6 +59,7 @@ describe('StakingPool.stake', () => {
         'NotInRound'
       );
     });
+
     context('Time passes', async () => {
       beforeEach('init the first round', async () => {
         const tx = await testEnv.stakingAsset
@@ -76,6 +77,7 @@ describe('StakingPool.stake', () => {
       it('success', async () => {
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
+
         await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, stakeAmount);
         const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
 
@@ -97,6 +99,7 @@ describe('StakingPool.stake', () => {
 
   context('staking scenario', async () => {
     const stakeAmount = utils.parseEther('100');
+
     beforeEach('init the first round and time passes', async () => {
       await testEnv.stakingPool
         .connect(deployer)
@@ -105,6 +108,7 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingAsset.connect(bob).faucet();
+
       const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(await getTimestamp(tx), startTimestamp);
     });

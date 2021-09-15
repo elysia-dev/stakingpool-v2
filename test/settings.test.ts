@@ -17,7 +17,7 @@ describe('StakingPool.settings', () => {
   const provider = waffle.provider;
   const [deployer, depositor] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
+  const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
   const year = BigNumber.from(2022);
   const month = BigNumber.from(7);
   const day = BigNumber.from(7);
@@ -49,18 +49,18 @@ describe('StakingPool.settings', () => {
       await expect(
         testEnv.stakingPool
           .connect(depositor)
-          .initNewRound(rewardPersecond, startTimestamp, duration)
+          .initNewRound(rewardPerSecond, startTimestamp, duration)
       ).to.be.revertedWith('OnlyAdmin');
     });
 
     it('success', async () => {
-      const initTx = await testEnv.stakingPool
+      await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewRound(rewardPerSecond, startTimestamp, duration);
 
       const poolData = await testEnv.stakingPool.getPoolData(1);
 
-      expect(poolData.rewardPerSecond).to.be.equal(rewardPersecond);
+      expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
       expect(poolData.rewardIndex).to.be.equal(WAD);
       expect(poolData.startTimestamp).to.be.equal(startTimestamp);
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
@@ -68,14 +68,15 @@ describe('StakingPool.settings', () => {
       expect(poolData.lastUpdateTimestamp).to.be.equal(startTimestamp);
       expect(await testEnv.stakingPool.currentRound()).to.be.equal(1);
     });
+
     it('reverts if the next round initiated before the current round is over', async () => {
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewRound(rewardPerSecond, startTimestamp, duration);
       await expect(
         testEnv.stakingPool
           .connect(deployer)
-          .initNewRound(rewardPersecond, startTimestamp, duration)
+          .initNewRound(rewardPerSecond, startTimestamp, duration)
       ).to.be.revertedWith('RoundConflicted');
     });
   });
@@ -89,18 +90,17 @@ describe('StakingPool.settings', () => {
     beforeEach('init the first round and time passes', async () => {
       initTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewRound(rewardPerSecond, startTimestamp, duration);
       await advanceTimeTo(await getTimestamp(initTx), endTimestamp);
     });
 
     it('init the next round, success', async () => {
-      const secondInitTx = await testEnv.stakingPool
+      await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, nextStartTimestamp, duration);
+        .initNewRound(rewardPerSecond, nextStartTimestamp, duration);
 
       const poolData = await testEnv.stakingPool.getPoolData(2);
-
-      expect(poolData.rewardPerSecond).to.be.equal(rewardPersecond);
+      expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
       expect(poolData.rewardIndex).to.be.equal(WAD);
       expect(poolData.startTimestamp).to.be.equal(nextStartTimestamp);
       expect(poolData.endTimestamp).to.be.equal(nextEndTimestamp);
@@ -124,11 +124,13 @@ describe('StakingPool.settings', () => {
     beforeEach('set', async () => {
       await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, RAY);
     });
+
     it('reverts if general account call', async () => {
       await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
         'OnlyAdmin'
       );
     });
+
     it('success', async () => {
       const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
       expect(tx)

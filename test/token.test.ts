@@ -121,6 +121,7 @@ describe('StakingPool.token', () => {
       await advanceTimeTo(await getTimestamp(tx), startTimestamp);
       await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
     });
+
     it('voting power should be 0 before self delegation', async () => {
       expect(await testEnv.stakingPool.balanceOf(alice.address)).to.be.equal(
         utils.parseEther('100')
