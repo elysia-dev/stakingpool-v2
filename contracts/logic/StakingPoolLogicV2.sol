@@ -69,11 +69,11 @@ library StakingPoolLogicV2 {
     StakingPoolV2.PoolData storage poolData,
     uint256 rewardPerSecond,
     uint256 roundStartTimestamp,
-    uint8 duration
+    uint256 duration
   ) internal returns (uint256, uint256) {
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.startTimestamp = roundStartTimestamp;
-    poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
+    poolData.endTimestamp = roundStartTimestamp + duration;
     poolData.lastUpdateTimestamp = roundStartTimestamp;
     poolData.rewardIndex = 1e18;
 
