@@ -4,6 +4,8 @@ import { StakingAsset, StakingPoolV2 } from '../typechain';
 import * as rounds from '../data/rounds';
 import { getRewardAsset, getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
 import { ethers, utils } from 'ethers';
+import { roundStartTimestamp, toTimestamp } from '../test/utils/time';
+import { InitRoundData } from '../data/types/InitRoundData';
 
 interface Args {
   round: keyof typeof rounds;
@@ -19,17 +21,12 @@ task('testnet:initNewRound', 'Initiate staking round')
     stakingPool = await getStakingPool(hre);
     const rewardAsset = await getStakingAsset(hre);
 
-    const roundData: rounds.InitRoundData = rounds[args.round];
+    const roundData: InitRoundData = rounds[args.round];
+    const timestamp = roundStartTimestamp(roundData);
 
     const initTx = await stakingPool
       .connect(deployer)
-      .initNewRound(
-        roundData.rewardPerSecond,
-        roundData.year,
-        roundData.month,
-        roundData.day,
-        roundData.duration
-      );
+      .initNewRound(roundData.rewardPerSecond, timestamp, roundData.duration);
     await initTx.wait();
 
     const transferTx = await rewardAsset
@@ -98,18 +95,12 @@ task('mainnet:initNewRound:elPool', 'Initiate staking round')
 
     stakingPool = await getStakingPool(hre);
 
-    const roundData: rounds.InitRoundData = rounds[args.round];
-    const rewardPerSecond = ethers.utils.parseEther('25000').div(86400);
+    const roundData: InitRoundData = rounds[args.round];
+    const timestamp = roundStartTimestamp(roundData);
 
     const initTx = await stakingPool
       .connect(deployer)
-      .initNewRound(
-        rewardPerSecond,
-        roundData.year,
-        roundData.month,
-        roundData.day,
-        roundData.duration
-      );
+      .initNewRound(roundData.rewardPerSecond, timestamp, roundData.duration);
     await initTx.wait();
 
     console.log('Round initiated');
@@ -123,18 +114,12 @@ task('mainnet:initNewRound:elyfiPool', 'Initiate staking round')
 
     stakingPool = await getStakingPool(hre);
 
-    const roundData: rounds.InitRoundData = rounds[args.round];
-    const rewardPerSecond = ethers.utils.parseEther('1250').div(86400);
+    const roundData: InitRoundData = rounds[args.round];
+    const timestamp = roundStartTimestamp(roundData);
 
     const initTx = await stakingPool
       .connect(deployer)
-      .initNewRound(
-        rewardPerSecond,
-        roundData.year,
-        roundData.month,
-        roundData.day,
-        roundData.duration
-      );
+      .initNewRound(roundData.rewardPerSecond, timestamp, roundData.duration);
     await initTx.wait();
 
     console.log('Round initiated');
