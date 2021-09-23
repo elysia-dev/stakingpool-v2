@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
-import './libraries/TimeConverter.sol';
 import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
@@ -60,15 +59,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     return poolData.getUserReward(user);
   }
 
-  struct PoolDataLocalVars {
-    uint256 rewardPerSecond;
-    uint256 rewardIndex;
-    uint256 startTimestamp;
-    uint256 endTimestamp;
-    uint256 totalPrincipal;
-    uint256 lastUpdateTimestamp;
-  }
-
   /// @notice Returns the state and data of the round
   /// @param round The round of the pool
   /// @return rewardPerSecond The total reward accrued per second in the round
@@ -91,7 +81,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     )
   {
     PoolData storage poolData = _rounds[round];
-
     return (
       poolData.rewardPerSecond,
       poolData.rewardIndex,
@@ -206,7 +195,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     emit Migrate(msg.sender, amount, round, currentRound);
   }
 
-  /***************** Internal functions ******************/
+  /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount, uint8 round) internal {
     PoolData storage poolData = _rounds[round];
@@ -258,33 +247,30 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   /// @notice Init the new round. After the round closed, staking is not allowed.
   /// @param rewardPerSecond The total accrued reward per second in new round
-  /// @param year The round start year
-  /// @param month The round start month
-  /// @param day The round start day
+  /// @param startTimestamp The start timestamp of initiated round
   /// @param duration The duration of the initiated round
   function initNewRound(
     uint256 rewardPerSecond,
-    uint16 year,
-    uint8 month,
-    uint8 day,
-    uint8 duration
+    uint256 startTimestamp,
+    uint256 duration
   ) external override onlyAdmin {
     PoolData storage poolDataBefore = _rounds[currentRound];
 
-    uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day, 10);
+    uint256 roundstartTimestamp = startTimestamp;
 
     if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
 
     uint8 newRound = currentRound + 1;
-    (uint256 startTimestamp, uint256 endTimestamp) = _rounds[newRound].initRound(
+
+    (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _rounds[newRound].initRound(
       rewardPerSecond,
-      roundstartTimestamp,
+      startTimestamp,
       duration
     );
 
     currentRound = newRound;
 
-    emit InitRound(rewardPerSecond, startTimestamp, endTimestamp, currentRound);
+    emit InitRound(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp, currentRound);
   }
 
   function retrieveResidue() external onlyAdmin {

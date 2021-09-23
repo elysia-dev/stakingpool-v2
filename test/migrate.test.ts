@@ -2,7 +2,7 @@ import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
-import { RAY } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterMigrate } from './utils/expect';
@@ -20,32 +20,32 @@ describe('StakingPool.migrate', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const firstRoundInit = {
+  const firstRoundInitData = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
     year: BigNumber.from(2022),
     month: BigNumber.from(7),
     day: BigNumber.from(7),
-    duration: BigNumber.from(30),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
 
-  const secondRoundInit = {
+  const secondRoundInitData = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
     year: BigNumber.from(2022),
     month: BigNumber.from(9),
     day: BigNumber.from(7),
-    duration: BigNumber.from(30),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
 
   const firstRoundStartTimestamp = toTimestamp(
-    firstRoundInit.year,
-    firstRoundInit.month,
-    firstRoundInit.day,
+    firstRoundInitData.year,
+    firstRoundInitData.month,
+    firstRoundInitData.day,
     BigNumber.from(10)
   );
   const secondRoundStartTimestamp = toTimestamp(
-    secondRoundInit.year,
-    secondRoundInit.month,
-    secondRoundInit.day,
+    secondRoundInitData.year,
+    secondRoundInitData.month,
+    secondRoundInitData.day,
     BigNumber.from(10)
   ).add(10);
 
@@ -65,11 +65,9 @@ describe('StakingPool.migrate', () => {
     await testEnv.stakingPool
       .connect(deployer)
       .initNewRound(
-        firstRoundInit.rewardPersecond,
-        firstRoundInit.year,
-        firstRoundInit.month,
-        firstRoundInit.day,
-        firstRoundInit.duration
+        firstRoundInitData.rewardPersecond,
+        firstRoundStartTimestamp,
+        firstRoundInitData.duration
       );
     await testEnv.stakingAsset.connect(alice).faucet();
     await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -95,11 +93,9 @@ describe('StakingPool.migrate', () => {
       const tx = await testEnv.stakingPool
         .connect(deployer)
         .initNewRound(
-          secondRoundInit.rewardPersecond,
-          secondRoundInit.year,
-          secondRoundInit.month,
-          secondRoundInit.day,
-          secondRoundInit.duration
+          secondRoundInitData.rewardPersecond,
+          secondRoundStartTimestamp,
+          secondRoundInitData.duration
         );
       await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
     });

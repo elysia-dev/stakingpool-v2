@@ -1,4 +1,3 @@
-import { BigNumber, utils } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   StakingAsset,

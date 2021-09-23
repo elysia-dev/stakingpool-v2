@@ -73,9 +73,7 @@ interface IStakingPoolV2 {
 
   function initNewRound(
     uint256 rewardPerSecond,
-    uint16 year,
-    uint8 month,
-    uint8 day,
-    uint8 duration
+    uint256 startTimestamp,
+    uint256 duration
   ) external;
 }
