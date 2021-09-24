@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { InitRoundData } from "./types/InitRoundData";
-import { SECONDSPERDAY} from '../test/utils/constants'
 
 export const third: InitRoundData = {
   rewardPerSecond: ethers.utils.parseEther('1'),
@@ -9,5 +8,5 @@ export const third: InitRoundData = {
   day: 25,
   hour: 10,
   minute: 0,
-  duration: ethers.BigNumber.from(40).mul(SECONDSPERDAY).toNumber(),
+  duration: ethers.BigNumber.from(40).mul(86400).toNumber(),
 };
