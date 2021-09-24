@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { InitRoundData } from "./types/InitRoundData";
 
 export const third: InitRoundData = {
-  rewardPerSecond: ethers.utils.parseEther('1'),
+  rewardPerSecond: ethers.utils.parseEther('1250').div(86400),
   year: 2021,
   month: 9,
   day: 25,
