@@ -14,10 +14,17 @@ interface Args {
 task('testnet:initNewRound', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
 
-    stakingPool = await getStakingPool(hre);
+    const { get } = hre.deployments;
+
+    const stakingPoolDeployment = await get('StakingPoolV2');
+
+    const stakingPool = (await hre.ethers.getContractAt(
+      stakingPoolDeployment.abi,
+      stakingPoolDeployment.address
+    )) as StakingPoolV2;
+
     const rewardAsset = await getDai(hre);
 
     const roundData: InitRoundData = rounds[args.round];
@@ -47,11 +54,17 @@ task('testnet:initNewRound', 'Initiate staking round')
 task('testnet:stake', 'Stake asset')
   .addParam('amount', 'The amount to stake')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
     const amount = hre.ethers.utils.parseEther(args.amount);
 
-    stakingPool = await getStakingPool(hre);
+    const { get } = hre.deployments;
+
+    const stakingPoolDeployment = await get('StakingPoolV2');
+
+    const stakingPool = (await hre.ethers.getContractAt(
+      stakingPoolDeployment.abi,
+      stakingPoolDeployment.address
+    )) as StakingPoolV2;
 
     const stakingAsset = await getStakingAsset(hre);
 
@@ -99,10 +112,15 @@ task('testnet:withdraw', 'Unstake asset')
 task('mainnet:initNewRound', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
-    let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
+    const { get } = hre.deployments;
 
-    stakingPool = await getStakingPool(hre);
+    const stakingPoolDeployment = await get('StakingPoolV2');
+
+    const stakingPool = (await hre.ethers.getContractAt(
+      stakingPoolDeployment.abi,
+      stakingPoolDeployment.address
+    )) as StakingPoolV2;
 
     const roundData: InitRoundData = rounds[args.round];
     const timestamp = hre.ethers.BigNumber.from(

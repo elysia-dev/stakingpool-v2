@@ -6,9 +6,6 @@ import { AssetData } from '../data/types/AssetData';
 export const getElToken = async (hre: HardhatRuntimeEnvironment) => {
   let el: Contract;
 
-  if (hre.network.name == 'ganache') {
-  }
-
   const data: AssetData = require('../data/assets/el').default;
 
   el = await hre.ethers.getContractAt(data[hre.network.name].abi, data[hre.network.name].address);
@@ -33,5 +30,6 @@ export const getDai = async (hre: HardhatRuntimeEnvironment) => {
   const data: AssetData = require('../data/assets/dai').default;
 
   dai = await hre.ethers.getContractAt(data[hre.network.name].abi, data[hre.network.name].address);
+
   return dai;
 };

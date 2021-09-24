@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import '@typechain/hardhat';
 import '@nomiclabs/hardhat-etherscan';
+import '@nomiclabs/hardhat-ethers';
 import 'hardhat-deploy-ethers';
 import 'hardhat-deploy';
 
