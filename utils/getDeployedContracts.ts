@@ -77,5 +77,5 @@ const stakingPool = {
 };
 
 const getDeploymentPath = (network: string, file: string) => {
-  return path.join(__dirname, '..', '..', 'deployments', network, file);
+  return path.join(__dirname, '..', 'deployments', network, file);
 };
