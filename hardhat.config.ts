@@ -10,8 +10,6 @@ import 'solidity-coverage';
 
 import { HardhatUserConfig } from 'hardhat/types';
 
-const testMnemonic = 'suggest mirror pulp horn goat wagon body long fortune dirt glass awesome';
-
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.4',
@@ -41,14 +39,14 @@ const config: HardhatUserConfig = {
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: {
-        mnemonic: process.env.TEST_MNEMONIC || testMnemonic,
+        mnemonic: process.env.TEST_MNEMONIC,
       },
       chainId: 3,
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: {
-        mnemonic: process.env.TEST_MNEMONIC || testMnemonic,
+        mnemonic: process.env.TEST_MNEMONIC,
       },
       chainId: 42,
     },
