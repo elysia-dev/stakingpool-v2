@@ -6,6 +6,9 @@ import { getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
 import { InitRoundData } from '../data/types/InitRoundData';
 import { getDai } from '../utils/getDependencies';
 
+import StakingPoolV2Artifact from '../artifacts/contracts/StakingPoolV2.sol/StakingPoolV2.json';
+import { StakedUserList } from '../data/userList';
+
 interface Args {
   round: keyof typeof rounds;
   amount: string;
@@ -140,3 +143,25 @@ task('mainnet:initNewRound', 'Initiate staking round')
 
     console.log('Round initiated');
   });
+
+task('getReward', 'Initiate staking round').setAction(
+  async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    const [deployer] = await hre.ethers.getSigners();
+    const { get } = hre.deployments;
+
+    const stakingPool = (await hre.ethers.getContractAt(
+      StakingPoolV2Artifact.abi,
+      '0xcd668b44c7cf3b63722d5ce5f655de68dd8f2750'
+    )) as StakingPoolV2;
+
+    const userRewards = [];
+
+    for (let account of StakedUserList) {
+      console.log(account);
+      const userData = await stakingPool.getUserData(3, account);
+      userRewards.push(userData.userPrincipal);
+    }
+
+    console.log(userRewards);
+  }
+);
