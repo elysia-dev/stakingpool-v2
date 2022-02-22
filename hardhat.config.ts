@@ -50,6 +50,20 @@ const config: HardhatUserConfig = {
       },
       chainId: 42,
     },
+    bscTest: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: [process.env.ADMIN || ''],
+    },
+    bscMain: {
+      url: 'https://bsc-dataseed.binance.org/',
+      chainId: 56,
+      gasPrice: 20000000000,
+      accounts: {
+        mnemonic: process.env.TEST_MNEMONIC,
+      },
+    },
     ganache: {
       url: 'http://0.0.0.0:8545',
     },
