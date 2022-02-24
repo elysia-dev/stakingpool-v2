@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
  * @notice This ERC20 is only for the testnet.
  */
 contract RewardAsset is ERC20 {
-  constructor() ERC20('Reward', 'Reward') {
+  constructor() ERC20('Elysia Test BUSD', 'BUSD') {
     _mint(msg.sender, 1e30 / 2);
     _mint(address(this), 1e30 / 2);
   }

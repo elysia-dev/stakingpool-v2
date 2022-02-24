@@ -1,4 +1,4 @@
-import { task } from 'hardhat/config';
+import { task, types } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { StakingPoolV2 } from '../typechain';
 import * as rounds from '../data/rounds';
@@ -12,7 +12,7 @@ interface Args {
 }
 
 task('testnet:initNewRound', 'Initiate staking round')
-  .addParam('round', 'The round to initiate, first, second, third... ')
+  .addParam('round', 'The round to initiate, first, second, third... ', types.string)
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
     const [deployer] = await hre.ethers.getSigners();
 
