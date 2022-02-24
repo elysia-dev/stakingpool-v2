@@ -273,6 +273,21 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     emit InitRound(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp, currentRound);
   }
 
+  function changeRoundData(
+    uint8 round,
+    uint256 rewardPerSecond,
+    uint256 duration
+  ) external onlyAdmin {
+    PoolData storage poolData = _rounds[round];
+
+    if (round < currentRound) revert RoundConflicted();
+
+    poolData.updateStakingPool(round, msg.sender);
+
+    poolData.rewardPerSecond = rewardPerSecond;
+    poolData.endTimestamp = poolData.startTimestamp + duration;
+  }
+
   function retrieveResidue() external onlyAdmin {
     SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)));
   }

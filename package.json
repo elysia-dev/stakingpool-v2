@@ -41,6 +41,7 @@
     "docgen": "yarn run solidity-docgen --solc-module solc --templates ./templates",
     "coverage": "yarn hardhat coverage --testfiles 'test/contracts/**/*.test.ts' --solcoverjs ./.solcover.js",
     "deploy:kovan": "yarn hardhat --network kovan deploy --tags elyfiPool",
-    "deploy:mainnet": "yarn hardhat --network mainnet deploy --tags elyfiPool"
+    "deploy:mainnet": "yarn hardhat --network mainnet deploy --tags elyfiPool",
+    "deploy:bsc": "yarn hardhat --network bsc deploy --tags elyfiPool"
   }
 }

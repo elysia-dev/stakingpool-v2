@@ -10,7 +10,7 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
   IERC20 public immutable underlying;
 
   constructor(IERC20 underlyingToken)
-    ERC20('StakedElyfiToken', 'SELFI')
+    ERC20('StakedElyfiToken', 'sELFI')
     ERC20Permit('StakedElyfiToken')
   {
     underlying = underlyingToken;

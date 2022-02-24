@@ -33,3 +33,13 @@ export const getDai = async (hre: HardhatRuntimeEnvironment) => {
 
   return dai;
 };
+
+export const getBusd = async (hre: HardhatRuntimeEnvironment) => {
+  let busd: Contract;
+
+  const data: AssetData = require('../data/assets/busd').default;
+
+  busd = await hre.ethers.getContractAt(data[hre.network.name].abi, data[hre.network.name].address);
+
+  return busd;
+};

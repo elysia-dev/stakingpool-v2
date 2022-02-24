@@ -4,4 +4,5 @@ export enum Network {
   ropsten = 'ropsten',
   kovan = 'kovan',
   mainnet = 'mainnet',
+  bsc = 'bsc'
 }
