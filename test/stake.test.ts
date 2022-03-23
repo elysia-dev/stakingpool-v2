@@ -135,7 +135,7 @@ describe('StakingPool.stake', () => {
   
       //pool 1 staking
       const poolDataBefore_1 = await getPoolData(testEnv, 1);
-      const userDataBefore_1 = await getUserData(testEnv, alice);
+      const userDataBefore_1 = await getUserData(testEnv, alice, 1);
       const stakeTx_1 = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 1);
 
       const [expectedPoolData_1, expectedUserData_1] = expectDataAfterStake(
@@ -150,7 +150,7 @@ describe('StakingPool.stake', () => {
       
       //pool 2 staking
       const poolDataBefore_2 = await getPoolData(testEnv, 2);
-      const userDataBefore_2 = await getUserData(testEnv, alice);
+      const userDataBefore_2 = await getUserData(testEnv, alice, 2);
       const stakeTx_2 = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 2);
 
 
@@ -190,7 +190,7 @@ describe('StakingPool.stake', () => {
       );
 
       const opened_poolDataBefore = await getPoolData(testEnv, 3);
-      const opened_userDataBefore = await getUserData(testEnv, alice);
+      const opened_userDataBefore = await getUserData(testEnv, alice, 3);
       const opened_stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 3);
 
 
