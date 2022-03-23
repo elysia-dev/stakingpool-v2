@@ -15,9 +15,8 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   using StakingPoolLogicV2 for PoolData;
 
-  constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
+  constructor(IERC20 stakingAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
-    rewardAsset = rewardAsset_;
     _admin = msg.sender;
   }
 
@@ -31,43 +30,41 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     mapping(address => uint256) userIndex;
     mapping(address => uint256) userReward;
     mapping(address => uint256) userPrincipal;
+    IERC20 rewardAsset;
+    bool isPause;
   }
 
-  uint8 public currentRound;
-
+  uint8 public currentPoolID;
+  IERC20 stakingAsset;
   address internal _admin;
-
-  IERC20 public stakingAsset;
-  IERC20 public rewardAsset;
-
-  mapping(uint8 => PoolData) internal _rounds;
+  mapping(uint8 => PoolData) internal _poolID;
 
   /***************** View functions ******************/
 
   /// @notice Returns reward index of the round
-  /// @param round The round of the pool
-  function getRewardIndex(uint8 round) external view override returns (uint256) {
-    PoolData storage poolData = _rounds[round];
+  /// @param poolID The round of the pool
+  function getRewardIndex(uint8 poolID) external view override returns (uint256) {
+    PoolData storage poolData = _poolID[poolID];
     return poolData.getRewardIndex();
   }
 
   /// @notice Returns user accrued reward index of the round
   /// @param user The user address
-  /// @param round The round of the pool
-  function getUserReward(address user, uint8 round) external view override returns (uint256) {
-    PoolData storage poolData = _rounds[round];
+  /// @param poolID The pool ID of the pool
+  function getUserReward(address user, uint8 poolID) external view override returns (uint256) {
+    PoolData storage poolData = _poolID[poolID];
     return poolData.getUserReward(user);
   }
 
   /// @notice Returns the state and data of the round
-  /// @param round The round of the pool
+  /// @param poolID The pool ID of the pool
   /// @return rewardPerSecond The total reward accrued per second in the round
   /// @return rewardIndex The reward index of the round
   /// @return startTimestamp The start timestamp of the round
   /// @return endTimestamp The end timestamp of the round
   /// @return totalPrincipal The total staked amount of the round
   /// @return lastUpdateTimestamp The last update timestamp of the round
-  function getPoolData(uint8 round)
+  function getPoolData(uint8 poolID)
     external
     view
     override
@@ -80,7 +77,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       uint256 lastUpdateTimestamp
     )
   {
-    PoolData storage poolData = _rounds[round];
+    PoolData storage poolData = _poolID[poolID];
     return (
       poolData.rewardPerSecond,
       poolData.rewardIndex,
@@ -92,9 +89,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   /// @notice Returns the state and data of the user
-  /// @param round The round of the pool
+  /// @param poolID The round of the pool
   /// @param user The user address
-  function getUserData(uint8 round, address user)
+  function getUserData(uint8 poolID, address user)
     external
     view
     override
@@ -104,7 +101,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       uint256 userPrincipal
     )
   {
-    PoolData storage poolData = _rounds[round];
+    PoolData storage poolData = _poolID[poolID];
 
     return (poolData.userIndex[user], poolData.userReward[user], poolData.userPrincipal[user]);
   }
@@ -113,15 +110,15 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
-  function stake(uint256 amount) external override {
-    PoolData storage poolData = _rounds[currentRound];
+  /// @param poolID The pool ID of the pool
+  function stake(uint256 amount, uint8 poolID) external override {
+    if(_isOpen(poolID) == false) revert InvalidPoolID();
+  
+    PoolData storage poolData = _poolID[poolID];
+    if (poolID > currentPoolID) revert NotInitiatedRound(poolID, currentPoolID);
+    if (amount == 0) revert InvalidAmount();
 
-    if (currentRound == 0) revert StakingNotInitiated();
-    if (poolData.endTimestamp < block.timestamp || poolData.startTimestamp > block.timestamp)
-      revert NotInRound();
-    if (amount == 0) revert InvaidAmount();
-
-    poolData.updateStakingPool(currentRound, msg.sender);
+    poolData.updateStakingPool(poolID, msg.sender);
 
     _depositFor(msg.sender, amount);
 
@@ -133,29 +130,34 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       amount,
       poolData.userIndex[msg.sender],
       poolData.userPrincipal[msg.sender],
-      currentRound
+      poolID
     );
   }
 
   /// @notice Withdraw the amount of principal from the pool contract and update data
   /// @param amount Amount to withdraw
-  /// @param round The round to withdraw
-  function withdraw(uint256 amount, uint8 round) external override {
-    _withdraw(amount, round);
+  /// @param poolID The pool ID to withdraw
+  function withdraw(uint256 amount, uint8 poolID) external override {
+    _withdraw(amount, poolID);
   }
 
   /// @notice Transfer accrued reward to msg.sender. User accrued reward will be reset and user reward index will be set to the current reward index.
-  /// @param round The round to claim
-  function claim(uint8 round) external override {
-    _claim(msg.sender, round);
+  /// @param poolID The pool ID to claim
+  function claim(uint8 poolID) external override {
+    _claim(msg.sender, poolID);
   }
 
   /// @notice Migrate the amount of principal to the current round and transfer the rest principal to the caller
   /// @param amount Amount to migrate.
-  /// @param round The closed round to migrate
-  function migrate(uint256 amount, uint8 round) external override {
-    if (round >= currentRound) revert NotInitiatedRound(round, currentRound);
-    PoolData storage poolData = _rounds[round];
+  /// @param fromPoolID The closed pool ID to migrate, source
+  /// @param toPoolID The opened pool, destination
+  function migrate(uint256 amount, uint8 fromPoolID, uint8 toPoolID) external override {
+    if (toPoolID > currentPoolID) revert NotInitiatedRound(toPoolID, currentPoolID);
+    if (_isOpen(toPoolID) == false) revert InvalidPoolID();
+    if (_isOpen(fromPoolID) == true) revert InvalidPoolID();
+
+
+    PoolData storage poolData = _poolID[fromPoolID];
     uint256 userPrincipal = poolData.userPrincipal[msg.sender];
 
     if (userPrincipal == 0) revert ZeroPrincipal();
@@ -164,17 +166,17 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
     // Claim reward
     if (poolData.getUserReward(msg.sender) != 0) {
-      _claim(msg.sender, round);
+      _claim(msg.sender, fromPoolID);
     }
 
     // Withdraw
     if (amountToWithdraw != 0) {
-      _withdraw(amountToWithdraw, round);
+      _withdraw(amountToWithdraw, fromPoolID);
     }
 
     // Update current pool
-    PoolData storage currentPoolData = _rounds[currentRound];
-    currentPoolData.updateStakingPool(currentRound, msg.sender);
+    PoolData storage currentPoolData = _poolID[toPoolID];
+    currentPoolData.updateStakingPool(toPoolID, msg.sender);
 
     // Migrate user principal
     poolData.userPrincipal[msg.sender] -= amount;
@@ -189,26 +191,26 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       amount,
       currentPoolData.userIndex[msg.sender],
       currentPoolData.userPrincipal[msg.sender],
-      currentRound
+      toPoolID
     );
 
-    emit Migrate(msg.sender, amount, round, currentRound);
+    emit Migrate(msg.sender, amount, fromPoolID, toPoolID);
   }
 
   /***************** Internal Functions ******************/
 
-  function _withdraw(uint256 amount, uint8 round) internal {
-    PoolData storage poolData = _rounds[round];
+  function _withdraw(uint256 amount, uint8 poolID) internal {
+    PoolData storage poolData = _poolID[poolID];
     uint256 amountToWithdraw = amount;
 
-    if (round > currentRound) revert NotInitiatedRound(round, currentRound);
+    if (poolID > currentPoolID) revert NotInitiatedRound(poolID, currentPoolID);
     if (amount == type(uint256).max) {
       amountToWithdraw = poolData.userPrincipal[msg.sender];
     }
     if (poolData.userPrincipal[msg.sender] < amountToWithdraw)
       revert NotEnoughPrincipal(poolData.userPrincipal[msg.sender]);
 
-    poolData.updateStakingPool(round, msg.sender);
+    poolData.updateStakingPool(poolID, msg.sender);
 
     poolData.userPrincipal[msg.sender] -= amountToWithdraw;
     poolData.totalPrincipal -= amountToWithdraw;
@@ -220,14 +222,14 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       amountToWithdraw,
       poolData.userIndex[msg.sender],
       poolData.userPrincipal[msg.sender],
-      currentRound
+      poolID
     );
   }
 
-  function _claim(address user, uint8 round) internal {
-    if (round > currentRound) revert NotInitiatedRound(round, currentRound);
+  function _claim(address user, uint8 poolID) internal {
+    if (poolID > currentPoolID) revert NotInitiatedRound(poolID, currentPoolID);
 
-    PoolData storage poolData = _rounds[round];
+    PoolData storage poolData = _poolID[poolID];
 
     uint256 reward = poolData.getUserReward(user);
 
@@ -236,51 +238,63 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
 
-    SafeERC20.safeTransfer(rewardAsset, user, reward);
+    SafeERC20.safeTransfer(_poolID[poolID].rewardAsset, user, reward);
 
-    uint256 rewardLeft = rewardAsset.balanceOf(address(this));
+    uint256 rewardLeft = _poolID[poolID].rewardAsset.balanceOf(address(this));
 
-    emit Claim(user, reward, rewardLeft, round);
+    emit Claim(user, reward, rewardLeft, poolID);
+  }
+
+  function _isOpen(uint8 poolID) internal view returns (bool) {
+    PoolData storage poolData =  _poolID[poolID];
+    if (poolData.startTimestamp > block.timestamp || poolData.endTimestamp < block.timestamp)
+      return false;
+    else 
+      return true;
   }
 
   /***************** Admin Functions ******************/
 
   /// @notice Init the new round. After the round closed, staking is not allowed.
-  /// @param rewardPerSecond The total accrued reward per second in new round
-  /// @param startTimestamp The start timestamp of initiated round
-  /// @param duration The duration of the initiated round
-  function initNewRound(
+  /// @param rewardPerSecond The total accrued reward per second in new pool
+  /// @param startTimestamp The start timestamp of initiated pool
+  /// @param duration The duration of the initiated pool
+  function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint256 duration
-  ) external override onlyAdmin {
-    PoolData storage poolDataBefore = _rounds[currentRound];
+    uint256 duration,
+    IERC20 rewardAsset_
+  ) external override payable onlyAdmin {
 
-    uint256 roundstartTimestamp = startTimestamp;
+    uint8 newPoolID = currentPoolID + 1;
 
-    if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
-
-    uint8 newRound = currentRound + 1;
-
-    (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _rounds[newRound].initRound(
+    (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolID[newPoolID].initRound(
       rewardPerSecond,
       startTimestamp,
-      duration
+      duration,
+      rewardAsset_
     );
 
-    currentRound = newRound;
+    SafeERC20.safeTransferFrom(rewardAsset_, msg.sender, address(this), duration * rewardPerSecond);
 
-    emit InitRound(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp, currentRound);
+    currentPoolID = newPoolID;
+    emit InitRound(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp, currentPoolID);
   }
 
-  function retrieveResidue() external onlyAdmin {
-    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)));
+  function retrieveResidue(uint8 poolID) external onlyAdmin {
+    SafeERC20.safeTransfer(_poolID[poolID].rewardAsset, _admin, _poolID[poolID].rewardAsset.balanceOf(address(this)));
   }
+
 
   /***************** Modifier ******************/
 
   modifier onlyAdmin() {
     if (msg.sender != _admin) revert OnlyAdmin();
+    _;
+  }
+
+  modifier isNotPause(uint8 poolID) {
+    if (_poolID[poolID].isPause == false) revert();
     _;
   }
 }

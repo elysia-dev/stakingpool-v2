@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 interface IStakingPoolV2 {
+  error InvalidPoolID();
   error NotInRound();
   error StakingNotInitiated();
-  error InvaidAmount();
+  error InvalidAmount();
   error ZeroReward();
   error OnlyAdmin();
   error RoundConflicted();
@@ -38,13 +40,14 @@ interface IStakingPoolV2 {
 
   event Migrate(address user, uint256 amount, uint8 migrateRound, uint8 currentRound);
 
-  function stake(uint256 amount) external;
+  function stake(uint256 amount, uint8 poolID) external;
 
   function claim(uint8 round) external;
 
   function withdraw(uint256 amount, uint8 round) external;
 
-  function migrate(uint256 amount, uint8 round) external;
+  function migrate(uint256 amount, uint8 fromPoolID, uint8 toPoolID) external ;
+
 
   function getRewardIndex(uint8 round) external view returns (uint256);
 
@@ -71,9 +74,10 @@ interface IStakingPoolV2 {
       uint256 userPrincipal
     );
 
-  function initNewRound(
+  function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint256 duration
-  ) external;
+    uint256 duration,
+    IERC20 rewardAsset_
+  ) external payable;
 }

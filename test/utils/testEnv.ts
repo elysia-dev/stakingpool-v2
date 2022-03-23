@@ -29,13 +29,11 @@ const setStakingAsset = async (): Promise<StakingAsset> => {
   )) as StakingAsset__factory;
 
   stakingAsset = await stakingAssetFactory.deploy();
-
   return stakingAsset;
 };
 
 const setStakingPool = async (
-  stakingAsset: StakingAsset,
-  rewardAsset: RewardAsset
+  stakingAsset: StakingAsset
 ): Promise<StakingPoolV2> => {
   let stakingPool: StakingPoolV2;
 
@@ -43,7 +41,7 @@ const setStakingPool = async (
     'StakingPoolV2'
   )) as StakingPoolV2__factory;
 
-  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address, rewardAsset.address);
+  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address);
 
   return stakingPool;
 };
@@ -56,7 +54,7 @@ export const setTestEnv = async (): Promise<TestEnv> => {
   testEnv.rewardAsset = await setRewardAsset();
   testEnv.stakingAsset = await setStakingAsset();
 
-  testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset, testEnv.rewardAsset);
+  testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset);
 
   return testEnv;
 };

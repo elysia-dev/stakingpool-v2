@@ -6,28 +6,28 @@ import UserData from '../types/UserData';
 export const getUserData = async (
   testEnv: TestEnv,
   user: Wallet,
-  round?: number
+  poolID?: number
 ): Promise<UserData> => {
   const userData = <UserData>{};
-  const roundToGet = !round ? await testEnv.stakingPool.currentRound() : round;
+  const poolIDToGet = !poolID ? await testEnv.stakingPool.currentPoolID() : poolID;
 
-  const contractUserData = await testEnv.stakingPool.getUserData(roundToGet, user.address);
+  const contractUserData = await testEnv.stakingPool.getUserData(poolIDToGet, user.address);
 
   userData.rewardAssetBalance = await testEnv.rewardAsset.balanceOf(user.address);
   userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(user.address);
   userData.userPrincipal = contractUserData.userPrincipal;
   userData.userIndex = contractUserData.userIndex;
   userData.userPreviousReward = contractUserData.userReward;
-  userData.userReward = await testEnv.stakingPool.getUserReward(user.address, roundToGet);
+  userData.userReward = await testEnv.stakingPool.getUserReward(user.address, poolIDToGet);
 
   return userData;
 };
 
-export const getPoolData = async (testEnv: TestEnv, round?: number) => {
+export const getPoolData = async (testEnv: TestEnv, poolID?: number) => {
   const poolData = <PoolData>{};
-  const roundToGet = !round ? await testEnv.stakingPool.currentRound() : round;
+  const poolIDToGet = !poolID ? await testEnv.stakingPool.currentPoolID() : poolID;
 
-  const contractPoolData = await testEnv.stakingPool.getPoolData(roundToGet);
+  const contractPoolData = await testEnv.stakingPool.getPoolData(poolIDToGet);
 
   poolData.rewardPerSecond = contractPoolData.rewardPerSecond;
   poolData.rewardIndex = contractPoolData.rewardIndex;
