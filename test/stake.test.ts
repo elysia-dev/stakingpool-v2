@@ -124,15 +124,17 @@ describe('StakingPool.stake', () => {
 
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
+      const initTx = await testEnv.stakingPool
       .connect(deployer)
       .initNewPool(rewardPersecond, startTimestamp_2, duration, testEnv.rewardAsset.address);
+      await advanceTimeTo(await getTimestamp(initTx), startTimestamp_2);
+
+      await testEnv.stakingAsset.connect(alice).faucet();
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     });
 
     it('staking pool 1, 2 are opened', async () => {
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp_2);
-  
+      
       //pool 1 staking
       const poolDataBefore_1 = await getPoolData(testEnv, 1);
       const userDataBefore_1 = await getUserData(testEnv, alice, 1);
@@ -177,13 +179,10 @@ describe('StakingPool.stake', () => {
     it('staking pool 3 is opened, 1,2 are closed', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
+      const initTx = await testEnv.stakingPool
       .connect(deployer)
       .initNewPool(rewardPersecond, startTimestamp_3, duration, testEnv.rewardAsset.address);
-      
-
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp_3);
+      await advanceTimeTo(await getTimestamp(initTx), startTimestamp_3);
   
       await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount, 1)).to.be.revertedWith(
         'InvalidPoolID'
