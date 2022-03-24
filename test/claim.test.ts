@@ -60,7 +60,7 @@ describe('StakingPool.claim', () => {
     BigNumber.from(10)
   );
 
-  const amount = ethers.utils.parseEther('1');
+  const amount = ethers.utils.parseEther('100');
 
   async function fixture() {
     return await setTestEnv();
@@ -134,18 +134,29 @@ describe('StakingPool.claim', () => {
     });
   });
 
-  context('pool 1 and pool 2 is opened', async () => {
-    await testEnv.stakingPool.connect(alice).stake(amount, 1);
-    const initTx = await testEnv.stakingPool
-    .connect(deployer)
-    .initNewPool(
-      thirdRoundInit.rewardPersecond,
-      thirdRoundStartTimestamp,
-      thirdRoundInit.duration,
-      testEnv.rewardAsset.address
-    );
-    await advanceTimeTo(await getTimestamp(initTx), thirdRoundStartTimestamp);
+  context('pool 1, 2 are opened', async () => {
+    beforeEach('init pool and user stakes', async () => {
+      await testEnv.stakingPool.connect(alice).stake(amount, 1);
+      const initTx = await testEnv.stakingPool
+      .connect(deployer)
+      .initNewPool(
+        thirdRoundInit.rewardPersecond,
+        thirdRoundStartTimestamp,
+        thirdRoundInit.duration,
+        testEnv.rewardAsset.address
+      );
+      await advanceTimeTo(await getTimestamp(initTx), thirdRoundStartTimestamp);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingPool.connect(alice).stake(amount, 2);
+    });
 
+
+    it('revert if invalid round', async () => {
+      await expect(testEnv.stakingPool.connect(alice).claim(3)).to.be.revertedWith(
+        'NotInitiatedRound'
+      );
+    });
+    
 
     it('pool 1 claim', async () => {
       const poolDataBefore = await getPoolData(testEnv, 1);
@@ -167,7 +178,6 @@ describe('StakingPool.claim', () => {
     });
 
     it('pool 2 claim', async () => {
-      await testEnv.stakingPool.connect(alice).stake(amount, 2);
       const poolDataBefore = await getPoolData(testEnv, 2);
       const userDataBefore = await getUserData(testEnv, alice, 2);
 
@@ -181,7 +191,6 @@ describe('StakingPool.claim', () => {
 
       const poolDataAfter = await getPoolData(testEnv, 2);
       const userDataAfter = await getUserData(testEnv, alice, 2);
-
       expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
       expect(userDataAfter).to.be.equalUserData(expectedUserData);
     });
@@ -189,7 +198,6 @@ describe('StakingPool.claim', () => {
 
 
 
-  
 
   context('pool 1 is closed and pool 2 is opened', async () => {
     beforeEach('init second pool', async () => {
