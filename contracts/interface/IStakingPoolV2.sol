@@ -79,5 +79,5 @@ interface IStakingPoolV2 {
     uint256 startTimestamp,
     uint256 duration,
     IERC20 rewardAsset_
-  ) external payable;
+  ) external;
 }

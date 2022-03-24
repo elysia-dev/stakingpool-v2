@@ -264,7 +264,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     uint256 startTimestamp,
     uint256 duration,
     IERC20 rewardAsset_
-  ) external override payable onlyAdmin {
+  ) external override onlyAdmin {
 
     uint8 newPoolID = currentPoolID + 1;
 

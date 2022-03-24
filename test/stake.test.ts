@@ -111,7 +111,7 @@ describe('StakingPool.stake', () => {
     });
   });
 
-  context("Many pool is opened", async () => {
+  context("many pools are opened", async () => {
     const stakeAmount = utils.parseEther('100');
 
     beforeEach('init the first round and time passes', async () => {
@@ -133,7 +133,7 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     });
 
-    it('staking pool 1, 2 are opened', async () => {
+    it('staking pool 1, 2 are opened and stake', async () => {
       
       //pool 1 staking
       const poolDataBefore_1 = await getPoolData(testEnv, 1);
@@ -183,29 +183,38 @@ describe('StakingPool.stake', () => {
       .connect(deployer)
       .initNewPool(rewardPersecond, startTimestamp_3, duration, testEnv.rewardAsset.address);
       await advanceTimeTo(await getTimestamp(initTx), startTimestamp_3);
-  
-      await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount, 1)).to.be.revertedWith(
-        'InvalidPoolID'
-      );
-
-      const opened_poolDataBefore = await getPoolData(testEnv, 3);
-      const opened_userDataBefore = await getUserData(testEnv, alice, 3);
-      const opened_stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 3);
 
 
-      const [opened_expectedPoolData, opened_expectedUserData] = expectDataAfterStake(
-        opened_poolDataBefore,
-        opened_userDataBefore,
-        await getTimestamp(opened_stakeTx),
-        stakeAmount
-      );
+      it('revert if alice stakes in closed pool', async () => {
+        await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount, 1)).to.be.revertedWith(
+          'InvalidPoolID'
+        );
 
-      const opened_poolDataAfter = await getPoolData(testEnv, 3);
-      const opened_userDataAfter = await getUserData(testEnv, alice, 3);
+        await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount, 2)).to.be.revertedWith(
+          'InvalidPoolID'
+        );
+      });
+      
+      it('alice stakes in opened pool', async () => {
+        const opened_poolDataBefore = await getPoolData(testEnv, 3);
+        const opened_userDataBefore = await getUserData(testEnv, alice, 3);
+        const opened_stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 3);
 
-      expect(opened_poolDataAfter).to.be.equalPoolData(opened_expectedPoolData);
-      expect(opened_userDataAfter).to.be.equalUserData(opened_expectedUserData);
-            
+
+        const [opened_expectedPoolData, opened_expectedUserData] = expectDataAfterStake(
+          opened_poolDataBefore,
+          opened_userDataBefore,
+          await getTimestamp(opened_stakeTx),
+          stakeAmount
+        );
+
+        const opened_poolDataAfter = await getPoolData(testEnv, 3);
+        const opened_userDataAfter = await getUserData(testEnv, alice, 3);
+
+        expect(opened_poolDataAfter).to.be.equalPoolData(opened_expectedPoolData);
+        expect(opened_userDataAfter).to.be.equalUserData(opened_expectedUserData);
+      });
+      
     });
   })
 
