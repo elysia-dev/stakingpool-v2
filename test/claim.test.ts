@@ -151,14 +151,14 @@ describe('StakingPool.claim', () => {
     });
 
 
-    it('revert if invalid round', async () => {
+    it('revert if invalid pool ID', async () => {
       await expect(testEnv.stakingPool.connect(alice).claim(3)).to.be.revertedWith(
         'NotInitiatedRound'
       );
     });
     
 
-    it('pool 1 claim', async () => {
+    it('success pool 1 claim', async () => {
       const poolDataBefore = await getPoolData(testEnv, 1);
       const userDataBefore = await getUserData(testEnv, alice, 1);
 
@@ -177,7 +177,7 @@ describe('StakingPool.claim', () => {
       expect(userDataAfter).to.be.equalUserData(expectedUserData);
     });
 
-    it('pool 2 claim', async () => {
+    it('success pool 2 claim', async () => {
       const poolDataBefore = await getPoolData(testEnv, 2);
       const userDataBefore = await getUserData(testEnv, alice, 2);
 
@@ -213,7 +213,7 @@ describe('StakingPool.claim', () => {
       await advanceTimeTo(await getTimestamp(initTx), secondRoundStartTimestamp);
     });
 
-    it('pool 1 claim', async () => {
+    it('success pool 1 claim', async () => {
       const poolDataBefore = await getPoolData(testEnv, 1);
       const userDataBefore = await getUserData(testEnv, alice, 1);
 
