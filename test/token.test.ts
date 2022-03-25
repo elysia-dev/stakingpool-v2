@@ -29,9 +29,11 @@ describe('StakingPool.token', () => {
 
   async function fixture() {
     const testEnv = await setTestEnv();
+    await testEnv.rewardAsset.connect(deployer).faucet();
+    await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingPool
       .connect(deployer)
-      .initNewRound(rewardPersecond, startTimestamp, duration);
+      .initNewPool(rewardPersecond, startTimestamp, duration, testEnv.rewardAsset.address);
     return testEnv;
   }
 
@@ -57,7 +59,7 @@ describe('StakingPool.token', () => {
     });
 
     it('ERC20 functions are unavailable', async () => {
-      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
+      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'), 1);
       await expect(
         testEnv.stakingPool.connect(alice).transfer(bob.address, utils.parseEther('100'))
       ).to.be.revertedWith('');
@@ -91,7 +93,7 @@ describe('StakingPool.token', () => {
     });
 
     it('wrapper tokens are minted in staking', async () => {
-      const tx = await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
+      const tx = await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'), 1);
       expect(tx)
         .to.emit(testEnv.stakingPool, 'Transfer')
         .withArgs(ZERO_ADDRESS, alice.address, utils.parseEther('100'));
@@ -101,8 +103,8 @@ describe('StakingPool.token', () => {
     });
 
     it('wrapper tokens are burned in unstaking', async () => {
-      const currentRound = await testEnv.stakingPool.currentRound();
-      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
+      const currentRound = await testEnv.stakingPool.currentPoolID();
+      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'), 1);
       const tx = await testEnv.stakingPool
         .connect(alice)
         .withdraw(utils.parseEther('100'), currentRound);
@@ -119,7 +121,7 @@ describe('StakingPool.token', () => {
         .connect(alice)
         .approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(await getTimestamp(tx), startTimestamp);
-      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
+      await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'), 1);
     });
 
     it('voting power should be 0 before self delegation', async () => {
@@ -163,9 +165,11 @@ describe('StakingPool.token', () => {
 
   context('ERC20 permit', async () => {
     beforeEach('init the first round and time passes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewPool(rewardPersecond, startTimestamp, duration, testEnv.rewardAsset.address);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
