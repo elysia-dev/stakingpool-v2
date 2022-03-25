@@ -50,13 +50,13 @@ describe('StakingPool.stake', () => {
   });
 
 
-  it('reverts if the round has not initiated', async () => {
+  it('reverts if the pool has not initiated', async () => {
     await expect(
       testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'), 1)
     ).to.be.revertedWith('InvalidPoolID');
   });
 
-  context('when the first round initiated', async () => {
+  context('when the first pool initiated', async () => {
     const stakeAmount = utils.parseEther('100');
 
     beforeEach('init the first round', async () => {
@@ -114,7 +114,7 @@ describe('StakingPool.stake', () => {
   context("many pools are opened", async () => {
     const stakeAmount = utils.parseEther('100');
 
-    beforeEach('init the first round and time passes', async () => {
+    beforeEach('init the first pool and time passes', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
@@ -176,13 +176,16 @@ describe('StakingPool.stake', () => {
     });
 
 
-    it('staking pool 3 is opened, 1,2 are closed', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      const initTx = await testEnv.stakingPool
-      .connect(deployer)
-      .initNewPool(rewardPersecond, startTimestamp_3, duration, testEnv.rewardAsset.address);
-      await advanceTimeTo(await getTimestamp(initTx), startTimestamp_3);
+    describe('staking pool 3 is opened, 1,2 are closed', async () => {
+      beforeEach('init the thrid pool', async () => {
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+        const initTx = await testEnv.stakingPool
+        .connect(deployer)
+        .initNewPool(rewardPersecond, startTimestamp_3, duration, testEnv.rewardAsset.address);
+        await advanceTimeTo(await getTimestamp(initTx), startTimestamp_3);
+      })
+      
 
 
       it('revert if alice stakes in closed pool', async () => {
@@ -195,7 +198,7 @@ describe('StakingPool.stake', () => {
         );
       });
       
-      it('alice stakes in opened pool', async () => {
+      it('success when alice stakes in opened pool', async () => {
         const opened_poolDataBefore = await getPoolData(testEnv, 3);
         const opened_userDataBefore = await getUserData(testEnv, alice, 3);
         const opened_stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount, 3);
