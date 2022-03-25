@@ -62,8 +62,9 @@ describe('StakingPool.withdraw', () => {
   context('when the first round initiated', async () => {
     it('reverts if withdrawl amount exceeds principal', async () => {
       const currentRound = await testEnv.stakingPool.currentPoolID();
-      testEnv.stakingPool.connect(alice).withdraw(amount, currentRound);
-      //await expect().to.be.revertedWith('NotEnoughPrincipal');
+      await expect(
+        testEnv.stakingPool.connect(alice).withdraw(amount, currentRound)
+      ).to.be.revertedWith('NotEnoughPrincipal');
     });
 
     it ('reverts if target round is before initiation', async () => {
@@ -345,9 +346,12 @@ describe('StakingPool.withdraw', () => {
 
     });
 
-    it('alice stake in pool 1 and bob stake in pool 2', async () => {
-      await testEnv.stakingPool.connect(alice).stake(stakeAmount.mul(2), 1);
-      await testEnv.stakingPool.connect(bob).stake(stakeAmount.mul(2), 2);
+    describe('alice stake in pool 1 and bob stake in pool 2', async () => {
+      beforeEach('user stakes', async () => {
+        await testEnv.stakingPool.connect(alice).stake(stakeAmount.mul(2), 1);
+        await testEnv.stakingPool.connect(bob).stake(stakeAmount.mul(2), 2);
+      })
+      
 
       //pool 1
 
