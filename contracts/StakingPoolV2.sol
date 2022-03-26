@@ -4,6 +4,7 @@ import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "hardhat/console.sol";
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -35,7 +36,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   uint8 public currentPoolID;
-  IERC20 stakingAsset;
+  IERC20 public stakingAsset;
   address internal _admin;
   mapping(uint8 => PoolData) internal _poolID;
 
@@ -101,6 +102,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       uint256 userPrincipal
     )
   {
+
     PoolData storage poolData = _poolID[poolID];
 
     return (poolData.userIndex[user], poolData.userReward[user], poolData.userPrincipal[user]);
@@ -152,45 +154,49 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   /// @param fromPoolID The closed pool ID to migrate, source
   /// @param toPoolID The opened pool, destination
   function migrate(uint256 amount, uint8 fromPoolID, uint8 toPoolID) external override {
+
     if (toPoolID > currentPoolID) revert NotInitiatedRound(toPoolID, currentPoolID);
     if (_isOpen(toPoolID) == false) revert InvalidPoolID();
     if (_isOpen(fromPoolID) == true) revert InvalidPoolID();
 
 
-    PoolData storage poolData = _poolID[fromPoolID];
-    uint256 userPrincipal = poolData.userPrincipal[msg.sender];
+    PoolData storage fromPoolData = _poolID[fromPoolID];
+    PoolData storage toPoolData = _poolID[toPoolID];
+    uint256 userPrincipal = fromPoolData.userPrincipal[msg.sender];
 
     if (userPrincipal == 0) revert ZeroPrincipal();
 
     uint256 amountToWithdraw = userPrincipal - amount;
 
     // Claim reward
-    if (poolData.getUserReward(msg.sender) != 0) {
+    if (fromPoolData.getUserReward(msg.sender) != 0) {
       _claim(msg.sender, fromPoolID);
     }
 
     // Withdraw
     if (amountToWithdraw != 0) {
       _withdraw(amountToWithdraw, fromPoolID);
-    }
-
+    } 
+      
+  
+    
     // Update current pool
-    PoolData storage currentPoolData = _poolID[toPoolID];
-    currentPoolData.updateStakingPool(toPoolID, msg.sender);
+    fromPoolData.updateStakingPool(fromPoolID, msg.sender);
+    toPoolData.updateStakingPool(toPoolID, msg.sender);
 
     // Migrate user principal
-    poolData.userPrincipal[msg.sender] -= amount;
-    currentPoolData.userPrincipal[msg.sender] += amount;
+    fromPoolData.userPrincipal[msg.sender] -= amount;
+    toPoolData.userPrincipal[msg.sender] += amount;
 
     // Migrate total principal
-    poolData.totalPrincipal -= amount;
-    currentPoolData.totalPrincipal += amount;
+    fromPoolData.totalPrincipal -= amount;
+    toPoolData.totalPrincipal += amount;
 
     emit Stake(
       msg.sender,
       amount,
-      currentPoolData.userIndex[msg.sender],
-      currentPoolData.userPrincipal[msg.sender],
+      toPoolData.userIndex[msg.sender],
+      toPoolData.userPrincipal[msg.sender],
       toPoolID
     );
 
@@ -267,7 +273,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   ) external override onlyAdmin {
 
     uint8 newPoolID = currentPoolID + 1;
-
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolID[newPoolID].initRound(
       rewardPerSecond,
       startTimestamp,

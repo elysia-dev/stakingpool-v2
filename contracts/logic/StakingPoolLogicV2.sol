@@ -3,6 +3,7 @@ pragma solidity 0.8.4;
 import '../StakingPoolV2.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "hardhat/console.sol";
 
 library StakingPoolLogicV2 {
   using StakingPoolLogicV2 for StakingPoolV2.PoolData;
@@ -18,6 +19,7 @@ library StakingPoolLogicV2 {
     uint256 currentTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
       : poolData.endTimestamp;
+
     uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
@@ -42,6 +44,8 @@ library StakingPoolLogicV2 {
     if (poolData.userIndex[user] == 0) {
       return 0;
     }
+
+
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
 
     uint256 balance = poolData.userPrincipal[user];
@@ -56,6 +60,7 @@ library StakingPoolLogicV2 {
     uint8 currentRound,
     address user
   ) internal {
+
     poolData.userReward[user] = getUserReward(poolData, user);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
     poolData.lastUpdateTimestamp = block.timestamp < poolData.endTimestamp

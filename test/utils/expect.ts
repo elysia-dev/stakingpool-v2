@@ -98,13 +98,13 @@ export function expectDataAfterMigrate(
 
   const withdrawAmount = fromUserData.userPrincipal.sub(amount);
 
-  if (!withdrawAmount.eq(0)) {
+  //if (!withdrawAmount.eq(0)) {
     [newFromPoolData, newFromUserData] = calculateDataAfterUpdate(
       fromPoolData,
       fromUserData,
       txTimeStamp
     );
-  }
+  //}
   const [newToPoolData, newToUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
     toPoolData,
     toUserData,
