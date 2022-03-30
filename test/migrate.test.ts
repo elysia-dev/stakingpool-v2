@@ -139,6 +139,40 @@ describe('StakingPool.migrate', () => {
       expect(toUserDataAfter).to.be.equalUserData(expectedToUserData);
     });
 
+    it('success when the last user migrate all', async () => {
+      const fromPoolDataBefore = await getPoolData(testEnv, firstRound);
+      const fromUserDataBefore = await getUserData(testEnv, alice, firstRound);
+
+      const toPoolDataBefore = await getPoolData(testEnv, secondRound);
+      const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
+
+      await testEnv.stakingPool.connect(bob).migrate(amount.mul(2), firstRound);
+      const migrateTx = await testEnv.stakingPool.connect(alice).migrate(amount.mul(3), firstRound);
+
+      const [
+        [expectedFromPoolData, expectedFromUserData],
+        [expectedToPoolData, expectedToUserData],
+      ] = expectDataAfterMigrate(
+        fromPoolDataBefore,
+        fromUserDataBefore,
+        toPoolDataBefore,
+        toUserDataBefore,
+        await getTimestamp(migrateTx),
+        amount.mul(3)
+      );
+
+      const fromPoolDataAfter = await getPoolData(testEnv, firstRound);
+      const fromUserDataAfter = await getUserData(testEnv, alice, firstRound);
+
+      const toPoolDataAfter = await getPoolData(testEnv, secondRound);
+      const toUserDataAfter = await getUserData(testEnv, alice, secondRound);
+
+      expect(fromPoolDataAfter).to.be.equalPoolData(expectedFromPoolData);
+      expect(fromUserDataAfter).to.be.equalUserData(expectedFromUserData);
+      expect(toPoolDataAfter).to.be.equalPoolData(expectedToPoolData);
+      expect(toUserDataAfter).to.be.equalUserData(expectedToUserData);
+    });
+
     it('success when user migrate zero amount', async () => {
       const fromPoolDataBefore = await getPoolData(testEnv, firstRound);
       const fromUserDataBefore = await getUserData(testEnv, alice, firstRound);
