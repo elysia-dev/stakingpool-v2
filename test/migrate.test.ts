@@ -305,7 +305,6 @@ describe('StakingPool.migrate', () => {
           testEnv.rewardAsset.address
         );
       await advanceTimeTo(await getTimestamp(tx), thirdRoundStartTimestamp);
-      //await testEnv.stakingPool.connect(alice).stake(amount.mul(3), 2);
     });
 
     describe('pool 1 is closed and pool 2,3 are opened', async () => {
@@ -399,7 +398,7 @@ describe('StakingPool.migrate', () => {
         );
       });
 
-      it.only('success when user migrate from pool 2 to pool 3', async () => {
+      it('success when user migrate from pool 2 to pool 3', async () => {
        
         const fromPoolDataBefore = await getPoolData(testEnv, 2);
         const fromUserDataBefore = await getUserData(testEnv, alice, 2);
@@ -427,7 +426,6 @@ describe('StakingPool.migrate', () => {
         const toPoolDataAfter = await getPoolData(testEnv, 3);
         const toUserDataAfter = await getUserData(testEnv, alice, 3);
         
-        console.log(expectedFromPoolData, fromPoolDataAfter)
         expect(fromPoolDataAfter).to.be.equalPoolData(expectedFromPoolData);
         expect(fromUserDataAfter).to.be.equalUserData(expectedFromUserData);
         expect(toPoolDataAfter).to.be.equalPoolData(expectedToPoolData);

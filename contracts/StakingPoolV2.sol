@@ -4,7 +4,6 @@ import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import "hardhat/console.sol";
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.

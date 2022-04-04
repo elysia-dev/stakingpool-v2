@@ -14,7 +14,6 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.withdraw', () => {
   let testEnv: TestEnv;
-
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
 
@@ -32,7 +31,6 @@ describe('StakingPool.withdraw', () => {
     firstRound.day,
     BigNumber.from(10)
   );
-
 
   const amount = ethers.utils.parseEther('1');
 
@@ -272,7 +270,6 @@ describe('StakingPool.withdraw', () => {
 
   });
 
-
   context('many pools are opened', async() => {
     const stakeAmount = utils.parseEther('20');
 
@@ -321,7 +318,6 @@ describe('StakingPool.withdraw', () => {
       const poolDataAfter_1 = await getPoolData(testEnv, 1);
       const userDataAfter_1 = await getUserData(testEnv, alice, 1);
 
-
       //pool 2
       const poolDataBefore_2 = await getPoolData(testEnv, 2);
       const userDataBefore_2 = await getUserData(testEnv, alice, 2);
@@ -337,7 +333,6 @@ describe('StakingPool.withdraw', () => {
       const poolDataAfter_2 = await getPoolData(testEnv, 2);
       const userDataAfter_2 = await getUserData(testEnv, alice, 2);
 
-
       expect(poolDataAfter_1).to.be.equalPoolData(expectedPoolData_1);
       expect(userDataAfter_1).to.be.equalUserData(expectedUserData_1);
 
@@ -352,9 +347,7 @@ describe('StakingPool.withdraw', () => {
         await testEnv.stakingPool.connect(bob).stake(stakeAmount.mul(2), 2);
       })
       
-
       //pool 1
-
       it('revert if alice withdraws from pool 2', async() => {
         await expect(
           testEnv.stakingPool.connect(alice).withdraw(stakeAmount, 2)
@@ -380,15 +373,12 @@ describe('StakingPool.withdraw', () => {
         expect(userDataAfter_1).to.be.equalUserData(expectedUserData_1);
       });
       
-
-
       //pool 2
       it('revert if bob withdraws from pool 1', async() => {
         await expect(
           testEnv.stakingPool.connect(bob).withdraw(stakeAmount, 1)
         ).to.be.revertedWith('NotEnoughPrincipal');
       });
-
 
       it('bob withdraws from pool 2', async () => {
         const poolDataBefore_2 = await getPoolData(testEnv, 2);
