@@ -45,7 +45,9 @@ describe('StakingPool.settings', () => {
   });
 
   context('when the staking pool deployed', async () => {
-    it('reverts if general account initiate the round', async () => {
+    it('reverts if general account initiate the pool', async () => {
+      await testEnv.rewardAsset.connect(depositor).faucet();
+      await testEnv.rewardAsset.connect(depositor).approve(testEnv.stakingPool.address, RAY);
       await expect(
         testEnv.stakingPool
           .connect(depositor)
@@ -54,6 +56,8 @@ describe('StakingPool.settings', () => {
     });
 
     it('success', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
@@ -69,24 +73,10 @@ describe('StakingPool.settings', () => {
      
   });
 
-  context('when the current round is over', async () => {
-    let initTx: ContractTransaction;
-    const nextYear = year.add(1);
-    const nextStartTimestamp = toTimestamp(nextYear, month, day, BigNumber.from(10));
-    const nextEndTimestamp = nextStartTimestamp.add(duration);
-
-    beforeEach('init the first round and time passes', async () => {
-      initTx = await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(rewardPerSecond, startTimestamp, duration);
-      await advanceTimeTo(await getTimestamp(initTx), endTimestamp);
-    });
-
-  });
-
   context('retrieveResidue', async () => {
     beforeEach('set', async () => {
-      await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, RAY);
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
     });
 
     it('reverts if general account call', async () => {

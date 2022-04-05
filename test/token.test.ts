@@ -29,6 +29,8 @@ describe('StakingPool.token', () => {
 
   async function fixture() {
     const testEnv = await setTestEnv();
+    await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingPool
       .connect(deployer)
       .initNewPool(rewardPersecond, startTimestamp, duration);
@@ -162,6 +164,8 @@ describe('StakingPool.token', () => {
 
   context('ERC20 permit', async () => {
     beforeEach('init the first round and time passes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPersecond, startTimestamp, duration);

@@ -7,10 +7,9 @@ interface IStakingPoolV2 {
   error InvalidAmount();
   error ZeroReward();
   error OnlyAdmin();
-  error RoundConflicted();
   error NotEnoughPrincipal(uint256 principal);
-  error NotInitiatedRound(uint8 round, uint8 currentRound);
   error ZeroPrincipal();
+  error IsOpened();
 
   event Stake(
     address indexed user,

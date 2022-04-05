@@ -100,7 +100,8 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
-  function stake(uint256 amount) external override {
+  function stake(uint256 amount) external override stakingInitiated {
+   
     if (amount == 0) revert InvalidAmount();
 
     _poolData.updateStakingPool(msg.sender);
@@ -120,12 +121,12 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   /// @notice Withdraw the amount of principal from the pool contract and update data
   /// @param amount Amount to withdraw
-  function withdraw(uint256 amount) external override {
+  function withdraw(uint256 amount) external override stakingInitiated {
     _withdraw(amount);
   }
 
   /// @notice Transfer accrued reward to msg.sender. User accrued reward will be reset and user reward index will be set to the current reward index.
-  function claim() external override {
+  function claim() external override stakingInitiated {
     _claim(msg.sender);
   }
 
@@ -190,6 +191,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       duration
     );
 
+    SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), duration * rewardPerSecond);
     emit InitPool(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
   }
 
@@ -201,6 +203,11 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   modifier onlyAdmin() {
     if (msg.sender != _admin) revert OnlyAdmin();
+    _;
+  }
+
+  modifier stakingInitiated() {
+    if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
     _;
   }
 }
