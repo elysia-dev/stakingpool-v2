@@ -101,7 +101,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
   function stake(uint256 amount) external override {
-    if (amount == 0) revert InvaidAmount();
+    if (amount == 0) revert InvalidAmount();
 
     _poolData.updateStakingPool(msg.sender);
 
@@ -183,19 +183,14 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     uint256 startTimestamp,
     uint256 duration
   ) external override onlyAdmin {
-    PoolData storage poolDataBefore = _poolData;
-
-    uint256 roundstartTimestamp = startTimestamp;
-
-    if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
-
+   
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
       rewardPerSecond,
       startTimestamp,
       duration
     );
 
-    emit InitRound(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
+    emit InitPool(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
   }
 
   function retrieveResidue() external onlyAdmin {

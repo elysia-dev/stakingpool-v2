@@ -4,7 +4,7 @@ pragma solidity 0.8.4;
 interface IStakingPoolV2 {
   error NotInRound();
   error StakingNotInitiated();
-  error InvaidAmount();
+  error InvalidAmount();
   error ZeroReward();
   error OnlyAdmin();
   error RoundConflicted();
