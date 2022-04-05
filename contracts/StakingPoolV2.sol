@@ -103,7 +103,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
   function stake(uint256 amount) external override stakingInitiated {
-    if (_poolData.isOpened != true) revert IsOpened();
+    if (_poolData.isOpened == false) revert IsClosed();
     if (amount == 0) revert InvalidAmount();
 
     _poolData.updateStakingPool(msg.sender);
@@ -200,7 +200,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
   
   function closePool() external onlyAdmin {
-    if (_poolData.isOpened != true) revert IsOpened();
+    if (_poolData.isOpened == false) revert IsClosed();
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;

@@ -24,7 +24,11 @@ describe('StakingPool.stake', () => {
   const day = BigNumber.from(7);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
+  const month_end = BigNumber.from(8);
+  const day_end = BigNumber.from(20);
+
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
+  const endTimestamp = toTimestamp(year, month_end, day_end, BigNumber.from(10));
 
   async function fixture() {
     return await setTestEnv();
@@ -93,6 +97,34 @@ describe('StakingPool.stake', () => {
 
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
+
+      context('pool is closed', async () => {
+        beforeEach('time passes and pool is closed', async () => {
+          const tx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+          await advanceTimeTo(await getTimestamp(tx), endTimestamp);
+        })
+        
+        it('revert if general account close the pool', async () => {
+          await expect(testEnv.stakingPool.connect(alice).closePool()
+          ).to.be.revertedWith('OnlyAdmin');
+        });
+
+        it('revert if open the pool already finished', async() => {
+          await testEnv.stakingPool.connect(deployer).closePool();
+
+          await expect(testEnv.stakingPool
+            .connect(deployer)
+            .initNewPool(rewardPersecond, startTimestamp, duration)
+          ).to.be.revertedWith('IsFinished');
+        });
+
+        it('revert if staking in the pool finished', async() => {
+          await testEnv.stakingPool.connect(deployer).closePool();
+
+          await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)
+          ).to.be.revertedWith('IsClosed');
+        });
       });
     });
   });

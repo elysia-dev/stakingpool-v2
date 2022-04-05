@@ -9,7 +9,7 @@ interface IStakingPoolV2 {
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
   error IsFinished();
-  error IsOpened();
+  error IsClosed();
 
   event Stake(
     address indexed user,
