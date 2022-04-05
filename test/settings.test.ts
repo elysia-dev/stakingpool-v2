@@ -49,36 +49,24 @@ describe('StakingPool.settings', () => {
       await expect(
         testEnv.stakingPool
           .connect(depositor)
-          .initNewRound(rewardPerSecond, startTimestamp, duration)
+          .initNewPool(rewardPerSecond, startTimestamp, duration)
       ).to.be.revertedWith('OnlyAdmin');
     });
 
     it('success', async () => {
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPerSecond, startTimestamp, duration);
+        .initNewPool(rewardPerSecond, startTimestamp, duration);
 
-      const poolData = await testEnv.stakingPool.getPoolData(1);
+      const poolData = await testEnv.stakingPool.getPoolData();
 
       expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
       expect(poolData.rewardIndex).to.be.equal(WAD);
       expect(poolData.startTimestamp).to.be.equal(startTimestamp);
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(startTimestamp);
-      expect(await testEnv.stakingPool.currentRound()).to.be.equal(1);
     });
-
-    it('reverts if the next round initiated before the current round is over', async () => {
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewRound(rewardPerSecond, startTimestamp, duration);
-      await expect(
-        testEnv.stakingPool
-          .connect(deployer)
-          .initNewRound(rewardPerSecond, startTimestamp, duration)
-      ).to.be.revertedWith('RoundConflicted');
-    });
+     
   });
 
   context('when the current round is over', async () => {
@@ -90,34 +78,10 @@ describe('StakingPool.settings', () => {
     beforeEach('init the first round and time passes', async () => {
       initTx = await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPerSecond, startTimestamp, duration);
+        .initNewPool(rewardPerSecond, startTimestamp, duration);
       await advanceTimeTo(await getTimestamp(initTx), endTimestamp);
     });
 
-    it('init the next round, success', async () => {
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewRound(rewardPerSecond, nextStartTimestamp, duration);
-
-      const poolData = await testEnv.stakingPool.getPoolData(2);
-      expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
-      expect(poolData.rewardIndex).to.be.equal(WAD);
-      expect(poolData.startTimestamp).to.be.equal(nextStartTimestamp);
-      expect(poolData.endTimestamp).to.be.equal(nextEndTimestamp);
-      expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(nextStartTimestamp);
-      expect(await testEnv.stakingPool.currentRound()).to.be.equal(2);
-    });
-
-    it('not initiated pool data should be 0', async () => {
-      const poolData = await testEnv.stakingPool.getPoolData(3);
-      expect(poolData.rewardPerSecond).to.be.equal(0);
-      expect(poolData.rewardIndex).to.be.equal(0);
-      expect(poolData.startTimestamp).to.be.equal(0);
-      expect(poolData.endTimestamp).to.be.equal(0);
-      expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(0);
-    });
   });
 
   context('retrieveResidue', async () => {
