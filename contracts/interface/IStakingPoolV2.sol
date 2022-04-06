@@ -4,53 +4,45 @@ pragma solidity 0.8.4;
 interface IStakingPoolV2 {
   error NotInRound();
   error StakingNotInitiated();
-  error InvaidAmount();
+  error InvalidAmount();
   error ZeroReward();
   error OnlyAdmin();
-  error RoundConflicted();
   error NotEnoughPrincipal(uint256 principal);
-  error NotInitiatedRound(uint8 round, uint8 currentRound);
   error ZeroPrincipal();
+  error IsOpened();
 
   event Stake(
     address indexed user,
     uint256 amount,
     uint256 userIndex,
-    uint256 userPrincipal,
-    uint8 currentRound
+    uint256 userPrincipal
   );
   event Withdraw(
     address indexed user,
     uint256 amount,
     uint256 userIndex,
-    uint256 userPrincipal,
-    uint8 currentRound
+    uint256 userPrincipal
   );
 
-  event Claim(address indexed user, uint256 reward, uint256 rewardLeft, uint8 currentRound);
+  event Claim(address indexed user, uint256 reward, uint256 rewardLeft);
 
-  event InitRound(
+  event InitPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint256 endTimestamp,
-    uint256 currentRound
+    uint256 endTimestamp
   );
-
-  event Migrate(address user, uint256 amount, uint8 migrateRound, uint8 currentRound);
 
   function stake(uint256 amount) external;
 
-  function claim(uint8 round) external;
+  function claim() external;
 
-  function withdraw(uint256 amount, uint8 round) external;
+  function withdraw(uint256 amount) external;
 
-  function migrate(uint256 amount, uint8 round) external;
+  function getRewardIndex() external view returns (uint256);
 
-  function getRewardIndex(uint8 round) external view returns (uint256);
+  function getUserReward(address user) external view returns (uint256);
 
-  function getUserReward(address user, uint8 round) external view returns (uint256);
-
-  function getPoolData(uint8 round)
+  function getPoolData()
     external
     view
     returns (
@@ -62,7 +54,7 @@ interface IStakingPoolV2 {
       uint256 lastUpdateTimestamp
     );
 
-  function getUserData(uint8 round, address user)
+  function getUserData(address user)
     external
     view
     returns (
@@ -71,7 +63,7 @@ interface IStakingPoolV2 {
       uint256 userPrincipal
     );
 
-  function initNewRound(
+  function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
     uint256 duration

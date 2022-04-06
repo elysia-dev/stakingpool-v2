@@ -10,8 +10,7 @@ library StakingPoolLogicV2 {
   event UpdateStakingPool(
     address indexed user,
     uint256 newRewardIndex,
-    uint256 totalPrincipal,
-    uint8 currentRound
+    uint256 totalPrincipal
   );
 
   function getRewardIndex(StakingPoolV2.PoolData storage poolData) internal view returns (uint256) {
@@ -53,7 +52,6 @@ library StakingPoolLogicV2 {
 
   function updateStakingPool(
     StakingPoolV2.PoolData storage poolData,
-    uint8 currentRound,
     address user
   ) internal {
     poolData.userReward[user] = getUserReward(poolData, user);
@@ -61,7 +59,7 @@ library StakingPoolLogicV2 {
     poolData.lastUpdateTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
       : poolData.endTimestamp;
-    emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal, currentRound);
+    emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal);
   }
 
   function initRound(
@@ -78,4 +76,7 @@ library StakingPoolLogicV2 {
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
+
+
+
 }

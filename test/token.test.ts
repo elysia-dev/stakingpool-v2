@@ -29,9 +29,11 @@ describe('StakingPool.token', () => {
 
   async function fixture() {
     const testEnv = await setTestEnv();
+    await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingPool
       .connect(deployer)
-      .initNewRound(rewardPersecond, startTimestamp, duration);
+      .initNewPool(rewardPersecond, startTimestamp, duration);
     return testEnv;
   }
 
@@ -101,11 +103,10 @@ describe('StakingPool.token', () => {
     });
 
     it('wrapper tokens are burned in unstaking', async () => {
-      const currentRound = await testEnv.stakingPool.currentRound();
       await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
       const tx = await testEnv.stakingPool
         .connect(alice)
-        .withdraw(utils.parseEther('100'), currentRound);
+        .withdraw(utils.parseEther('100'));
       expect(tx)
         .to.emit(testEnv.stakingPool, 'Transfer')
         .withArgs(alice.address, ZERO_ADDRESS, utils.parseEther('100'));
@@ -163,9 +164,11 @@ describe('StakingPool.token', () => {
 
   context('ERC20 permit', async () => {
     beforeEach('init the first round and time passes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewPool(rewardPersecond, startTimestamp, duration);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);

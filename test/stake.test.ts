@@ -36,32 +36,32 @@ describe('StakingPool.stake', () => {
 
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
-    await testEnv.stakingAsset.connect(alice).faucet();
   });
 
-  it('reverts if the round has not initiated', async () => {
+  it('reverts if the pool has not initiated', async () => {
+    await testEnv.stakingAsset.connect(alice).faucet();
+    await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     await expect(
       testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'))
     ).to.be.revertedWith('StakingNotInitiated');
   });
 
-  context('when the first round initiated', async () => {
+  context('when the pool initiated', async () => {
     const stakeAmount = utils.parseEther('100');
 
-    beforeEach('init the first round', async () => {
+    beforeEach('init the pool', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
-    });
+        .initNewPool(rewardPersecond, startTimestamp, duration);
 
-    it('reverts when it is not in round', async () => {
-      await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)).to.be.revertedWith(
-        'NotInRound'
-      );
+      await testEnv.stakingAsset.connect(alice).faucet();
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     });
 
     context('Time passes', async () => {
-      beforeEach('init the first round', async () => {
+      beforeEach('init the pool', async () => {
         const tx = await testEnv.stakingAsset
           .connect(alice)
           .approve(testEnv.stakingPool.address, RAY);
@@ -70,7 +70,7 @@ describe('StakingPool.stake', () => {
 
       it('reverts if user staking amount is 0', async () => {
         await expect(testEnv.stakingPool.connect(alice).stake(0)).to.be.revertedWith(
-          'InvaidAmount'
+          'InvalidAmount'
         );
       });
 
@@ -100,10 +100,12 @@ describe('StakingPool.stake', () => {
   context('staking scenario', async () => {
     const stakeAmount = utils.parseEther('100');
 
-    beforeEach('init the first round and time passes', async () => {
+    beforeEach('init the pool and time passes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewRound(rewardPersecond, startTimestamp, duration);
+        .initNewPool(rewardPersecond, startTimestamp, duration);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
