@@ -4,6 +4,7 @@ import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import 'hardhat/console.sol';
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -105,9 +106,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function stake(uint256 amount) external override stakingInitiated {
     if (_poolData.isOpened == false) revert IsClosed();
     if (amount == 0) revert InvalidAmount();
-
     _poolData.updateStakingPool(msg.sender);
-
     _depositFor(msg.sender, amount);
 
     _poolData.userPrincipal[msg.sender] += amount;
@@ -142,6 +141,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (amount == type(uint256).max) {
       amountToWithdraw = _poolData.userPrincipal[msg.sender];
     }
+    
     if (_poolData.userPrincipal[msg.sender] < amountToWithdraw)
       revert NotEnoughPrincipal(_poolData.userPrincipal[msg.sender]);
 

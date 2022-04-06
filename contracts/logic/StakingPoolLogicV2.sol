@@ -3,6 +3,7 @@ pragma solidity 0.8.4;
 import '../StakingPoolV2.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import 'hardhat/console.sol';
 
 library StakingPoolLogicV2 {
   using StakingPoolLogicV2 for StakingPoolV2.PoolData;
@@ -38,9 +39,11 @@ library StakingPoolLogicV2 {
     view
     returns (uint256)
   {
+
     if (poolData.userIndex[user] == 0) {
       return 0;
     }
+
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
 
     uint256 balance = poolData.userPrincipal[user];

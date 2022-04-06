@@ -110,7 +110,7 @@ describe('StakingPool.stake', () => {
           ).to.be.revertedWith('OnlyAdmin');
         });
 
-        it('revert if open the pool already finished', async() => {
+        it('revert if open the pool already finished', async () => {
           await testEnv.stakingPool.connect(deployer).closePool();
 
           await expect(testEnv.stakingPool
@@ -119,7 +119,7 @@ describe('StakingPool.stake', () => {
           ).to.be.revertedWith('IsFinished');
         });
 
-        it('revert if staking in the pool finished', async() => {
+        it('revert if staking in the pool finished', async () => {
           await testEnv.stakingPool.connect(deployer).closePool();
 
           await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)
