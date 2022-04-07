@@ -17,7 +17,6 @@ Assertion.addMethod('equalPoolData', function (expectedData: PoolData) {
   const actualData = <PoolData>this._obj;
 
   (Object.keys(actualData) as (keyof PoolData)[]).forEach((key) => {
-    console.log("key:", key);
     expect(expectedData[key]).to.equal(actualData[key]);
   });
 });
@@ -26,7 +25,6 @@ Assertion.addMethod('equalUserData', function (expectedData: UserData) {
   const actualData = <UserData>this._obj;
 
   (Object.keys(actualData) as (keyof UserData)[]).forEach((key) => {
-    console.log("key:", key);
     expect(expectedData[key]).to.equal(actualData[key], key);
   });
 });
