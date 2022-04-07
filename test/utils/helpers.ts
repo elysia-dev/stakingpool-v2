@@ -47,8 +47,8 @@ export const getSumUserData = async (
   userData.rewardAssetBalance = userBefore.rewardAssetBalance.add(userAfter.rewardAssetBalance);
   userData.stakingAssetBalance = userBefore.stakingAssetBalance.add(userAfter.stakingAssetBalance);
   userData.userPrincipal = userBefore.userPrincipal.add(userAfter.userPrincipal);
-  userData.userIndex = userBefore.userIndex.add(userAfter.userIndex);
-  userData.userPreviousReward = userBefore.userPreviousReward.add(userAfter.userPreviousReward)
+  userData.userIndex = userAfter.userIndex;
+  userData.userPreviousReward = userAfter.userPreviousReward;
   userData.userReward = userBefore.userReward.add(userAfter.userReward)
 
   return userData;
@@ -61,12 +61,12 @@ export const getSumPoolData = async (
 ) => {
   const poolData = <PoolData>{};
 
-  poolData.rewardPerSecond = poolBefore.rewardPerSecond.add(poolAfter.rewardPerSecond);
-  poolData.rewardIndex = poolBefore.rewardIndex.add(poolAfter.rewardIndex);
-  poolData.startTimestamp = poolBefore.startTimestamp.add(poolAfter.startTimestamp);
-  poolData.endTimestamp = poolBefore.endTimestamp.add(poolAfter.endTimestamp);
+  poolData.rewardPerSecond = poolAfter.rewardPerSecond;
+  poolData.rewardIndex = poolAfter.rewardIndex;
+  poolData.startTimestamp = poolAfter.startTimestamp;
+  poolData.endTimestamp = poolAfter.endTimestamp;
   poolData.totalPrincipal = poolBefore.totalPrincipal.add(poolAfter.totalPrincipal);
-  poolData.lastUpdateTimestamp = poolBefore.lastUpdateTimestamp.add(poolAfter.lastUpdateTimestamp);
+  poolData.lastUpdateTimestamp = poolAfter.lastUpdateTimestamp;
   poolData.stakingAssetBalance = poolBefore.stakingAssetBalance.add(poolAfter.stakingAssetBalance);
   poolData.rewardAssetBalance = poolBefore.rewardAssetBalance.add(poolAfter.rewardAssetBalance);
 
