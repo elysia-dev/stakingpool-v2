@@ -3,7 +3,7 @@ import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 import TestEnv from './types/TestEnv';
@@ -193,33 +193,19 @@ describe('StakingPool.claim', () => {
       expect(userDataAfter).to.be.equalUserData(expectedUserData);
     });
 
-    // TODO if pool is colosed reward is not increased
-    
-    // it('if pool is closed, reward is not increased', async () => {
-    //   const poolDataBefore = await getPoolData(testEnv);
-    //   const userDataBefore = await getUserData(testEnv, alice);
-    //   const claimTxBefore = await testEnv.stakingPool.connect(alice).claim();
-    //   await advanceTimeTo(await getTimestamp(claimTxBefore), secondRoundStartTimestamp);
+    it('After the pool is closed, the reward does not increase as time passes', async () => {
+      await testEnv.stakingPool.connect(deployer).closePool();
+      const poolDataBefore = await getPoolData(testEnv);
+      const userDataBefore = await getUserData(testEnv, alice);
 
-    //   const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
-    //     poolDataBefore,
-    //     userDataBefore,
-    //     await getTimestamp(claimTxBefore)
-    //   );
+      await advanceTime(10);
 
-    //   const closeTx = await testEnv.stakingPool.connect(deployer).closePool();
-    //   await advanceTimeTo(await getTimestamp(closeTx), secondRoundStartTimestamp);
-      
-    //   const claimTx = await testEnv.stakingPool.connect(alice).claim();
-    //   await advanceTimeTo(await getTimestamp(claimTx), thirdRoundStartTimestamp);
+      const poolDataAfter = await getPoolData(testEnv);
+      const userDataAfter = await getUserData(testEnv, alice);
 
-    //   const poolDataAfter = await getPoolData(testEnv);
-    //   const userDataAfter = await getUserData(testEnv, alice);
-
-    //   expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-    //   expect(userDataAfter).to.be.equalUserData(expectedUserData);
-      
-    // });
+      expect(poolDataAfter).to.eql(poolDataBefore);
+      expect(userDataAfter).to.eql(userDataBefore);
+    });
   });
 
 });
