@@ -133,48 +133,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _claim(msg.sender);
   }
 
-  /// @notice Migrate the amount of principal to the current round and transfer the rest principal to the caller
-  /// @param amount Amount to migrate.
-  function migrate(uint256 amount) external override {
-    uint256 userPrincipal = _poolData.userPrincipal[msg.sender];
-
-    if (userPrincipal == 0) revert ZeroPrincipal();
-
-    uint256 amountToWithdraw = userPrincipal - amount;
-
-    // Claim reward
-    if (_poolData.getUserReward(msg.sender) != 0) {
-      _claim(msg.sender);
-    }
-
-    // Withdraw
-    if (amountToWithdraw != 0) {
-      _withdraw(amountToWithdraw);
-    }
-
-    // // Update current pool
-    // PoolData storage currentPoolData = _rounds[currentRound];
-    // currentPoolData.updateStakingPool(msg.sender);
-
-    // // Migrate user principal
-    // poolData.userPrincipal[msg.sender] -= amount;
-    // currentPoolData.userPrincipal[msg.sender] += amount;
-
-    // // Migrate total principal
-    // poolData.totalPrincipal -= amount;
-    // currentPoolData.totalPrincipal += amount;
-
-    emit Stake(
-      msg.sender,
-      amount,
-      _poolData.userIndex[msg.sender],
-      _poolData.userPrincipal[msg.sender]
-    );
-
-    emit Migrate(msg.sender, amount);
-  }
-
-  
   /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount) internal {
@@ -252,10 +210,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function inputNextReward(uint256 amount) external onlyAdmin {
     _poolData.nextRewardAmount = amount;
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), amount);
-  }
-
-  function setReduceRewardRate(uint8 n) external onlyAdmin {
-    _poolData.rewardPerSecondReduceRate = n;
   }
 
   function retrieveResidue() external onlyAdmin {

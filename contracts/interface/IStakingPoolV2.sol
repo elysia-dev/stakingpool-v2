@@ -41,8 +41,6 @@ interface IStakingPoolV2 {
 
   function withdraw(uint256 amount) external;
 
-  function migrate(uint256 amount) external;
-
   function getRewardIndex() external view returns (uint256);
 
   function getUserReward(address user) external view returns (uint256);
