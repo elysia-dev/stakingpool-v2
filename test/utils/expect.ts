@@ -30,7 +30,7 @@ export function expectDataAfterStake(
   return [newPoolData, newUserData];
 }
 
-export function expectDataAfterStakeFixedRewardPersecond(
+export function expectDataAfterStakeSetReward(
   poolData: PoolData,
   userData: UserData,
   txTimeStamp: BigNumber,
@@ -99,8 +99,37 @@ export function expectDataAfterWithdraw(
 export function expectDataAfterClaim(
   poolData: PoolData,
   userData: UserData,
-  txTimeStamp: BigNumber
+  txTimeStamp: BigNumber,
+
 ): [PoolData, UserData] {
+  const newPoolData = { ...poolData } as PoolData;
+  const newUserData = { ...userData } as UserData;
+
+  const accruedReward = calculateUserReward(poolData, userData, txTimeStamp);
+  const newUserRewardAssetBalance = userData.rewardAssetBalance.add(accruedReward);
+  newUserData.rewardAssetBalance = newUserRewardAssetBalance;
+
+  newUserData.userPreviousReward = newUserData.userReward = BigNumber.from(0);
+
+  const newRewardIndex = calculateRewardIndex(poolData, txTimeStamp);
+  newUserData.userIndex = newRewardIndex;
+
+  const newPoolTotalRewardAssetBalance = poolData.rewardAssetBalance.sub(accruedReward);
+  newPoolData.rewardAssetBalance = newPoolTotalRewardAssetBalance;
+
+  return [newPoolData, newUserData];
+}
+
+export function expectDataAfterClaimSetReward(
+  poolData: PoolData,
+  userData: UserData,
+  txTimeStamp: BigNumber,
+  rewardPerSecond: BigNumber,
+  duration: BigNumber
+): [PoolData, UserData] {
+  poolData.rewardPerSecond = rewardPerSecond;
+  poolData.lastUpdateTimestamp = poolData.startTimestamp = poolData.endTimestamp;
+  poolData.endTimestamp = poolData.endTimestamp.add(duration);
   const newPoolData = { ...poolData } as PoolData;
   const newUserData = { ...userData } as UserData;
 

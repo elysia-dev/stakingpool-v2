@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterClaim } from './utils/expect';
+import { expectDataAfterClaim, expectDataAfterClaimSetReward, expectDataAfterStake, expectDataAfterStakeSetReward } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 import TestEnv from './types/TestEnv';
 
@@ -20,46 +20,28 @@ describe('StakingPool.claim', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
 
-  const firstRoundInit = {
-    rewardPersecond: BigNumber.from(utils.parseEther('1')),
-    year: BigNumber.from(2022),
-    month: BigNumber.from(7),
-    day: BigNumber.from(7),
-    duration: BigNumber.from(30).mul(SECONDSPERDAY),
-  };
-  const firstRoundStartTimestamp = toTimestamp(
-    firstRoundInit.year,
-    firstRoundInit.month,
-    firstRoundInit.day,
-    BigNumber.from(10)
-  );
-  const secondRoundInit = {
-    rewardPersecond: BigNumber.from(utils.parseEther('1')),
-    year: BigNumber.from(2022),
-    month: BigNumber.from(7),
-    day: BigNumber.from(8),
-    duration: BigNumber.from(30).mul(SECONDSPERDAY),
-  };
-  const secondRoundStartTimestamp = toTimestamp(
-    secondRoundInit.year,
-    secondRoundInit.month,
-    secondRoundInit.day,
-    BigNumber.from(10)
-  );
+  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
+  const year =  BigNumber.from(2022);
+  const month_1 = BigNumber.from(7);
+  const day_1 = BigNumber.from(7);
+  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const thirdRoundInit = {
-    rewardPersecond: BigNumber.from(utils.parseEther('1')),
-    year: BigNumber.from(2022),
-    month: BigNumber.from(8),
-    day: BigNumber.from(20),
-    duration: BigNumber.from(30).mul(SECONDSPERDAY),
-  };
-  const thirdRoundStartTimestamp = toTimestamp(
-    thirdRoundInit.year,
-    thirdRoundInit.month,
-    thirdRoundInit.day,
-    BigNumber.from(10)
-  );
+  const month_2 = BigNumber.from(7);
+  const day_2 = BigNumber.from(8);
+
+  const month_3 = BigNumber.from(8);
+  const day_3 = BigNumber.from(20);
+
+  const firstRoundStartTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
+  const secondRoundStartTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
+  const thirdRoundStartTimestamp = toTimestamp(year, month_3, day_3, BigNumber.from(10));
+
+  const month_pass = BigNumber.from(8);
+  const day_pass = BigNumber.from(6);
+  const passTimestamp = toTimestamp(year, month_pass, day_pass, BigNumber.from(10));
+  const inputAmount = utils.parseEther('100'); 
+  const nextRewardPersecond = inputAmount.div(duration);
+
 
   const amount = ethers.utils.parseEther('1');
 
@@ -90,9 +72,9 @@ describe('StakingPool.claim', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(
-          firstRoundInit.rewardPersecond,
+          rewardPersecond,
           firstRoundStartTimestamp,
-          firstRoundInit.duration
+          duration
         );
       await testEnv.stakingAsset.connect(alice).faucet();
       const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -139,9 +121,9 @@ describe('StakingPool.claim', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(
-          firstRoundInit.rewardPersecond,
+          rewardPersecond,
           firstRoundStartTimestamp,
-          firstRoundInit.duration
+          duration
         );
       await testEnv.stakingAsset.connect(alice).faucet();
       const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -196,30 +178,114 @@ describe('StakingPool.claim', () => {
     // TODO if pool is colosed reward is not increased
     
     // it('if pool is closed, reward is not increased', async () => {
+    //   await testEnv.stakingPool.connect(alice).stake(amount.mul(2));
+
     //   const poolDataBefore = await getPoolData(testEnv);
     //   const userDataBefore = await getUserData(testEnv, alice);
-    //   const claimTxBefore = await testEnv.stakingPool.connect(alice).claim();
-    //   await advanceTimeTo(await getTimestamp(claimTxBefore), secondRoundStartTimestamp);
-
+      
     //   const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
     //     poolDataBefore,
     //     userDataBefore,
-    //     await getTimestamp(claimTxBefore)
+    //     secondRoundStartTimestamp
     //   );
 
-    //   const closeTx = await testEnv.stakingPool.connect(deployer).closePool();
-    //   await advanceTimeTo(await getTimestamp(closeTx), secondRoundStartTimestamp);
-      
-    //   const claimTx = await testEnv.stakingPool.connect(alice).claim();
-    //   await advanceTimeTo(await getTimestamp(claimTx), thirdRoundStartTimestamp);
+    //   const tx = await testEnv.stakingPool.connect(deployer).closePool();
+    //   await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
+    //   await testEnv.stakingPool.connect(alice).claim();
 
     //   const poolDataAfter = await getPoolData(testEnv);
     //   const userDataAfter = await getUserData(testEnv, alice);
 
     //   expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
     //   expect(userDataAfter).to.be.equalUserData(expectedUserData);
-      
     // });
+
+    context('change rewardPerSecond', async () => {
+      beforeEach('init the pool and stake in pool', async () => {
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+        await testEnv.stakingPool
+          .connect(deployer)
+          .initNewPool(
+            rewardPersecond,
+            firstRoundStartTimestamp,
+            duration
+          );
+        await testEnv.stakingAsset.connect(alice).faucet();
+        const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+        await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+        await testEnv.stakingPool.connect(alice).stake(amount);
+      });
+
+      it('rewardPerSecond is changed and claim', async () => {
+        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        await advanceTimeTo(await getTimestamp(tx), passTimestamp);
+  
+        const [expectedPoolData_1, expectedUserData_1] = expectDataAfterStake(
+          poolDataBefore,
+          userDataBefore,
+          passTimestamp,
+          BigNumber.from(0)
+        );
+        
+        const claimTx = await testEnv.stakingPool.connect(alice).claim();
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterClaimSetReward(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(claimTx),
+          nextRewardPersecond,
+          duration
+        );
+        
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData_2);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData_2);
+      });
+
+      it('rewardPerSecond is changed and stake and claim', async () => {
+        const stakeAmount = utils.parseEther('10');
+        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        await advanceTimeTo(await getTimestamp(tx), passTimestamp);
+
+        const [expectedPoolData_1, expectedUserData_1] = expectDataAfterStake(
+          poolDataBefore,
+          userDataBefore,
+          passTimestamp,
+          BigNumber.from(0)
+        );
+
+        const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
+          expectedPoolData_1,
+          expectedUserData_1, 
+          await getTimestamp(stakeTx),
+          stakeAmount,
+          nextRewardPersecond,
+          duration
+        );
+
+        const claimTx = await testEnv.stakingPool.connect(alice).claim();
+        const [expectedPoolData_3, expectedUserData_3] = expectDataAfterClaim(
+          expectedPoolData_2,
+          expectedUserData_2,
+          await getTimestamp(claimTx)
+        );
+
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData_3);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData_3);
+      });
+    });
   });
 
 });

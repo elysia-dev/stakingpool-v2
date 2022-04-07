@@ -5,7 +5,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterStake, expectDataAfterStakeFixedRewardPersecond } from './utils/expect';
+import { expectDataAfterStake, expectDataAfterStakeSetReward } from './utils/expect';
 import { getPoolData, getSumPoolData, getSumUserData, getUserData } from './utils/helpers';
 
 const { loadFixture } = waffle;
@@ -265,22 +265,22 @@ describe('StakingPool.stake', () => {
     it('rewardPerSecond is changed and stake in pool', async () => {
       const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
 
-      const poolDataBefore_ = await getPoolData(testEnv);
-      const userDataBefore_ = await getUserData(testEnv, alice);
+      const poolDataBefore = await getPoolData(testEnv);
+      const userDataBefore = await getUserData(testEnv, alice);
       await advanceTimeTo(await getTimestamp(tx), passTimestamp);
 
-      const [expectedPoolData_, expectedUserData_] = expectDataAfterStake(
-        poolDataBefore_,
-        userDataBefore_,
+      const [expectedPoolData_1, expectedUserData_1] = expectDataAfterStake(
+        poolDataBefore,
+        userDataBefore,
         passTimestamp,
         BigNumber.from(0)
       );
       
       const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       
-      const [expectedPoolData, expectedUserData] = expectDataAfterStakeFixedRewardPersecond(
-        expectedPoolData_,
-        expectedUserData_,
+      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
+        expectedPoolData_1,
+        expectedUserData_1,
         await getTimestamp(stakeTx),
         stakeAmount,
         nextRewardPersecond,
@@ -290,27 +290,27 @@ describe('StakingPool.stake', () => {
       const poolDataAfter = await getPoolData(testEnv);
       const userDataAfter = await getUserData(testEnv, alice);
 
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData_2);
+      expect(userDataAfter).to.be.equalUserData(expectedUserData_2);
       
     });
 
     it('rewardPerSecond is changed and stake in pool twice', async () => {
       const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
 
-      const poolDataBefore_ = await getPoolData(testEnv);
-      const userDataBefore_ = await getUserData(testEnv, alice);
+      const poolDataBefore = await getPoolData(testEnv);
+      const userDataBefore = await getUserData(testEnv, alice);
       await advanceTimeTo(await getTimestamp(tx), passTimestamp);
 
       const [expectedPoolData_1, expectedUserData_1] = expectDataAfterStake(
-        poolDataBefore_,
-        userDataBefore_,
+        poolDataBefore,
+        userDataBefore,
         passTimestamp,
         BigNumber.from(0)
       );
       
       const stakeTx_1 = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeFixedRewardPersecond(
+      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
         expectedPoolData_1,
         expectedUserData_1,
         await getTimestamp(stakeTx_1),
