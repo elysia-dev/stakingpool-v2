@@ -23,12 +23,15 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   struct PoolData {
+    uint8 rewardPerSecondReduceRate;
+    uint32 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
     uint256 startTimestamp;
     uint256 endTimestamp;
-    uint256 totalPrincipal;
     uint256 lastUpdateTimestamp;
+    uint256 totalPrincipal;
+    uint256 nextRewardAmount;
     mapping(address => uint256) userIndex;
     mapping(address => uint256) userReward;
     mapping(address => uint256) userPrincipal;
@@ -131,7 +134,47 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _claim(msg.sender);
   }
 
-  // TODO Implement `migrate` function to send an asset to the next staking contract
+  /// @notice Migrate the amount of principal to the current round and transfer the rest principal to the caller
+  /// @param amount Amount to migrate.
+  function migrate(uint256 amount) external override {
+    uint256 userPrincipal = _poolData.userPrincipal[msg.sender];
+
+    if (userPrincipal == 0) revert ZeroPrincipal();
+
+    uint256 amountToWithdraw = userPrincipal - amount;
+
+    // Claim reward
+    if (_poolData.getUserReward(msg.sender) != 0) {
+      _claim(msg.sender);
+    }
+
+    // Withdraw
+    if (amountToWithdraw != 0) {
+      _withdraw(amountToWithdraw);
+    }
+
+    // // Update current pool
+    // PoolData storage currentPoolData = _rounds[currentRound];
+    // currentPoolData.updateStakingPool(msg.sender);
+
+    // // Migrate user principal
+    // poolData.userPrincipal[msg.sender] -= amount;
+    // currentPoolData.userPrincipal[msg.sender] += amount;
+
+    // // Migrate total principal
+    // poolData.totalPrincipal -= amount;
+    // currentPoolData.totalPrincipal += amount;
+
+    emit Stake(
+      msg.sender,
+      amount,
+      _poolData.userIndex[msg.sender],
+      _poolData.userPrincipal[msg.sender]
+    );
+
+    emit Migrate(msg.sender, amount);
+  }
+
   
   /***************** Internal Functions ******************/
 
@@ -184,7 +227,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint256 duration
+    uint32 duration
   ) external override onlyAdmin {
     if (_poolData.isFinished == true) revert IsFinished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
@@ -192,7 +235,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       startTimestamp,
       duration
     );
-    
     _poolData.isOpened = true;
 
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), duration * rewardPerSecond);
@@ -204,6 +246,15 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;
+  }
+
+  function inputNextReward(uint256 amount) external onlyAdmin {
+    _poolData.nextRewardAmount = amount;
+    SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), amount);
+  }
+
+  function setReduceRewardRate(uint8 n) external onlyAdmin {
+    _poolData.rewardPerSecondReduceRate = n;
   }
 
   function retrieveResidue() external onlyAdmin {

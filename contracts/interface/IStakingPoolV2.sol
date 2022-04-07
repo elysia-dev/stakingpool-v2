@@ -33,11 +33,15 @@ interface IStakingPoolV2 {
     uint256 endTimestamp
   );
 
+  event Migrate(address user, uint256 amount);
+
   function stake(uint256 amount) external;
 
   function claim() external;
 
   function withdraw(uint256 amount) external;
+
+  function migrate(uint256 amount) external;
 
   function getRewardIndex() external view returns (uint256);
 
@@ -67,6 +71,7 @@ interface IStakingPoolV2 {
   function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint256 duration
+    uint32 duration
   ) external;
+
 }

@@ -39,24 +39,34 @@ library StakingPoolLogicV2 {
     view
     returns (uint256)
   {
-
     if (poolData.userIndex[user] == 0) {
       return 0;
     }
 
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
-
     uint256 balance = poolData.userPrincipal[user];
-
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e9;
 
     return result;
+  }
+
+  function updateRewardPerSecond(StakingPoolV2.PoolData storage poolData, address user) internal {
+    poolData.userReward[user] = getUserReward(poolData, user);
+    poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
+
+    poolData.startTimestamp = poolData.lastUpdateTimestamp = poolData.endTimestamp;
+    poolData.endTimestamp = poolData.endTimestamp + poolData.duration;
+    poolData.rewardPerSecond = poolData.nextRewardAmount / poolData.duration;
   }
 
   function updateStakingPool(
     StakingPoolV2.PoolData storage poolData,
     address user
   ) internal {
+    if(block.timestamp > poolData.endTimestamp) {
+      updateRewardPerSecond(poolData, user);
+    }
+
     poolData.userReward[user] = getUserReward(poolData, user);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
     poolData.lastUpdateTimestamp = block.timestamp < poolData.endTimestamp
@@ -69,14 +79,14 @@ library StakingPoolLogicV2 {
     StakingPoolV2.PoolData storage poolData,
     uint256 rewardPerSecond,
     uint256 roundStartTimestamp,
-    uint256 duration
+    uint32 duration
   ) internal returns (uint256, uint256) {
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + duration;
     poolData.lastUpdateTimestamp = roundStartTimestamp;
     poolData.rewardIndex = 1e18;
-
+    poolData.duration = duration;
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
 
