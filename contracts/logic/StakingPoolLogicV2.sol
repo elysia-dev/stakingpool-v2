@@ -63,7 +63,7 @@ library StakingPoolLogicV2 {
     StakingPoolV2.PoolData storage poolData,
     address user
   ) internal {
-    if(block.timestamp > poolData.endTimestamp) {
+    if(poolData.isOpened == true && block.timestamp > poolData.endTimestamp) {
       updateRewardPerSecond(poolData, user);
     }
 

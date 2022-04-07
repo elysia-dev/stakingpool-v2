@@ -14,8 +14,6 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.claim', () => {
   let testEnv: TestEnv;
-  let firstRound: number;
-  let secondRound: number;
 
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
