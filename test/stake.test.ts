@@ -6,7 +6,7 @@ import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake, expectDataAfterStakeSetReward } from './utils/expect';
-import { getPoolData, getSumPoolData, getSumUserData, getUserData } from './utils/helpers';
+import { getPoolData, getUserData } from './utils/helpers';
 
 const { loadFixture } = waffle;
 
@@ -14,7 +14,6 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.stake', () => {
   let testEnv: TestEnv;
-  let testEnvCompare: TestEnv;
 
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
@@ -52,7 +51,6 @@ describe('StakingPool.stake', () => {
 
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
-    testEnvCompare = await loadFixture(fixture);
   });
 
   it('reverts if the pool has not initiated', async () => {
@@ -129,14 +127,14 @@ describe('StakingPool.stake', () => {
           await expect(testEnv.stakingPool
             .connect(deployer)
             .initNewPool(rewardPersecond, startTimestamp, duration)
-          ).to.be.revertedWith('IsFinished');
+          ).to.be.revertedWith('Finished');
         });
 
         it('revert if staking in the pool finished', async () => {
           await testEnv.stakingPool.connect(deployer).closePool();
 
           await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)
-          ).to.be.revertedWith('IsClosed');
+          ).to.be.revertedWith('Closed');
         });
       });
     });

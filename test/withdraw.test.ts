@@ -227,7 +227,7 @@ describe('StakingPool.withdraw', () => {
       it('revert if alice withdraws and stakes', async () => {
         await testEnv.stakingPool.connect(alice).withdraw(stakeAmount);
         await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)
-        ).to.be.revertedWith('IsClosed');
+        ).to.be.revertedWith('Closed');
       });
   
   
