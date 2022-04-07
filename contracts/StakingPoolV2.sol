@@ -130,8 +130,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _claim(msg.sender);
   }
 
-  // TODO Implement `migrate` function to send an asset to the next staking contract
-  
   /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount) internal {
