@@ -2,6 +2,7 @@
 pragma solidity 0.8.4;
 import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
+import './interface/INextStakingPool.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
@@ -39,6 +40,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   address internal _admin;
+  address internal _nextContractAddr;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
@@ -133,6 +135,38 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _claim(msg.sender);
   }
 
+  /// @notice Migrate the amount of principal to the current round and transfer the rest principal to the caller
+  function migrate() external override {
+    if (_poolData.isOpened == true) revert Opened();
+    if (_nextContractAddr == address(0)) revert NotSetContractAddr();
+    if (_poolData.userPrincipal[msg.sender] == 0) revert ZeroPrincipal();
+    uint256 amount = _poolData.userPrincipal[msg.sender];
+
+    // Claim reward
+    if (_poolData.getUserReward(msg.sender) != 0) {
+      _claim(msg.sender);
+    }
+
+    // Update current pool
+    _poolData.updateStakingPool(msg.sender);
+
+    // Migrate user, total principal 
+    _poolData.userPrincipal[msg.sender] -= amount;
+    _poolData.totalPrincipal -= amount;
+
+    // Migrate
+    _migrateFor(_nextContractAddr, amount);
+
+    // Call next contract
+    INextStakingPool nextContract = INextStakingPool(_nextContractAddr);
+
+    // Migrate next contract of user, total principal
+    nextContract.setPreviousUserPrincipal(amount);
+    nextContract.setPreviousTotalPrincipal(amount);
+
+    emit Migrate(msg.sender);
+  }
+
   /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount) internal {
@@ -210,6 +244,10 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function inputNextReward(uint256 amount) external onlyAdmin {
     _poolData.nextRewardAmount = amount;
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), amount);
+  }
+
+  function setNextContractAddr(address addr) external onlyAdmin {
+    _nextContractAddr = addr;
   }
 
   function retrieveResidue() external onlyAdmin {

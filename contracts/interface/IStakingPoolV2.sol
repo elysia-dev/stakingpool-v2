@@ -8,8 +8,10 @@ interface IStakingPoolV2 {
   error OnlyAdmin();
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
+  error NotSetContractAddr();
   error Finished();
   error Closed();
+  error Opened();
 
   event Stake(
     address indexed user,
@@ -33,13 +35,15 @@ interface IStakingPoolV2 {
     uint256 endTimestamp
   );
 
-  event Migrate(address user, uint256 amount);
+  event Migrate(address user);
 
   function stake(uint256 amount) external;
 
   function claim() external;
 
   function withdraw(uint256 amount) external;
+
+  function migrate() external;
 
   function getRewardIndex() external view returns (uint256);
 
