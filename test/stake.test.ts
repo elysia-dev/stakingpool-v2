@@ -5,7 +5,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterStake, expectDataAfterStakeSetReward } from './utils/expect';
+import { expectDataAfterStake } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 
 const { loadFixture } = waffle;
@@ -100,7 +100,9 @@ describe('StakingPool.stake', () => {
           poolDataBefore,
           userDataBefore,
           await getTimestamp(stakeTx),
-          stakeAmount
+          stakeAmount,
+          nextRewardPersecond,
+          duration
         );
 
         const poolDataAfter = await getPoolData(testEnv);
@@ -167,7 +169,9 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         await getTimestamp(stakeTx),
-        stakeAmount
+        stakeAmount,
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -189,7 +193,9 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         await getTimestamp(stakeTx),
-        stakeAmount
+        stakeAmount,
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -211,7 +217,9 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         await getTimestamp(stakeTx),
-        stakeAmount
+        stakeAmount,
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -234,7 +242,9 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         await getTimestamp(stakeTx),
-        stakeAmount
+        stakeAmount,
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -271,12 +281,14 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         passTimestamp,
-        BigNumber.from(0)
+        BigNumber.from(0),
+        nextRewardPersecond,
+        duration
       );
       
       const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       
-      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
+      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
         expectedPoolData_1,
         expectedUserData_1,
         await getTimestamp(stakeTx),
@@ -304,11 +316,13 @@ describe('StakingPool.stake', () => {
         poolDataBefore,
         userDataBefore,
         passTimestamp,
-        BigNumber.from(0)
+        BigNumber.from(0),
+        nextRewardPersecond,
+        duration
       );
       
       const stakeTx_1 = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
+      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
         expectedPoolData_1,
         expectedUserData_1,
         await getTimestamp(stakeTx_1),
@@ -324,7 +338,9 @@ describe('StakingPool.stake', () => {
         expectedPoolData_2,
         expectedUserData_2,
         await getTimestamp(stakeTx_2),
-        stakeAmount
+        stakeAmount,
+        nextRewardPersecond,
+        duration
       );
       
       const poolDataAfter = await getPoolData(testEnv);

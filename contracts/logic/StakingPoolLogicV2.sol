@@ -48,7 +48,7 @@ library StakingPoolLogicV2 {
 
     return result;
   }
-
+ 
   function updateRewardPerSecond(StakingPoolV2.PoolData storage poolData, address user) internal {
     poolData.userReward[user] = getUserReward(poolData, user);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
@@ -71,6 +71,7 @@ library StakingPoolLogicV2 {
     poolData.lastUpdateTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
       : poolData.endTimestamp;
+
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal);
   }
 

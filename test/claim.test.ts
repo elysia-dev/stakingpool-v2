@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterClaim, expectDataAfterClaimSetReward, expectDataAfterStake, expectDataAfterStakeSetReward } from './utils/expect';
+import { expectDataAfterClaim, expectDataAfterStake } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 import TestEnv from './types/TestEnv';
 
@@ -99,7 +99,9 @@ describe('StakingPool.claim', () => {
         const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
           poolDataBefore,
           userDataBefore,
-          await getTimestamp(claimTx)
+          await getTimestamp(claimTx),
+          nextRewardPersecond,
+          duration
         );
 
         const poolDataAfter = await getPoolData(testEnv);
@@ -141,7 +143,9 @@ describe('StakingPool.claim', () => {
       const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
         poolDataBefore,
         userDataBefore,
-        await getTimestamp(claimTx)
+        await getTimestamp(claimTx),
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -163,7 +167,9 @@ describe('StakingPool.claim', () => {
       const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
         poolDataBefore,
         userDataBefore,
-        await getTimestamp(claimTx)
+        await getTimestamp(claimTx),
+        nextRewardPersecond,
+        duration
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -226,11 +232,13 @@ describe('StakingPool.claim', () => {
           poolDataBefore,
           userDataBefore,
           passTimestamp,
-          BigNumber.from(0)
+          BigNumber.from(0),
+          nextRewardPersecond,
+          duration
         );
         
         const claimTx = await testEnv.stakingPool.connect(alice).claim();
-        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterClaimSetReward(
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterClaim(
           expectedPoolData_1,
           expectedUserData_1,
           await getTimestamp(claimTx),
@@ -257,11 +265,13 @@ describe('StakingPool.claim', () => {
           poolDataBefore,
           userDataBefore,
           passTimestamp,
-          BigNumber.from(0)
+          BigNumber.from(0),
+          nextRewardPersecond,
+          duration
         );
 
         const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStakeSetReward(
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
           expectedPoolData_1,
           expectedUserData_1, 
           await getTimestamp(stakeTx),
@@ -274,7 +284,9 @@ describe('StakingPool.claim', () => {
         const [expectedPoolData_3, expectedUserData_3] = expectDataAfterClaim(
           expectedPoolData_2,
           expectedUserData_2,
-          await getTimestamp(claimTx)
+          await getTimestamp(claimTx),
+          nextRewardPersecond,
+          duration
         );
 
         const poolDataAfter = await getPoolData(testEnv);
