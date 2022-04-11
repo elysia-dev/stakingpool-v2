@@ -29,7 +29,6 @@ library StakingPoolLogicV2 {
     }
 
     uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e9) / totalPrincipal;
-
     return poolData.rewardIndex + rewardIndexDiff;
   }
 
@@ -42,11 +41,8 @@ library StakingPoolLogicV2 {
       return 0;
     }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
-
     uint256 balance = poolData.userPrincipal[user];
-
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e9;
-
     return result;
   }
 
@@ -76,7 +72,5 @@ library StakingPoolLogicV2 {
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
-
-
 
 }

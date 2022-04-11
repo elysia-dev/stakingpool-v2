@@ -2,14 +2,14 @@
 pragma solidity 0.8.4;
 
 interface IStakingPoolV2 {
-  error NotInRound();
   error StakingNotInitiated();
   error InvalidAmount();
   error ZeroReward();
   error OnlyAdmin();
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
-  error IsOpened();
+  error Finished();
+  error Closed();
 
   event Stake(
     address indexed user,
@@ -17,6 +17,7 @@ interface IStakingPoolV2 {
     uint256 userIndex,
     uint256 userPrincipal
   );
+
   event Withdraw(
     address indexed user,
     uint256 amount,

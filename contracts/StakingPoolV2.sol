@@ -31,13 +31,15 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     mapping(address => uint256) userIndex;
     mapping(address => uint256) userReward;
     mapping(address => uint256) userPrincipal;
+    bool isOpened;
+    bool isFinished;
   }
-
 
   address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
+
   /***************** View functions ******************/
 
   /// @notice Returns reward index of the round
@@ -101,11 +103,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
   function stake(uint256 amount) external override stakingInitiated {
-   
+    if (_poolData.isOpened == false) revert Closed();
     if (amount == 0) revert InvalidAmount();
-
     _poolData.updateStakingPool(msg.sender);
-
     _depositFor(msg.sender, amount);
 
     _poolData.userPrincipal[msg.sender] += amount;
@@ -140,6 +140,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (amount == type(uint256).max) {
       amountToWithdraw = _poolData.userPrincipal[msg.sender];
     }
+    
     if (_poolData.userPrincipal[msg.sender] < amountToWithdraw)
       revert NotEnoughPrincipal(_poolData.userPrincipal[msg.sender]);
 
@@ -184,15 +185,24 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     uint256 startTimestamp,
     uint256 duration
   ) external override onlyAdmin {
-   
+    if (_poolData.isFinished == true) revert Finished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
       rewardPerSecond,
       startTimestamp,
       duration
     );
+    
+    _poolData.isOpened = true;
 
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), duration * rewardPerSecond);
     emit InitPool(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
+  }
+  
+  function closePool() external onlyAdmin {
+    if (_poolData.isOpened == false) revert Closed();
+    _poolData.endTimestamp = block.timestamp;
+    _poolData.isOpened = false;
+    _poolData.isFinished = true;
   }
 
   function retrieveResidue() external onlyAdmin {
@@ -210,4 +220,5 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
     _;
   }
+
 }

@@ -3,7 +3,7 @@ import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 import TestEnv from './types/TestEnv';
@@ -14,8 +14,7 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.claim', () => {
   let testEnv: TestEnv;
-  let firstRound: number;
-  let secondRound: number;
+
 
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
@@ -36,14 +35,28 @@ describe('StakingPool.claim', () => {
   const secondRoundInit = {
     rewardPersecond: BigNumber.from(utils.parseEther('1')),
     year: BigNumber.from(2022),
-    month: BigNumber.from(9),
-    day: BigNumber.from(7),
+    month: BigNumber.from(7),
+    day: BigNumber.from(8),
     duration: BigNumber.from(30).mul(SECONDSPERDAY),
   };
   const secondRoundStartTimestamp = toTimestamp(
     secondRoundInit.year,
     secondRoundInit.month,
     secondRoundInit.day,
+    BigNumber.from(10)
+  );
+
+  const thirdRoundInit = {
+    rewardPersecond: BigNumber.from(utils.parseEther('1')),
+    year: BigNumber.from(2022),
+    month: BigNumber.from(8),
+    day: BigNumber.from(20),
+    duration: BigNumber.from(30).mul(SECONDSPERDAY),
+  };
+  const thirdRoundStartTimestamp = toTimestamp(
+    thirdRoundInit.year,
+    thirdRoundInit.month,
+    thirdRoundInit.day,
     BigNumber.from(10)
   );
 
@@ -70,7 +83,7 @@ describe('StakingPool.claim', () => {
   });
 
   context('first claim', async () => {
-    beforeEach('deploy staking pool and init first round', async () => {
+    beforeEach('deploy staking pool and init the pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
@@ -81,9 +94,7 @@ describe('StakingPool.claim', () => {
           firstRoundInit.duration
         );
       await testEnv.stakingAsset.connect(alice).faucet();
-      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingAsset.connect(bob).faucet();
-      const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
+      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
     });
 
@@ -115,6 +126,83 @@ describe('StakingPool.claim', () => {
 
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
+    });
+  });
+
+
+  context('claim after pool is closed', async () => {
+    beforeEach('init the pool and close the pool', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingPool
+        .connect(deployer)
+        .initNewPool(
+          firstRoundInit.rewardPersecond,
+          firstRoundStartTimestamp,
+          firstRoundInit.duration
+        );
+      await testEnv.stakingAsset.connect(alice).faucet();
+      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+      await testEnv.stakingPool.connect(alice).stake(amount);
+    });
+
+    context('the pool is closed', async () => {
+      it('alice claim reward', async () => {
+        const tx = await testEnv.stakingPool.connect(deployer).closePool();
+        await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
+  
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const claimTx = await testEnv.stakingPool.connect(alice).claim();
+  
+        const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(claimTx)
+        );
+  
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
+
+      it('alice claim reward after time passes', async () => {
+        await testEnv.stakingPool.connect(deployer).closePool();
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+  
+        const claimTx = await testEnv.stakingPool.connect(alice).claim();
+        await advanceTimeTo(await getTimestamp(claimTx), thirdRoundStartTimestamp);
+  
+        const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(claimTx)
+        );
+  
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
+
+      it('the reward does not increase as time passes', async () => {
+        await testEnv.stakingPool.connect(deployer).closePool();
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+  
+        await advanceTime(10);
+  
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.eql(poolDataBefore);
+        expect(userDataAfter).to.eql(userDataBefore);
       });
     });
   });
