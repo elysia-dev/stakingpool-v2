@@ -50,8 +50,7 @@ library StakingPoolLogicV2 {
   }
  
   function updateRewardPerSecond(StakingPoolV2.PoolData storage poolData, address user) internal {
-    poolData.userReward[user] = getUserReward(poolData, user);
-    poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
+    poolData.rewardIndex = getRewardIndex(poolData);
 
     poolData.startTimestamp = poolData.lastUpdateTimestamp = poolData.endTimestamp;
     poolData.endTimestamp = poolData.endTimestamp + poolData.duration;
