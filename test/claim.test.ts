@@ -190,23 +190,20 @@ describe('StakingPool.claim', () => {
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
       });
+
+      it('the reward does not increase as time passes', async () => {
+        await testEnv.stakingPool.connect(deployer).closePool();
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
   
-    });
-
-    
-
-    it('After the pool is closed, the reward does not increase as time passes', async () => {
-      await testEnv.stakingPool.connect(deployer).closePool();
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
-
-      await advanceTime(10);
-
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
-
-      expect(poolDataAfter).to.eql(poolDataBefore);
-      expect(userDataAfter).to.eql(userDataBefore);
+        await advanceTime(10);
+  
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.eql(poolDataBefore);
+        expect(userDataAfter).to.eql(userDataBefore);
+      });
     });
   });
 
