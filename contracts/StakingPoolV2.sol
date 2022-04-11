@@ -4,7 +4,6 @@ import './logic/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import 'hardhat/console.sol';
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -104,7 +103,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   /// @notice Stake the amount of staking asset to pool contract and update data.
   /// @param amount Amount to stake.
   function stake(uint256 amount) external override stakingInitiated {
-    if (_poolData.isOpened == false) revert IsClosed();
+    if (_poolData.isOpened == false) revert Closed();
     if (amount == 0) revert InvalidAmount();
     _poolData.updateStakingPool(msg.sender);
     _depositFor(msg.sender, amount);
@@ -186,7 +185,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     uint256 startTimestamp,
     uint256 duration
   ) external override onlyAdmin {
-    if (_poolData.isFinished == true) revert IsFinished();
+    if (_poolData.isFinished == true) revert Finished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
       rewardPerSecond,
       startTimestamp,
@@ -200,7 +199,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
   
   function closePool() external onlyAdmin {
-    if (_poolData.isOpened == false) revert IsClosed();
+    if (_poolData.isOpened == false) revert Closed();
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;

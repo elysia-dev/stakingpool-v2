@@ -8,8 +8,8 @@ interface IStakingPoolV2 {
   error OnlyAdmin();
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
-  error IsFinished();
-  error IsClosed();
+  error Finished();
+  error Closed();
 
   event Stake(
     address indexed user,

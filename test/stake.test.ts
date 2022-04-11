@@ -116,14 +116,14 @@ describe('StakingPool.stake', () => {
           await expect(testEnv.stakingPool
             .connect(deployer)
             .initNewPool(rewardPersecond, startTimestamp, duration)
-          ).to.be.revertedWith('IsFinished');
+          ).to.be.revertedWith('Finished');
         });
 
         it('revert if staking in the pool finished', async () => {
           await testEnv.stakingPool.connect(deployer).closePool();
 
           await expect(testEnv.stakingPool.connect(alice).stake(stakeAmount)
-          ).to.be.revertedWith('IsClosed');
+          ).to.be.revertedWith('Closed');
         });
       });
     });
