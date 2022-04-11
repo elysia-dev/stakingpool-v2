@@ -46,9 +46,10 @@ export function expectDataAfterWithdraw(
   txTimeStamp: BigNumber,
   amount: BigNumber,
   rewardPerSecond: BigNumber,
-  duration: BigNumber
+  duration: BigNumber,
+  isOpened: boolean
 ): [PoolData, UserData] {
-  if(txTimeStamp > poolData.endTimestamp){
+  if(isOpened == true && txTimeStamp > poolData.endTimestamp){
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.lastUpdateTimestamp = poolData.startTimestamp = poolData.endTimestamp;
     poolData.endTimestamp = poolData.endTimestamp.add(duration);
@@ -85,9 +86,10 @@ export function expectDataAfterClaim(
   userData: UserData,
   txTimeStamp: BigNumber,
   rewardPerSecond: BigNumber,
-  duration: BigNumber
+  duration: BigNumber,
+  isOpened: boolean
 ): [PoolData, UserData] {
-  if(txTimeStamp > poolData.endTimestamp){
+  if(isOpened == true && txTimeStamp > poolData.endTimestamp){
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.lastUpdateTimestamp = poolData.startTimestamp = poolData.endTimestamp;
     poolData.endTimestamp = poolData.endTimestamp.add(duration);

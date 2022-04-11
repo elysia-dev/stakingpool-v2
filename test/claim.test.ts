@@ -101,7 +101,8 @@ describe('StakingPool.claim', () => {
           userDataBefore,
           await getTimestamp(claimTx),
           nextRewardPersecond,
-          duration
+          duration,
+          true
         );
 
         const poolDataAfter = await getPoolData(testEnv);
@@ -145,7 +146,8 @@ describe('StakingPool.claim', () => {
         userDataBefore,
         await getTimestamp(claimTx),
         nextRewardPersecond,
-        duration
+        duration,
+        false
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -169,7 +171,8 @@ describe('StakingPool.claim', () => {
         userDataBefore,
         await getTimestamp(claimTx),
         nextRewardPersecond,
-        duration
+        duration,
+        false
       );
 
       const poolDataAfter = await getPoolData(testEnv);
@@ -243,7 +246,8 @@ describe('StakingPool.claim', () => {
           expectedUserData_1,
           await getTimestamp(claimTx),
           nextRewardPersecond,
-          duration
+          duration,
+          true
         );
         
         const poolDataAfter = await getPoolData(testEnv);
@@ -286,7 +290,8 @@ describe('StakingPool.claim', () => {
           expectedUserData_2,
           await getTimestamp(claimTx),
           nextRewardPersecond,
-          duration
+          duration,
+          true
         );
 
         const poolDataAfter = await getPoolData(testEnv);
