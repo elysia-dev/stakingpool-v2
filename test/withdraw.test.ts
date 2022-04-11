@@ -229,8 +229,8 @@ describe('StakingPool.withdraw', () => {
         const poolDataAfter = await getPoolData(testEnv);
         const userDataAfter = await getUserData(testEnv, alice);
   
-        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+        expect(poolDataAfter).to.eql(expectedPoolData);
+        expect(userDataAfter).to.eql(expectedUserData);
       });
 
 
@@ -261,8 +261,8 @@ describe('StakingPool.withdraw', () => {
         const poolDataAfter = await getPoolData(testEnv);
         const userDataAfter = await getUserData(testEnv, alice);
   
-        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+        expect(poolDataAfter).to.eql(expectedPoolData);
+        expect(userDataAfter).to.eql(expectedUserData);
       });
     });
 

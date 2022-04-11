@@ -151,8 +151,8 @@ describe('StakingPool.claim', () => {
       const poolDataAfter = await getPoolData(testEnv);
       const userDataAfter = await getUserData(testEnv, alice);
 
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      expect(poolDataAfter).to.eql(expectedPoolData);
+      expect(userDataAfter).to.eql(expectedUserData);
     });
 
     it('pool is closed and alice claim reward after time passes', async () => {
@@ -175,8 +175,8 @@ describe('StakingPool.claim', () => {
       const poolDataAfter = await getPoolData(testEnv);
       const userDataAfter = await getUserData(testEnv, alice);
 
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      expect(poolDataAfter).to.eql(expectedPoolData);
+      expect(userDataAfter).to.eql(expectedUserData);
     });
 
     // TODO if pool is colosed reward is not increased
