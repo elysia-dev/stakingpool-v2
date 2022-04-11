@@ -162,7 +162,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
 
   function _claim(address user) internal {
     if(_poolData.isOpened == true && block.timestamp > _poolData.endTimestamp) {
-      _poolData.updateRewardPerSecond(user);
+      _poolData.updateRewardPerSecond();
     }
     uint256 reward = _poolData.getUserReward(user);
     if (reward == 0) revert ZeroReward() ;
