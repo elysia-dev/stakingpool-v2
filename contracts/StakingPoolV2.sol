@@ -185,7 +185,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint32 duration
+    uint256 duration
   ) external override onlyAdmin {
     if (_poolData.isFinished == true) revert Finished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(

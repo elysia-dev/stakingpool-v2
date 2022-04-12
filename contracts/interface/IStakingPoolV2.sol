@@ -69,7 +69,7 @@ interface IStakingPoolV2 {
   function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint32 duration
+    uint256 duration
   ) external;
 
 }
