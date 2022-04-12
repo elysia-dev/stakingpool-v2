@@ -66,10 +66,10 @@ describe('StakingPool.stake', () => {
 
     context('Time passes', async () => {
       beforeEach('init the pool', async () => {
-        const tx = await testEnv.stakingAsset
+        await testEnv.stakingAsset
           .connect(alice)
           .approve(testEnv.stakingPool.address, RAY);
-        await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+        await advanceTimeTo(startTimestamp);
       });
 
       it('reverts if user staking amount is 0', async () => {
@@ -101,10 +101,10 @@ describe('StakingPool.stake', () => {
 
       context('pool is closed', async () => {
         beforeEach('time passes and pool is closed', async () => {
-          const tx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-          await advanceTimeTo(await getTimestamp(tx), endTimestamp);
+          await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+          await advanceTimeTo(endTimestamp);
         })
-        
+
         it('revert if general account close the pool', async () => {
           await expect(testEnv.stakingPool.connect(alice).closePool()
           ).to.be.revertedWith('OnlyAdmin');
@@ -143,8 +143,8 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingAsset.connect(bob).faucet();
 
-      const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(startTimestamp);
     });
 
     it('first stake and second stake from alice', async () => {
