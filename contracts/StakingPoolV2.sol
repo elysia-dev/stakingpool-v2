@@ -164,7 +164,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       _poolData.updateRewardPerSecond();
     }
     uint256 reward = _poolData.getUserReward(user);
-    if (reward == 0) revert ZeroReward() ;
+    if (reward == 0) revert ZeroReward();
 
     _poolData.userReward[user] = 0;
     _poolData.userIndex[user] = _poolData.getRewardIndex();
