@@ -30,7 +30,7 @@ describe('StakingPool.token', () => {
   async function fixture() {
     const testEnv = await setTestEnv();
     await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+    await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingPool
       .connect(deployer)
       .initNewPool(rewardPersecond, startTimestamp, duration);
@@ -52,10 +52,10 @@ describe('StakingPool.token', () => {
   context('ERC20', async () => {
     beforeEach('deploy staking pool', async () => {
       await testEnv.stakingAsset.connect(alice).faucet();
-      const tx = await testEnv.stakingAsset
+      await testEnv.stakingAsset
         .connect(alice)
         .approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await advanceTimeTo(startTimestamp);
     });
 
     it('ERC20 functions are unavailable', async () => {
@@ -86,10 +86,10 @@ describe('StakingPool.token', () => {
   context('ERC20Wrapper', async () => {
     beforeEach('deploy staking pool', async () => {
       await testEnv.stakingAsset.connect(alice).faucet();
-      const tx = await testEnv.stakingAsset
+      await testEnv.stakingAsset
         .connect(alice)
         .approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await advanceTimeTo(startTimestamp);
     });
 
     it('wrapper tokens are minted in staking', async () => {
@@ -116,10 +116,10 @@ describe('StakingPool.token', () => {
   context('ERC20Votes', async () => {
     beforeEach('time passes', async () => {
       await testEnv.stakingAsset.connect(alice).faucet();
-      const tx = await testEnv.stakingAsset
+      await testEnv.stakingAsset
         .connect(alice)
         .approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await advanceTimeTo(startTimestamp);
       await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
     });
 
@@ -173,8 +173,8 @@ describe('StakingPool.token', () => {
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingAsset.connect(bob).faucet();
-      const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(startTimestamp);
     });
   });
 });

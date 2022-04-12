@@ -92,19 +92,19 @@ describe('StakingPool.withdraw', () => {
     context('stake and withdraw scenario', async () => {
       const stakeAmount = utils.parseEther('1');
 
-      beforeEach('time passes and alice stakes', async () => {  
-        const tx = await testEnv.stakingAsset
+      beforeEach('time passes and alice stakes', async () => {
+        await testEnv.stakingAsset
           .connect(alice)
           .approve(testEnv.stakingPool.address, RAY);
 
-        await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+        await advanceTimeTo(startTimestamp);
         await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       });
 
       it('alice withdraws all', async () => {
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
-      
+
         const withdrawTx = await testEnv.stakingPool
           .connect(alice)
           .withdraw(stakeAmount);
@@ -199,38 +199,38 @@ describe('StakingPool.withdraw', () => {
 
     context('withdraw after pool is closed', async () => {
       beforeEach('owner close pool', async () => {
-        const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-        await advanceTimeTo(await getTimestamp(tx), startTimestamp);
-  
+        await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+        await advanceTimeTo(startTimestamp);
+
         await testEnv.stakingPool.connect(alice).stake(amount.mul(2));
-        const closeTx = await testEnv.stakingPool.connect(deployer).closePool();
-        await advanceTimeTo(await getTimestamp(closeTx), secondTimestamp);
+        await testEnv.stakingPool.connect(deployer).closePool();
+        await advanceTimeTo(secondTimestamp);
       })
-  
+
       it('reverts if withdraws amount exceeds principal', async () => {
         await expect(
           testEnv.stakingPool.connect(alice).withdraw(amount.mul(3))
         ).to.be.revertedWith('NotEnoughPrincipal');
       });
-  
+
       it('alice withdraws all', async () => {
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
-      
+
         const withdrawTx = await testEnv.stakingPool
           .connect(alice)
           .withdraw(amount.mul(2));
-  
+
         const [expectedPoolData, expectedUserData] = expectDataAfterWithdraw(
           poolDataBefore,
           userDataBefore,
           await getTimestamp(withdrawTx),
           amount.mul(2)
         );
-  
+
         const poolDataAfter = await getPoolData(testEnv);
         const userDataAfter = await getUserData(testEnv, alice);
-  
+
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
       });
@@ -241,26 +241,26 @@ describe('StakingPool.withdraw', () => {
         await expect(testEnv.stakingPool.connect(alice).stake(amount)
         ).to.be.revertedWith('Closed');
       });
-  
-  
+
+
       it('alice withdraws partial', async () => {
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
-      
+
         const withdrawTx = await testEnv.stakingPool
           .connect(alice)
           .withdraw(amount);
-  
+
         const [expectedPoolData, expectedUserData] = expectDataAfterWithdraw(
           poolDataBefore,
           userDataBefore,
           await getTimestamp(withdrawTx),
           amount
         );
-  
+
         const poolDataAfter = await getPoolData(testEnv);
         const userDataAfter = await getUserData(testEnv, alice);
-  
+
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
       });

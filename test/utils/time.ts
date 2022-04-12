@@ -32,7 +32,7 @@ export function toTimestamp(
 export function roundStartTimestamp(roundData: InitRoundData) {
   return BigNumber.from(
     Date.UTC(roundData.year, roundData.month - 1, roundData.day, roundData.hour, roundData.minute) /
-      1000
+    1000
   );
 }
 
@@ -45,10 +45,9 @@ export async function advanceTime(secondsToIncrease: number) {
   return await waffle.provider.send('evm_mine', []);
 }
 
-export async function advanceTimeTo(current: BigNumber, target: BigNumber) {
-  const secondsToIncrease = target.sub(current).toNumber();
-  await waffle.provider.send('evm_increaseTime', [secondsToIncrease]);
-  return await waffle.provider.send('evm_mine', []);
+export async function advanceTimeTo(targetInput: BigNumber | number) {
+  const target = (targetInput instanceof BigNumber) ? targetInput.toNumber() : targetInput;
+  return await waffle.provider.send('evm_mine', [target]);
 }
 
 export async function advanceBlockTo(to: number) {
