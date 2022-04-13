@@ -87,7 +87,7 @@ describe('StakingPool.settings', () => {
 
     it('success', async () => {
       const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
-      expect(tx)
+      await expect(tx)
         .to.emit(testEnv.rewardAsset, 'Transfer')
         .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
     });
