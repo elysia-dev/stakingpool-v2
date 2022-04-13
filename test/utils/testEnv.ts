@@ -53,8 +53,8 @@ export const setTestEnv = async (): Promise<TestEnv> => {
     ...(<TestEnv>{}),
   };
 
-  testEnv.rewardAsset = await setRewardAsset();
   testEnv.stakingAsset = await setStakingAsset();
+  testEnv.rewardAsset = await setRewardAsset();
 
   testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset, testEnv.rewardAsset);
 
