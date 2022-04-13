@@ -107,8 +107,8 @@ describe('StakingPool.claim', () => {
   });
 
 
-  context('claim after pool is closed', async () => {
-    beforeEach('init the pool and close the pool', async () => {
+  context('when a new pool starts and Alice stakes', async () => {
+    beforeEach('init the pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
