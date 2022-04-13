@@ -22,7 +22,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   struct PoolData {
-    uint8 rewardPerSecondReduceRate;
     uint32 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
@@ -165,7 +164,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
       _poolData.updateRewardPerSecond();
     }
     uint256 reward = _poolData.getUserReward(user);
-    if (reward == 0) revert ZeroReward() ;
+    if (reward == 0) revert ZeroReward();
 
     _poolData.userReward[user] = 0;
     _poolData.userIndex[user] = _poolData.getRewardIndex();
@@ -186,7 +185,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   function initNewPool(
     uint256 rewardPerSecond,
     uint256 startTimestamp,
-    uint32 duration
+    uint256 duration
   ) external override onlyAdmin {
     if (_poolData.isFinished == true) revert Finished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
