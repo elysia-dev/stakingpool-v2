@@ -5,7 +5,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterStake, expectDataAfterWithdraw } from './utils/expect';
+import { expectDataAfterStake, expectDataAfterWithdraw, updatePoolData } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 
 const { loadFixture } = waffle;
@@ -18,36 +18,17 @@ describe('StakingPool.withdraw', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
 
-  const firstRound = {
-    rewardPersecond: BigNumber.from(utils.parseEther('1')),
-    year: BigNumber.from(2022),
-    month: BigNumber.from(7),
-    day: BigNumber.from(7),
-    duration: BigNumber.from(30).mul(SECONDSPERDAY),
-  };
+  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
+  const year = BigNumber.from(2022);
+  const month_1 = BigNumber.from(7);
+  const day_1 = BigNumber.from(7);
+  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const startTimestamp = toTimestamp(
-    firstRound.year,
-    firstRound.month,
-    firstRound.day,
-    BigNumber.from(10)
-  );
+  const month_2 = BigNumber.from(7);
+  const day_2 = BigNumber.from(8);
 
-  const secondRoundInit = {
-    rewardPersecond: BigNumber.from(utils.parseEther('1')),
-    year: BigNumber.from(2022),
-    month: BigNumber.from(7),
-    day: BigNumber.from(8),
-    duration: BigNumber.from(30).mul(SECONDSPERDAY),
-  };
-
-  const secondTimestamp = toTimestamp(
-    secondRoundInit.year,
-    secondRoundInit.month,
-    secondRoundInit.day,
-    BigNumber.from(10)
-  );
-
+  const firstTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
+  const secondTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
   const amount = ethers.utils.parseEther('1');
 
   async function fixture() {
@@ -76,7 +57,7 @@ describe('StakingPool.withdraw', () => {
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
-        .initNewPool(firstRound.rewardPersecond, startTimestamp, firstRound.duration);
+        .initNewPool(rewardPersecond, firstTimestamp, duration);
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingAsset.connect(bob).faucet();
@@ -97,7 +78,7 @@ describe('StakingPool.withdraw', () => {
           .connect(alice)
           .approve(testEnv.stakingPool.address, RAY);
 
-        await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+        await advanceTimeTo(await getTimestamp(tx), firstTimestamp);
         await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       });
 
@@ -160,7 +141,7 @@ describe('StakingPool.withdraw', () => {
           poolDataBefore,
           userDataBefore,
           await getTimestamp(withdrawAllTx),
-          ethers.constants.MaxUint256
+          ethers.constants.MaxUint256,
         );
 
         const poolDataAfter = await getPoolData(testEnv);
@@ -200,7 +181,7 @@ describe('StakingPool.withdraw', () => {
     context('withdraw after pool is closed', async () => {
       beforeEach('owner close pool', async () => {
         const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-        await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+        await advanceTimeTo(await getTimestamp(tx), firstTimestamp);
   
         await testEnv.stakingPool.connect(alice).stake(amount.mul(2));
         const closeTx = await testEnv.stakingPool.connect(deployer).closePool();
@@ -263,6 +244,119 @@ describe('StakingPool.withdraw', () => {
   
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
         expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
+    });
+
+    context('rewardPerSecond is changed', async () => {
+      beforeEach('deploy staking pool and init pool', async () => {
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+        await testEnv.stakingPool
+          .connect(deployer)
+          .initNewPool(rewardPersecond, firstTimestamp, duration);
+        await testEnv.stakingAsset.connect(alice).faucet();
+        const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+        await advanceTimeTo(await getTimestamp(tx), firstTimestamp);
+        await testEnv.stakingPool.connect(alice).stake(amount.mul(3));
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
+      });
+
+      it('rewardPerSecond is changed and withdraw all', async () => {        
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          rewardPersecond
+        );
+
+        const withdrawTx = await testEnv.stakingPool
+          .connect(alice)
+          .withdraw(amount.mul(3));
+
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterWithdraw(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(withdrawTx),
+          amount.mul(3)
+        );
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
+
+      it('rewardPerSecond is changed and withdraw partial', async () => {
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+  
+  
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          rewardPersecond
+        );
+  
+        const withdrawTx = await testEnv.stakingPool
+          .connect(alice)
+          .withdraw(amount);
+  
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterWithdraw(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(withdrawTx),
+          amount
+        );
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
+
+      it('rewardPerSecond is changed and stake and withdraw', async () => {
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+  
+  
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          rewardPersecond
+        );
+
+        const stakeTx = await testEnv.stakingPool.connect(alice).stake(amount.mul(2));
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(stakeTx),
+          amount.mul(2)
+        );
+
+        const withdrawTx = await testEnv.stakingPool.connect(alice).withdraw(amount);
+        const [expectedPoolData_3, expectedUserData_3] = expectDataAfterWithdraw(
+          expectedPoolData_2,
+          expectedUserData_2,
+          await getTimestamp(withdrawTx),
+          amount
+        );
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).eql(expectedPoolData_3);
+        expect(userDataAfter).eql(expectedUserData_3);
       });
     });
   });
