@@ -45,7 +45,7 @@ library ERC20Metadata {
   }
 
   // attempts to extract the token symbol. if it does not implement symbol, returns a symbol derived from the address
-  function tokenSymbol(address token) internal view returns (string memory) {
+  function tokenSymbol(address token) external view returns (string memory) {
     string memory symbol = callAndParseStringReturn(token, IERC20Metadata.symbol.selector);
     if (bytes(symbol).length == 0) {
       // fallback to 6 uppercase hex of address
@@ -55,7 +55,7 @@ library ERC20Metadata {
   }
 
   // attempts to extract the token name. if it does not implement name, returns a name derived from the address
-  function tokenName(address token) internal view returns (string memory) {
+  function tokenName(address token) external view returns (string memory) {
     string memory name = callAndParseStringReturn(token, IERC20Metadata.name.selector);
     if (bytes(name).length == 0) {
       // fallback to full hex of address
