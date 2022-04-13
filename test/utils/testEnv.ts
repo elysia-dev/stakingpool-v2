@@ -28,7 +28,7 @@ const setStakingAsset = async (): Promise<StakingAsset> => {
     'StakingAsset'
   )) as StakingAsset__factory;
 
-  stakingAsset = await stakingAssetFactory.deploy();
+  stakingAsset = await stakingAssetFactory.deploy('StakingAsset', 'STAKING');
 
   return stakingAsset;
 };
