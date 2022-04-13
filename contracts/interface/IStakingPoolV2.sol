@@ -10,6 +10,7 @@ interface IStakingPoolV2 {
   error ZeroPrincipal();
   error Finished();
   error Closed();
+  error Emergency();
 
   event Stake(
     address indexed user,

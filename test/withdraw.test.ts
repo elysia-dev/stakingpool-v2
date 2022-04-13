@@ -229,7 +229,6 @@ describe('StakingPool.withdraw', () => {
           duration,
           false
         );
-  
         const poolDataAfter = await getPoolData(testEnv);
         const userDataAfter = await getUserData(testEnv, alice);
   
@@ -407,6 +406,50 @@ describe('StakingPool.withdraw', () => {
         expect(userDataAfter).to.be.equalUserData(expectedUserData_3);
       });
       
+    });
+
+    context('in case of emergency', async () => {
+      beforeEach('init the pool and alice stakes', async () => {
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+        await testEnv.stakingPool
+          .connect(deployer)
+          .initNewPool(
+            rewardPersecond,
+            firstTimestamp,
+            duration
+          );
+        await testEnv.stakingAsset.connect(alice).faucet();
+        const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+        await advanceTimeTo(await getTimestamp(tx), firstTimestamp);
+        await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+      });
+  
+      it('sucess if alice withdraws in an emergency', async () => {
+        await testEnv.stakingPool.connect(deployer).setEmergency(true);
+
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+      
+        const withdrawTx = await testEnv.stakingPool
+          .connect(alice)
+          .withdraw(stakeAmount);
+  
+        const [expectedPoolData, expectedUserData] = expectDataAfterWithdraw(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(withdrawTx),
+          stakeAmount,
+          nextRewardPersecond,
+          duration,
+          false
+        );
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).to.eql(expectedPoolData);
+        expect(userDataAfter).to.eql(expectedUserData);
+      });
     });
   });
 });

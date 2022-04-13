@@ -39,8 +39,6 @@ describe('StakingPool.claim', () => {
   const passTimestamp = toTimestamp(year, month_pass, day_pass, BigNumber.from(10));
   const inputAmount = utils.parseEther('100');
   const nextRewardPersecond = inputAmount.div(duration);
-
-
   const amount = ethers.utils.parseEther('1');
 
   async function fixture() {
@@ -273,6 +271,31 @@ describe('StakingPool.claim', () => {
         expect(poolDataAfter).to.be.equalPoolData(expectedPoolData_3);
         expect(userDataAfter).to.be.equalUserData(expectedUserData_3);
       });
+    });
+  });
+
+  context('in case of emergency', async () => {
+    beforeEach('init the pool and alice stakes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingPool
+        .connect(deployer)
+        .initNewPool(
+          rewardPersecond,
+          firstRoundStartTimestamp,
+          duration
+        );
+      await testEnv.stakingAsset.connect(alice).faucet();
+      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+      await testEnv.stakingPool.connect(alice).stake(amount);
+    });
+
+    it('revert if alice claims in an emergency', async () => {
+      await testEnv.stakingPool.connect(deployer).setEmergency(true);
+      await expect(
+        testEnv.stakingPool.connect(alice).claim()
+      ).to.be.revertedWith('Emergency');
     });
   });
 });

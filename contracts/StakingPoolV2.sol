@@ -22,7 +22,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   struct PoolData {
-    uint32 duration;
+    uint256 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
     uint256 startTimestamp;
@@ -35,8 +35,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     mapping(address => uint256) userPrincipal;
     bool isOpened;
     bool isFinished;
-  }
+  } 
 
+  bool internal emergencyStop = false;
   address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
@@ -160,6 +161,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   function _claim(address user) internal {
+    if(emergencyStop == true) revert Emergency();
     if(_poolData.isOpened == true && block.timestamp > _poolData.endTimestamp) {
       _poolData.updateRewardPerSecond();
     }
@@ -206,13 +208,17 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.isFinished = true;
   }
 
+  function retrieveResidue() external onlyAdmin {
+    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal);
+  }
+
+  function setEmergency(bool stop) external onlyAdmin {
+    emergencyStop = stop;
+  } 
+
   function setNextReward(uint256 amount) external onlyAdmin {
     _poolData.nextRewardAmount = amount;
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), amount);
-  }
-
-  function retrieveResidue() external onlyAdmin {
-    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal);
   }
 
   /***************** Modifier ******************/
@@ -226,5 +232,4 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
     _;
   }
-
 }
