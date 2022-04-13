@@ -94,7 +94,7 @@ describe('StakingPool.token', () => {
 
     it('wrapper tokens are minted in staking', async () => {
       const tx = await testEnv.stakingPool.connect(alice).stake(utils.parseEther('100'));
-      expect(tx)
+      await expect(tx)
         .to.emit(testEnv.stakingPool, 'Transfer')
         .withArgs(ZERO_ADDRESS, alice.address, utils.parseEther('100'));
       expect(await testEnv.stakingPool.balanceOf(alice.address)).to.be.equal(
@@ -107,7 +107,7 @@ describe('StakingPool.token', () => {
       const tx = await testEnv.stakingPool
         .connect(alice)
         .withdraw(utils.parseEther('100'));
-      expect(tx)
+      await expect(tx)
         .to.emit(testEnv.stakingPool, 'Transfer')
         .withArgs(alice.address, ZERO_ADDRESS, utils.parseEther('100'));
     });

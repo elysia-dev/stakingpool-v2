@@ -85,5 +85,4 @@ library StakingPoolLogicV2 {
     poolData.duration = uint32(duration);
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
-
 }
