@@ -1,11 +1,11 @@
-import { BigNumber, ContractTransaction, utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -71,25 +71,5 @@ describe('StakingPool.settings', () => {
       expect(poolData.totalPrincipal).to.be.equal(0);
     });
 
-  });
-
-  context('retrieveResidue', async () => {
-    beforeEach('set', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-    });
-
-    it('reverts if general account call', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
-        'OnlyAdmin'
-      );
-    });
-
-    it('success', async () => {
-      const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
-      await expect(tx)
-        .to.emit(testEnv.rewardAsset, 'Transfer')
-        .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
-    });
   });
 });
