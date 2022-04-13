@@ -52,7 +52,7 @@ describe('StakingPool.settings', () => {
         testEnv.stakingPool
           .connect(depositor)
           .initNewPool(rewardPerSecond, startTimestamp, duration)
-      ).to.be.revertedWith('OnlyAdmin');
+      ).to.be.revertedWith('Ownable: caller is not the owner');
     });
 
     it('success', async () => {
@@ -70,7 +70,7 @@ describe('StakingPool.settings', () => {
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
     });
-     
+
   });
 
   context('retrieveResidue', async () => {
@@ -81,7 +81,7 @@ describe('StakingPool.settings', () => {
 
     it('reverts if general account call', async () => {
       await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
-        'OnlyAdmin'
+        'Ownable: caller is not the owner'
       );
     });
 

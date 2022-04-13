@@ -107,7 +107,7 @@ describe('StakingPool.stake', () => {
 
         it('revert if general account close the pool', async () => {
           await expect(testEnv.stakingPool.connect(alice).closePool()
-          ).to.be.revertedWith('OnlyAdmin');
+          ).to.be.revertedWith('Ownable: caller is not the owner');
         });
 
         it('revert if open the pool already finished', async () => {
