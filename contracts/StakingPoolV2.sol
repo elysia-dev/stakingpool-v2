@@ -207,13 +207,13 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.isFinished = true;
   }
 
-  function inputNextReward(uint256 amount) external onlyAdmin {
+  function setNextReward(uint256 amount) external onlyAdmin {
     _poolData.nextRewardAmount = amount;
     SafeERC20.safeTransferFrom(rewardAsset, msg.sender, address(this), amount);
   }
 
   function retrieveResidue() external onlyAdmin {
-    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)));
+    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal);
   }
 
   /***************** Modifier ******************/

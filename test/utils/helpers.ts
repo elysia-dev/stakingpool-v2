@@ -36,39 +36,3 @@ export const getPoolData = async (testEnv: TestEnv) => {
 
   return poolData;
 };
-
-
-export const getSumUserData = async (
-  userBefore: UserData,
-  userAfter: UserData,
-): Promise<UserData> => {
-  const userData = <UserData>{};
-
-  userData.rewardAssetBalance = userBefore.rewardAssetBalance.add(userAfter.rewardAssetBalance);
-  userData.stakingAssetBalance = userBefore.stakingAssetBalance.add(userAfter.stakingAssetBalance);
-  userData.userPrincipal = userBefore.userPrincipal.add(userAfter.userPrincipal);
-  userData.userIndex = userAfter.userIndex;
-  userData.userPreviousReward = userAfter.userPreviousReward;
-  userData.userReward = userBefore.userReward.add(userAfter.userReward)
-
-  return userData;
-};
-
-
-export const getSumPoolData = async (
-  poolBefore: PoolData,
-  poolAfter: PoolData,
-) => {
-  const poolData = <PoolData>{};
-
-  poolData.rewardPerSecond = poolAfter.rewardPerSecond;
-  poolData.rewardIndex = poolAfter.rewardIndex;
-  poolData.startTimestamp = poolAfter.startTimestamp;
-  poolData.endTimestamp = poolAfter.endTimestamp;
-  poolData.totalPrincipal = poolBefore.totalPrincipal.add(poolAfter.totalPrincipal);
-  poolData.lastUpdateTimestamp = poolAfter.lastUpdateTimestamp;
-  poolData.stakingAssetBalance = poolBefore.stakingAssetBalance.add(poolAfter.stakingAssetBalance);
-  poolData.rewardAssetBalance = poolBefore.rewardAssetBalance.add(poolAfter.rewardAssetBalance);
-
-  return poolData;
-};

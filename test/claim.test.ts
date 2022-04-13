@@ -115,8 +115,8 @@ describe('StakingPool.claim', () => {
   });
 
 
-  context('claim after pool is closed', async () => {
-    beforeEach('init the pool and close the pool', async () => {
+  context('when a new pool starts and Alice stakes 1ETH', async () => {
+    beforeEach('init the pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
@@ -197,24 +197,8 @@ describe('StakingPool.claim', () => {
     });
 
     context('change rewardPerSecond', async () => {
-      beforeEach('init the pool and stake in pool', async () => {
-        await testEnv.rewardAsset.connect(deployer).faucet();
-        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-        await testEnv.stakingPool
-          .connect(deployer)
-          .initNewPool(
-            rewardPersecond,
-            firstRoundStartTimestamp,
-            duration
-          );
-        await testEnv.stakingAsset.connect(alice).faucet();
-        const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-        await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
-        await testEnv.stakingPool.connect(alice).stake(amount);
-      });
-
       it('rewardPerSecond is changed and claim', async () => {
-        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+        const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
@@ -248,7 +232,7 @@ describe('StakingPool.claim', () => {
 
       it('rewardPerSecond is changed and stake and claim', async () => {
         const stakeAmount = utils.parseEther('10');
-        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+        const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);

@@ -271,7 +271,7 @@ describe('StakingPool.stake', () => {
     });
     
     it('rewardPerSecond is changed and stake in pool', async () => {
-      const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+      const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
@@ -306,7 +306,7 @@ describe('StakingPool.stake', () => {
     });
 
     it('rewardPerSecond is changed and stake in pool twice', async () => {
-      const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+      const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);

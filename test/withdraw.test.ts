@@ -287,7 +287,7 @@ describe('StakingPool.withdraw', () => {
       });
 
       it('rewardPerSecond is changed and withdraw all', async () => {
-        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+        const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
@@ -324,7 +324,7 @@ describe('StakingPool.withdraw', () => {
       });
 
       it('rewardPerSecond is changed and withdraw partial', async () => {
-        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+        const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
@@ -361,7 +361,7 @@ describe('StakingPool.withdraw', () => {
       });
 
       it('rewardPerSecond is changed and stake and withdraw', async () => {
-        const tx = await testEnv.stakingPool.connect(deployer).inputNextReward(inputAmount); 
+        const tx = await testEnv.stakingPool.connect(deployer).setNextReward(inputAmount); 
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
