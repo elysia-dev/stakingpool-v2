@@ -217,7 +217,15 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   function retrieveResidue() external onlyOwner {
-    SafeERC20.safeTransfer(rewardAsset, _msgSender(), rewardAsset.balanceOf(address(this)));
+    uint256 residueAmount;
+
+    if (stakingAsset == rewardAsset) {
+      residueAmount = rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal;
+    } else {
+      residueAmount = rewardAsset.balanceOf(address(this));
+    }
+
+    SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
   }
 
   function setEmergency(bool stop) external onlyOwner {
