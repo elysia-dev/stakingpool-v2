@@ -1,4 +1,4 @@
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 
@@ -107,3 +107,4 @@ describe('StakingPool.settings', () => {
     })
   })
 });
+
