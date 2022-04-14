@@ -2,6 +2,13 @@
 pragma solidity 0.8.4;
 
 interface INextStakingPool {
-    function setPreviousUserPrincipal(uint256 amount) external;
-    function setPreviousTotalPrincipal(uint256 amount) external;
+  error OnlyAdmin();
+  error Finished();
+  function setPreviousPoolData(address user, uint256 amount) external;
+
+  function initNewPool(
+    uint256 rewardPerSecond,
+    uint256 startTimestamp,
+    uint32 duration
+  ) external;
 }

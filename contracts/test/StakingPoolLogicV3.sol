@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
-import '../StakingPoolV2.sol';
+import './StakingPoolV3.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-library StakingPoolLogicV2 {
-  using StakingPoolLogicV2 for StakingPoolV2.PoolData;
+library StakingPoolLogicV3 {
+  using StakingPoolLogicV3 for StakingPoolV3.PoolData;
 
   event UpdateStakingPool(
     address indexed user,
@@ -13,7 +13,7 @@ library StakingPoolLogicV2 {
     uint256 totalPrincipal
   );
 
-  function getRewardIndex(StakingPoolV2.PoolData storage poolData) internal view returns (uint256) {
+  function getRewardIndex(StakingPoolV3.PoolData storage poolData) internal view returns (uint256) {
     uint256 currentTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
       : poolData.endTimestamp;
@@ -33,7 +33,7 @@ library StakingPoolLogicV2 {
     return poolData.rewardIndex + rewardIndexDiff;
   }
 
-  function getUserReward(StakingPoolV2.PoolData storage poolData, address user)
+  function getUserReward(StakingPoolV3.PoolData storage poolData, address user)
     internal
     view
     returns (uint256)
@@ -49,8 +49,9 @@ library StakingPoolLogicV2 {
     return result;
   }
 
+
   function updateStakingPool(
-    StakingPoolV2.PoolData storage poolData,
+    StakingPoolV3.PoolData storage poolData,
     address user
   ) internal {
     poolData.userReward[user] = getUserReward(poolData, user);
@@ -62,7 +63,7 @@ library StakingPoolLogicV2 {
   }
 
   function initRound(
-    StakingPoolV2.PoolData storage poolData,
+    StakingPoolV3.PoolData storage poolData,
     uint256 rewardPerSecond,
     uint256 roundStartTimestamp,
     uint32 duration

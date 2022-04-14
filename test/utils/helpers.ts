@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
+import TestNextVersionEnv from '../types/TestNextVersionEnv';
 import UserData from '../types/UserData';
 
 export const getUserData = async (
@@ -38,37 +39,38 @@ export const getPoolData = async (testEnv: TestEnv) => {
 };
 
 
-export const getSumUserData = async (
-  userBefore: UserData,
-  userAfter: UserData,
+export const getUserData_ = async (
+  testNextVersionEnv: TestNextVersionEnv,
+  user: Wallet,
 ): Promise<UserData> => {
   const userData = <UserData>{};
+  console.log('nextVersion user Data');
 
-  userData.rewardAssetBalance = userBefore.rewardAssetBalance.add(userAfter.rewardAssetBalance);
-  userData.stakingAssetBalance = userBefore.stakingAssetBalance.add(userAfter.stakingAssetBalance);
-  userData.userPrincipal = userBefore.userPrincipal.add(userAfter.userPrincipal);
-  userData.userIndex = userAfter.userIndex;
-  userData.userPreviousReward = userAfter.userPreviousReward;
-  userData.userReward = userBefore.userReward.add(userAfter.userReward)
+  const contractUserData = await testNextVersionEnv.stakingPool.getUserData(user.address);
+
+  userData.rewardAssetBalance = await testNextVersionEnv.rewardAsset.balanceOf(user.address);
+  userData.stakingAssetBalance = await testNextVersionEnv.stakingAsset.balanceOf(user.address);
+  userData.userPrincipal = contractUserData.userPrincipal;
+  userData.userIndex = contractUserData.userIndex;
+  userData.userPreviousReward = contractUserData.userReward;
+  userData.userReward = await testNextVersionEnv.stakingPool.getUserReward(user.address);
 
   return userData;
 };
 
-
-export const getSumPoolData = async (
-  poolBefore: PoolData,
-  poolAfter: PoolData,
-) => {
+export const getPoolData_ = async (testNextVersionEnv: TestNextVersionEnv) => {
+  console.log('nextVersion pool Data');
   const poolData = <PoolData>{};
+  const contractPoolData = await testNextVersionEnv.stakingPool.getPoolData();
 
-  poolData.rewardPerSecond = poolAfter.rewardPerSecond;
-  poolData.rewardIndex = poolAfter.rewardIndex;
-  poolData.startTimestamp = poolAfter.startTimestamp;
-  poolData.endTimestamp = poolAfter.endTimestamp;
-  poolData.totalPrincipal = poolBefore.totalPrincipal.add(poolAfter.totalPrincipal);
-  poolData.lastUpdateTimestamp = poolAfter.lastUpdateTimestamp;
-  poolData.stakingAssetBalance = poolBefore.stakingAssetBalance.add(poolAfter.stakingAssetBalance);
-  poolData.rewardAssetBalance = poolBefore.rewardAssetBalance.add(poolAfter.rewardAssetBalance);
+  poolData.rewardPerSecond = contractPoolData.rewardPerSecond;
+  poolData.rewardIndex = contractPoolData.rewardIndex;
+  poolData.startTimestamp = contractPoolData.startTimestamp;
+  poolData.endTimestamp = contractPoolData.endTimestamp;
+  poolData.totalPrincipal = contractPoolData.totalPrincipal;
+  poolData.lastUpdateTimestamp = contractPoolData.lastUpdateTimestamp;
+  poolData.stakingAssetBalance = await testNextVersionEnv.stakingAsset.balanceOf(testNextVersionEnv.stakingPool.address);
+  poolData.rewardAssetBalance = await testNextVersionEnv.rewardAsset.balanceOf(testNextVersionEnv.stakingPool.address);
 
   return poolData;
 };

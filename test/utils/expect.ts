@@ -191,69 +191,90 @@ export function expectDataAfterMigrate(
   toPoolData: PoolData,
   toUserData: UserData,
   txTimeStamp: BigNumber,
-  amount: BigNumber
 ): [[PoolData, UserData], [PoolData, UserData]] {
   let newFromPoolData = { ...fromPoolData } as PoolData;
   let newFromUserData = { ...fromUserData } as UserData;
 
-  const withdrawAmount = fromUserData.userPrincipal.sub(amount);
+  const amount = fromUserData.userPrincipal;
 
-  if (!withdrawAmount.eq(0)) {
-    [newFromPoolData, newFromUserData] = calculateDataAfterUpdate(
-      fromPoolData,
-      fromUserData,
-      txTimeStamp
-    );
-  }
+  [newFromPoolData, newFromUserData] = calculateDataAfterUpdate(
+    fromPoolData,
+    fromUserData,
+    txTimeStamp
+  );
+  
   const [newToPoolData, newToUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
     toPoolData,
     toUserData,
     txTimeStamp
   );
 
-  // reset previous user data
-  newFromUserData.userPreviousReward =
-    newFromUserData.userPrincipal =
-    newFromUserData.userReward =
-      BigNumber.from(0);
+  // ======== change user data =======
+    // -------- from pool -------
+    // reset previous user data
+    newFromUserData.userPreviousReward = newFromUserData.userPrincipal =
+    newFromUserData.userReward = BigNumber.from(0);
 
-  // update user index for claim
-  const newUserIndexInFromPool = calculateRewardIndex(fromPoolData, txTimeStamp);
-  newFromUserData.userIndex = newUserIndexInFromPool;
+    // update user index for claim 
+    const newUserIndexInFromPool = calculateRewardIndex(fromPoolData, txTimeStamp);
+    newFromUserData.userIndex = newUserIndexInFromPool;
+  
+    // sub user staking asset balance
+    const newUserStakingAssetBalanceInFromPool = fromUserData.stakingAssetBalance.sub(amount);
+    newFromUserData.stakingAssetBalance = newUserStakingAssetBalanceInFromPool;
 
-  // withdraw user staking asset balance
-  const newUserStakingAssetBalance = fromUserData.stakingAssetBalance.add(withdrawAmount);
-  newFromUserData.stakingAssetBalance = newToUserData.stakingAssetBalance =
-    newUserStakingAssetBalance;
+    // sub user reward asset
+    const accruedPreviousPoolReward = calculateUserReward(fromPoolData, fromUserData, txTimeStamp);
+    const newUserRewardAssetBalance = fromUserData.rewardAssetBalance.add(accruedPreviousPoolReward);
+    newFromUserData.rewardAssetBalance = newUserRewardAssetBalance;
 
-  // withdraw total pool staking asset balance
-  const newPoolStakingAssetBalance = fromPoolData.stakingAssetBalance.sub(withdrawAmount);
-  newFromPoolData.stakingAssetBalance = newToPoolData.stakingAssetBalance =
-    newPoolStakingAssetBalance;
 
-  // sub previous user principal to the previous pool
-  const newTotalPrincipalInFromPool = fromPoolData.totalPrincipal.sub(fromUserData.userPrincipal);
-  newFromPoolData.totalPrincipal = newTotalPrincipalInFromPool;
+    // --------- to pool -------
+    // update user index
+    const newUserIndexInToPool = calculateRewardIndex(toPoolData, txTimeStamp);
+    newFromUserData.userIndex = newUserIndexInToPool;
 
-  // add previous user principal to the new pool
-  const newUserPrincipalInToPool = toUserData.userPrincipal.add(amount);
-  newToUserData.userPrincipal = newUserPrincipalInToPool;
+    // add previous user principal to the new pool
+    const newUserPrincipalInToPool = toUserData.userPrincipal.add(amount);
+    newToUserData.userPrincipal = newUserPrincipalInToPool;
 
-  // add previous pool total principal to the new pool
-  const newTotalPrincipalInToPool = toPoolData.totalPrincipal.add(amount);
-  newToPoolData.totalPrincipal = newTotalPrincipalInToPool;
+    // sub user staking asset balance previous pool
+    const newUserStakingAssetBalanceInToPool = toUserData.stakingAssetBalance.add(amount);
+    newFromUserData.stakingAssetBalance = newUserStakingAssetBalanceInToPool;
 
-  // add accrued previous pool reward to user reward asset balance
-  const accruedPreviousPoolReward = calculateUserReward(fromPoolData, fromUserData, txTimeStamp);
-  const newUserRewardAssetBalance = fromUserData.rewardAssetBalance.add(accruedPreviousPoolReward);
-  newFromUserData.rewardAssetBalance = newToUserData.rewardAssetBalance = newUserRewardAssetBalance;
 
-  // sub accrued previous pool reward from pool reward asset balance
-  const newPoolRewardAssetBalance = fromPoolData.rewardAssetBalance.sub(accruedPreviousPoolReward);
-  newFromPoolData.rewardAssetBalance = newToPoolData.rewardAssetBalance = newPoolRewardAssetBalance;
+
+  // ======== change pool data =======
+    // -------- from pool -------
+    // sub total pool staking asset balance
+    const newPoolStakingAssetBalanceInFromPool = fromPoolData.stakingAssetBalance.sub(amount);
+    newFromPoolData.stakingAssetBalance = newPoolStakingAssetBalanceInFromPool;
+
+    // sub previous user principal from the previous pool
+    const newTotalPrincipalInFromPool = fromPoolData.totalPrincipal.sub(fromUserData.userPrincipal);
+    newFromPoolData.totalPrincipal = newTotalPrincipalInFromPool;
+
+    const newPoolRewardAssetBalance = fromPoolData.rewardAssetBalance.sub(accruedPreviousPoolReward);
+    newFromPoolData.rewardAssetBalance = newToPoolData.rewardAssetBalance = newPoolRewardAssetBalance;
+
+  
+    // -------- to pool -------
+    // add previous pool total principal to the new pool
+    const newTotalPrincipalInToPool = toPoolData.totalPrincipal.add(amount);
+    newToPoolData.totalPrincipal = newTotalPrincipalInToPool;
+
+    // add total pool staking asset balance
+    const newPoolStakingAssetBalanceInToPool = fromPoolData.stakingAssetBalance.add(amount);
+    newToPoolData.stakingAssetBalance = newPoolStakingAssetBalanceInToPool;
+
+    const [resultNewPoolData, resultNewUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
+      newToPoolData,
+      newToUserData,
+      txTimeStamp
+    );
 
   return [
     [newFromPoolData, newFromUserData],
-    [newToPoolData, newToUserData],
+    [resultNewPoolData, resultNewUserData],
   ];
 }

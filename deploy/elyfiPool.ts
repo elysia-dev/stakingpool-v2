@@ -20,6 +20,6 @@ const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment
     network: hre.network.name,
   });
 };
-elyfiPool.tags = ['elyfiPool'];
+elyfiPool.tags = ['elyfiPool', 'test'];
 
 export default elyfiPool;
