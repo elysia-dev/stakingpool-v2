@@ -5,6 +5,7 @@ import './interface/IStakingPoolV2.sol';
 import './interface/INextStakingPool.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "hardhat/console.sol";
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -139,12 +140,12 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (_poolData.userPrincipal[msg.sender] == 0) revert ZeroPrincipal();
     uint256 amount = _poolData.userPrincipal[msg.sender];
 
+    
     // Claim reward
     if (_poolData.getUserReward(msg.sender) != 0) {
       _claim(msg.sender);
     }
 
-    // Update current pool
     _poolData.updateStakingPool(msg.sender);
 
     // Migrate user, total principal 
@@ -152,14 +153,13 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.totalPrincipal -= amount;
 
     // Migrate
-    _migrateFor(_nextContractAddr, amount);
+    bool result = _migrateTo(_nextContractAddr, amount);
 
     // Call next contract
     INextStakingPool nextContract = INextStakingPool(_nextContractAddr);
 
     // Migrate next contract of user, total principal
-    nextContract.setPreviousUserPrincipal(amount);
-    nextContract.setPreviousTotalPrincipal(amount);
+    nextContract.setPreviousPoolData(msg.sender, amount);
 
     emit Migrate(msg.sender);
   }
@@ -232,13 +232,10 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   
   function closePool() external onlyAdmin {
     if (_poolData.isOpened == false) revert Closed();
+   // _poolData.rewardIndex = _poolData.getRewardIndex();
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;
-  }
-
-  function setNextContractAddr(address addr) external onlyAdmin {
-    _nextContractAddr = addr;
   }
 
   function setNextContractAddr(address addr) external onlyAdmin {

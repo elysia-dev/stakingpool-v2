@@ -2,12 +2,14 @@ import { ethers } from 'hardhat';
 import {
   StakingAsset,
   RewardAsset,
+  StakingPoolV3,
+  StakingPoolV3__factory,
   StakingPoolV2,
   StakingPoolV2__factory,
   StakingAsset__factory,
   RewardAsset__factory,
 } from '../../typechain';
-import TestEnv from '../types/TestEnv';
+import {TestEnv, MigrateTestEnv} from '../types/TestEnv';
 
 const setRewardAsset = async (): Promise<RewardAsset> => {
   let rewardAsset: RewardAsset;
@@ -48,6 +50,21 @@ const setStakingPool = async (
   return stakingPool;
 };
 
+const migrateSetStakingPool = async (
+  stakingAsset: StakingAsset,
+  rewardAsset: RewardAsset
+): Promise<StakingPoolV3> => {
+  let stakingPool: StakingPoolV3;
+
+  const stakingPoolFactory = (await ethers.getContractFactory(
+    'StakingPoolV3'
+  )) as StakingPoolV3__factory;
+
+  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address, rewardAsset.address);
+
+  return stakingPool;
+};
+
 export const setTestEnv = async (): Promise<TestEnv> => {
   const testEnv: TestEnv = {
     ...(<TestEnv>{}),
@@ -60,3 +77,27 @@ export const setTestEnv = async (): Promise<TestEnv> => {
 
   return testEnv;
 };
+
+export const setMigrateTestEnv = async (testEnv:TestEnv): Promise<MigrateTestEnv> => {
+  const migrateTestEnv: MigrateTestEnv = {
+    ...(<TestEnv>testEnv),
+    ...(<MigrateTestEnv>{}),
+  };
+  migrateTestEnv.newStakingPool = await migrateSetStakingPool(testEnv.stakingAsset, testEnv.rewardAsset);
+
+  return migrateTestEnv;
+}
+
+// export const setMigrateTestEnv = async (): Promise<MigrateTestEnv> => {
+//   const migrateTestEnv: MigrateTestEnv = {
+//     ...(<MigrateTestEnv>{}),
+//   };
+
+//   migrateTestEnv.rewardAsset = await setRewardAsset();
+//   migrateTestEnv.stakingAsset = await setStakingAsset();
+
+//   migrateTestEnv.stakingPool = await setStakingPool(migrateTestEnv.stakingAsset, migrateTestEnv.rewardAsset);
+//   migrateTestEnv.newStakingPool = await migrateSetStakingPool(migrateTestEnv.stakingAsset, migrateTestEnv.rewardAsset);
+
+//   return migrateTestEnv;
+// };

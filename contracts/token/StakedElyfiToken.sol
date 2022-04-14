@@ -102,8 +102,8 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
   
   /// @dev Allow a user to migrate underlying tokens to next new contract
   /// @notice This function is based on the openzeppelin ERC20Wrapper
-  function _migrateFor(address toContractAddr, uint256 amount) internal virtual returns (bool) {
-    SafeERC20.safeTransferFrom(underlying, address(this), address(toContractAddr), amount);
+  function _migrateTo(address toContractAddr, uint256 amount) internal virtual returns (bool) {
+    SafeERC20.safeTransfer(underlying, toContractAddr, amount);
     return true;
   }
 

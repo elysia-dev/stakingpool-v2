@@ -6,7 +6,7 @@ import { setTestEnv } from './utils/testEnv';
 import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
-import TestEnv from './types/TestEnv';
+import {TestEnv} from './types/TestEnv';
 
 const { loadFixture } = waffle;
 
