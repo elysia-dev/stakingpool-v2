@@ -22,6 +22,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   struct PoolData {
+    uint256 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
     uint256 startTimestamp;
@@ -33,8 +34,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     mapping(address => uint256) userPrincipal;
     bool isOpened;
     bool isFinished;
-  }
+  } 
 
+  bool internal emergencyStop = false;
   address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
@@ -160,6 +162,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
   }
 
   function _claim(address user) internal {
+    if(emergencyStop == true) revert Emergency();
     uint256 reward = _poolData.getUserReward(user);
 
     if (reward == 0) revert ZeroReward();
@@ -217,6 +220,10 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal);
   }
 
+  function setEmergency(bool stop) external onlyAdmin {
+    emergencyStop = stop;
+  } 
+
   /***************** Modifier ******************/
 
   modifier onlyAdmin() {
@@ -228,5 +235,4 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
     _;
   }
-
 }

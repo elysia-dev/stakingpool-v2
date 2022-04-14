@@ -1,4 +1,4 @@
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 
@@ -104,6 +104,32 @@ describe('StakingPool.settings', () => {
       await expect(
         testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('1')), BigNumber.from(30).mul(SECONDSPERDAY))
       ).to.be.revertedWith('OnlyAdmin');
-    })
-  })
+    });
+  });
+
+  context('in case of emergency', async () => {
+    beforeEach('init the pool and alice stakes', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingPool
+        .connect(deployer)
+        .initNewPool(
+          rewardPerSecond,
+          startTimestamp,
+          duration
+        );
+      await testEnv.stakingAsset.connect(depositor).faucet();
+      const tx = await testEnv.stakingAsset.connect(depositor).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await testEnv.stakingPool.connect(depositor).stake(ethers.utils.parseEther('1'));
+    });
+
+    it('revert if a person not admin set emergency', async () => {
+      await expect(
+        testEnv.stakingPool.connect(depositor).setEmergency(true)
+      ).to.be.revertedWith('OnlyAdmin');
+    });
+  });
+
 });
+
