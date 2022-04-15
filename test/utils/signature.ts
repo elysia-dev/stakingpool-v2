@@ -26,7 +26,7 @@ export const buildDelegationData = (
     },
     domain: {
       // The ERC712 contract name
-      name: 'StakedStakingAssetToken',
+      name: 'StakedStakingAsset',
       version: '1',
       chainId: chainId,
       verifyingContract: verifyingContract,
