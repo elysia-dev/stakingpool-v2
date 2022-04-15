@@ -32,6 +32,7 @@ describe('StakingPool.stake', () => {
   const endTimestamp = toTimestamp(year, month_end, day_end, BigNumber.from(10));
 
   const stakeAmount = utils.parseEther('10');
+  const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 
   async function fixture() {
     return await setTestEnv();
@@ -219,14 +220,14 @@ describe('StakingPool.stake', () => {
     it('rewardPerSecond is changed and stake in pool', async () => {
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
 
       const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
         poolDataBefore,
         userDataBefore,
         await getTimestamp(tx),
         duration,
-        rewardPersecond
+        newRewardPersecond
       );
 
       const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
@@ -247,14 +248,14 @@ describe('StakingPool.stake', () => {
     it('rewardPerSecond is changed and stake in pool twice', async () => {
       const poolDataBefore_1 = await getPoolData(testEnv);
       const userDataBefore_1 = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
       // check stake 1
       const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
         poolDataBefore_1,
         userDataBefore_1,
         await getTimestamp(tx),
         duration,
-        rewardPersecond
+        newRewardPersecond
       );
 
       const stakeTx_1 = await testEnv.stakingPool.connect(alice).stake(stakeAmount);

@@ -34,7 +34,7 @@ describe('StakingPool.claim', () => {
   const firstRoundStartTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
   const secondRoundStartTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
   const thirdRoundStartTimestamp = toTimestamp(year, month_3, day_3, BigNumber.from(10));
-
+  const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 
   const amount = ethers.utils.parseEther('1');
 
@@ -196,14 +196,14 @@ describe('StakingPool.claim', () => {
     it('rewardPerSecond is changed and claim', async () => {
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
 
       const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
         poolDataBefore,
         userDataBefore,
         await getTimestamp(tx),
         duration,
-        rewardPersecond
+        newRewardPersecond
       );
 
       const claimTx = await testEnv.stakingPool.connect(alice).claim();
@@ -223,7 +223,7 @@ describe('StakingPool.claim', () => {
     it('rewardPerSecond is changed and stake and claim', async () => {
       const poolDataBeforeStake = await getPoolData(testEnv);
       const userDataBeforeStake = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(rewardPersecond, duration);
+      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
 
       // stake test
       const [expectedPoolData, expectedUserData] = updatePoolData(
@@ -231,7 +231,7 @@ describe('StakingPool.claim', () => {
         userDataBeforeStake,
         await getTimestamp(tx),
         duration,
-        rewardPersecond
+        newRewardPersecond
       );
 
       const stakeTx = await testEnv.stakingPool.connect(alice).stake(amount);
