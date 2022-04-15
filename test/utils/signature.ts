@@ -26,7 +26,7 @@ export const buildDelegationData = (
     },
     domain: {
       // The ERC712 contract name
-      name: 'StakedElyfiToken',
+      name: 'StakedStakingAssetToken',
       version: '1',
       chainId: chainId,
       verifyingContract: verifyingContract,

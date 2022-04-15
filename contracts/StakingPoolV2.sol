@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.4;
-import './logic/StakingPoolLogicV2.sol';
+import './libraries/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './interface/INextStakingPool.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -13,13 +14,12 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 /// the difference between the user index and the current index by the user balance. User index and the pool
 /// index is updated and aligned with in the staking and withdrawing action.
 /// @author Elysia
-contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
+contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   using StakingPoolLogicV2 for PoolData;
 
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
-    _admin = msg.sender;
   }
 
   struct PoolData {
@@ -215,7 +215,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     uint256 rewardPerSecond,
     uint256 startTimestamp,
     uint256 duration
-  ) external override onlyAdmin {
+  ) external override onlyOwner {
     if (_poolData.isFinished == true) revert Finished();
     (uint256 newRoundStartTimestamp, uint256 newRoundEndTimestamp) = _poolData.initRound(
       rewardPerSecond,
@@ -229,7 +229,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     emit InitPool(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
   }
   
-  function closePool() external onlyAdmin {
+  function closePool() external onlyOwner {
     if (_poolData.isOpened == false) revert Closed();
    // _poolData.rewardIndex = _poolData.getRewardIndex();
     _poolData.endTimestamp = block.timestamp;
@@ -237,20 +237,11 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.isFinished = true;
   }
 
-  function setNextContractAddr(address addr) external onlyAdmin {
-    _nextContractAddr = addr;
-  }
-
-  function retrieveResidue() external onlyAdmin {
-    SafeERC20.safeTransfer(rewardAsset, _admin, rewardAsset.balanceOf(address(this)));
+  function retrieveResidue() external onlyOwner {
+    SafeERC20.safeTransfer(rewardAsset, _msgSender(), rewardAsset.balanceOf(address(this)));
   }
 
   /***************** Modifier ******************/
-
-  modifier onlyAdmin() {
-    if (msg.sender != _admin) revert OnlyAdmin();
-    _;
-  }
 
   modifier stakingInitiated() {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
