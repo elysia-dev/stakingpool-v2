@@ -32,7 +32,7 @@ export function toTimestamp(
 export function roundStartTimestamp(roundData: InitRoundData) {
   return BigNumber.from(
     Date.UTC(roundData.year, roundData.month - 1, roundData.day, roundData.hour, roundData.minute) /
-      1000
+    1000
   );
 }
 

@@ -1,7 +1,69 @@
-import { Wallet } from 'ethers';
+import { BigNumber, Wallet, ethers } from 'ethers';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
+
+export type TestHelperActions = {
+  faucetAndApproveTarget: (wallet: ethers.Wallet, amount: string) => Promise<void>
+  faucetAndApproveReward: (wallet: ethers.Wallet, amount: string) => Promise<void>
+  stake: (wallet: ethers.Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
+  initNewPool: (
+    wallet: ethers.Wallet,
+    rewardPerSecond: BigNumber,
+    startTimestamp: BigNumber,
+    duration: BigNumber,
+  ) => Promise<ethers.ContractTransaction>
+  closePool: (wallet: ethers.Wallet) => Promise<ethers.ContractTransaction>
+}
+
+export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
+  // A target is the token staked.
+  const faucetAndApproveTarget = async (
+    wallet: ethers.Wallet,
+    amount: string,
+  ) => {
+    await testEnv.stakingAsset.connect(wallet).faucet();
+    await testEnv.stakingAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
+  }
+
+  const faucetAndApproveReward = async (
+    wallet: ethers.Wallet,
+    amount: string,
+  ) => {
+    await testEnv.rewardAsset.connect(wallet).faucet();
+    await testEnv.rewardAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
+  }
+
+  const stake = (
+    wallet: ethers.Wallet,
+    amount: BigNumber,
+  ) => {
+    return testEnv.stakingPool.connect(wallet).stake(amount);
+  }
+
+  const initNewPool = async (
+    wallet: ethers.Wallet,
+    rewardPerSecond: BigNumber,
+    startTimestamp: BigNumber,
+    duration: BigNumber,
+  ) => (
+    testEnv.stakingPool
+      .connect(wallet)
+      .initNewPool(rewardPerSecond, startTimestamp, duration)
+  )
+
+  const closePool = (
+    wallet: ethers.Wallet,
+  ) => testEnv.stakingPool.connect(wallet).closePool();
+
+  return {
+    faucetAndApproveReward,
+    faucetAndApproveTarget,
+    stake,
+    initNewPool,
+    closePool,
+  }
+}
 
 export const getUserData = async (
   testEnv: TestEnv,
