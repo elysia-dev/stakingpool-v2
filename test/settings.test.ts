@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { toTimestamp } from './utils/time';
+import { advanceTimeTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -93,18 +93,33 @@ describe('StakingPool.settings', () => {
     });
   });
 
-  context('reset the pool', async () => {
-    it('revert if a person not admin try reset the pool', async () => {
+  context('authority to call extend pool function', async () => {
+    beforeEach('init pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
+      const tx = await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
+      advanceTimeTo(startTimestamp);
+    });
 
+    it('revert if a person not admin try extend the pool', async () => {
+      // TODO 
+      /*
       await expect(
-        testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('1')), BigNumber.from(30).mul(SECONDSPERDAY))
-      ).to.be.revertedWith('Ownable: caller is not the owner');
-    })
-  })
+        testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('2')), BigNumber.from(30).mul(SECONDSPERDAY))
+      ).to.be.revertedWith('OnlyAdmin');
+      */
+    });
+
+    it('success when alice is set up as a manger by amdin and', async () => {
+      await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
+      .to.be.revertedWith(
+        'OnlyAdmin'
+      );
+      await testEnv.stakingPool.connect(deployer).setManager(depositor.address);
+      await testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond,duration);
+    });
+  });
 });
 

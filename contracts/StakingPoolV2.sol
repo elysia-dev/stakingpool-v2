@@ -3,6 +3,7 @@ pragma solidity 0.8.4;
 import './libraries/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
@@ -13,12 +14,14 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 /// the difference between the user index and the current index by the user balance. User index and the pool
 /// index is updated and aligned with in the staking and withdrawing action.
 /// @author Elysia
-contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
+contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessControl {
   using StakingPoolLogicV2 for PoolData;
 
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
+    _admin = msg.sender;
+    _setupRole(MANAGER_ROLE, msg.sender);
   }
 
   struct PoolData {
@@ -37,6 +40,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   } 
 
   bool internal emergencyStop = false;
+  bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
   address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
@@ -207,8 +211,8 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   function extendPool(
     uint256 rewardPerSecond,
     uint256 duration
-  ) external onlyOwner {
-    _poolData.resetPool(duration);
+  ) external onlyRole(MANAGER_ROLE) {
+    _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
   }
   
@@ -229,6 +233,10 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     }
 
     SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
+  }
+
+  function setManager(address managerAddr) external onlyOwner {
+    _setupRole(MANAGER_ROLE, managerAddr);
   }
 
   function setEmergency(bool stop) external onlyOwner {
