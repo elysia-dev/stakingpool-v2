@@ -8,6 +8,7 @@ interface TestEnv {
 
 interface MigrateTestEnv extends TestEnv {
   newStakingPool: StakingPoolV3;
+  isNew: boolean;
 }
 
 export {

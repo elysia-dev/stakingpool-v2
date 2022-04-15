@@ -3,10 +3,10 @@ import hre, { waffle } from 'hardhat';
 import { expect } from 'chai';
 import { TestEnv, MigrateTestEnv } from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
-import { setTestEnv, setMigrateTestEnv } from './utils/testEnv';
+import { setTestEnv, setMigrateStaking } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterMigrate, expectDataAfterStake, expectDataAfterClaim, expectDataAfterWithdraw  } from './utils/expect';
-import { getPoolData, getUserData, newGetPoolData, newGetUserData} from './utils/helpers';
+import { getPoolData, getUserData } from './utils/helpers';
 
 const { loadFixture } = waffle;
 
@@ -45,7 +45,7 @@ describe('StakingPool.migrate', () => {
   });
 
   beforeEach('deploy staking pool', async () => {
-    testEnv = await setMigrateTestEnv(await loadFixture(fixture));
+    testEnv = await setMigrateStaking(await loadFixture(fixture));
     // testEnv = await loadFixture(fixture);
   });
 
@@ -94,8 +94,8 @@ describe('StakingPool.migrate', () => {
       const fromPoolDataBefore = await getPoolData(testEnv);
       const fromUserDataBefore = await getUserData(testEnv, alice);
 
-      const toPoolDataBefore = await newGetPoolData(testEnv);
-      const toUserDataBefore = await newGetUserData(testEnv, alice);
+      const toPoolDataBefore = await getPoolData(testEnv,true);
+      const toUserDataBefore = await getUserData(testEnv, alice,true);
 
       const migrateTx = await testEnv.stakingPool.connect(alice).migrate();
 
@@ -109,13 +109,11 @@ describe('StakingPool.migrate', () => {
         toUserDataBefore,
         await getTimestamp(migrateTx)
       );
-
       const fromPoolDataAfter = await getPoolData(testEnv);
       const fromUserDataAfter = await getUserData(testEnv, alice);
-
-      const toPoolDataAfter = await newGetPoolData(testEnv);
-      const toUserDataAfter = await newGetUserData(testEnv, alice);
-
+      const toPoolDataAfter = await getPoolData(testEnv, true);
+      const toUserDataAfter = await getUserData(testEnv, alice, true);
+    
       expect(fromPoolDataAfter).eql(expectedFromPoolData);
       expect(fromUserDataAfter).eql(expectedFromUserData);
       expect(toPoolDataAfter).eql(expectedToPoolData);
@@ -133,8 +131,8 @@ describe('StakingPool.migrate', () => {
       const fromPoolDataBefore = await getPoolData(testEnv);
       const fromUserDataBefore = await getUserData(testEnv, alice);
 
-      const toPoolDataBefore = await newGetPoolData(testEnv);
-      const toUserDataBefore = await newGetUserData(testEnv, alice);
+      const toPoolDataBefore = await getPoolData(testEnv, true);
+      const toUserDataBefore = await getUserData(testEnv, alice, true);
 
       const migrateTx = await testEnv.stakingPool.connect(alice).migrate();
 
@@ -152,8 +150,8 @@ describe('StakingPool.migrate', () => {
       const fromPoolDataAfter = await getPoolData(testEnv);
       const fromUserDataAfter = await getUserData(testEnv, alice);
 
-      const toPoolDataAfter = await newGetPoolData(testEnv);
-      const toUserDataAfter = await newGetUserData(testEnv, alice);
+      const toPoolDataAfter = await getPoolData(testEnv, true);
+      const toUserDataAfter = await getUserData(testEnv, alice,true);
 
       expect(fromPoolDataAfter).eql(expectedFromPoolData);
       expect(fromUserDataAfter).eql(expectedFromUserData);
@@ -170,8 +168,8 @@ describe('StakingPool.migrate', () => {
 
 
       // stake test
-      const poolDataBeforeStake = await newGetPoolData(testEnv);
-      const userDataBeforeStake = await newGetUserData(testEnv, alice);
+      const poolDataBeforeStake = await getPoolData(testEnv, true);
+      const userDataBeforeStake = await getUserData(testEnv, alice, true);
       const stakeTx = await testEnv.newStakingPool.connect(alice).stake(amount);
       const [expectedPoolDataStake, expectedUserDataStake] = expectDataAfterStake(
         poolDataBeforeStake,
@@ -180,26 +178,26 @@ describe('StakingPool.migrate', () => {
         amount
       );
 
-      const poolDataAfterStake = await newGetPoolData(testEnv);
-      const userDataAfterStake = await newGetUserData(testEnv, alice);
+      const poolDataAfterStake = await getPoolData(testEnv, true);
+      const userDataAfterStake = await getUserData(testEnv, alice, true);
 
       expect(poolDataAfterStake).eql(expectedPoolDataStake);
       expect(userDataAfterStake).eql(expectedUserDataStake);
 
       // claim test
-      const poolDataBeforeClaim = await newGetPoolData(testEnv);
-      const userDataBeforeClaim = await newGetUserData(testEnv, alice);
+      const poolDataBeforeClaim = await getPoolData(testEnv, true);
+      const userDataBeforeClaim = await getUserData(testEnv, alice, true);
       const claimTx = await testEnv.newStakingPool.connect(alice).claim();
       const [expectedPoolDataClaim, expectedUserDataClaim] = expectDataAfterClaim(
         poolDataBeforeClaim,
         userDataBeforeClaim,
         await getTimestamp(claimTx)
       );
-      const poolDataAfterClaim = await newGetPoolData(testEnv);
-      const userDataAfterClaim = await newGetUserData(testEnv, alice);
+      const poolDataAfterClaim = await getPoolData(testEnv, true);
+      const userDataAfterClaim = await getUserData(testEnv, alice, true);
 
-      expect(poolDataAfterClaim).to.be.equalPoolData(expectedPoolDataClaim);
-      expect(userDataAfterClaim).to.be.equalUserData(expectedUserDataClaim);
+      expect(poolDataAfterClaim).eql(expectedPoolDataClaim);
+      expect(userDataAfterClaim).eql(expectedUserDataClaim);
     });
 
     it('alice migrates asset to next version staking pool and stakes, withdraw in next version staking pool', async () => {
@@ -211,8 +209,8 @@ describe('StakingPool.migrate', () => {
 
 
       // stake test
-      const poolDataBeforeStake = await newGetPoolData(testEnv);
-      const userDataBeforeStake = await newGetUserData(testEnv, alice);
+      const poolDataBeforeStake = await getPoolData(testEnv, true);
+      const userDataBeforeStake = await getUserData(testEnv, alice, true);
       const stakeTx = await testEnv.newStakingPool.connect(alice).stake(amount.mul(2));
       const [expectedPoolDataStake, expectedUserDataStake] = expectDataAfterStake(
         poolDataBeforeStake,
@@ -221,15 +219,15 @@ describe('StakingPool.migrate', () => {
         amount.mul(2)
       );
 
-      const poolDataAfterStake = await newGetPoolData(testEnv);
-      const userDataAfterStake = await newGetUserData(testEnv, alice);
+      const poolDataAfterStake = await getPoolData(testEnv, true);
+      const userDataAfterStake = await  getUserData(testEnv, alice, true);
 
       expect(poolDataAfterStake).eql(expectedPoolDataStake);
       expect(userDataAfterStake).eql(expectedUserDataStake);
 
       // withdraw test
-      const poolDataBeforeWithdraw = await newGetPoolData(testEnv);
-      const userDataBeforeWithdraw = await newGetUserData(testEnv, alice);
+      const poolDataBeforeWithdraw = await getPoolData(testEnv, true);
+      const userDataBeforeWithdraw = await  getUserData(testEnv, alice, true);
       const withdrawTx = await testEnv.newStakingPool.connect(alice).withdraw(amount);
       const [expectedPoolDataWithdraw, expectedUserDataWithdraw] = expectDataAfterWithdraw(
         poolDataBeforeWithdraw,
@@ -237,8 +235,8 @@ describe('StakingPool.migrate', () => {
         await getTimestamp(withdrawTx),
         amount
       );
-      const poolDataAfterWithdraw = await newGetPoolData(testEnv);
-      const userDataAfterWithdraw = await newGetUserData(testEnv, alice);
+      const poolDataAfterWithdraw = await getPoolData(testEnv, true);
+      const userDataAfterWithdraw = await getUserData(testEnv, alice, true);
 
       expect(poolDataAfterWithdraw).to.be.equalPoolData(expectedPoolDataWithdraw);
       expect(userDataAfterWithdraw).to.be.equalUserData(expectedUserDataWithdraw);

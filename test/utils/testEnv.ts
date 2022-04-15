@@ -78,7 +78,7 @@ export const setTestEnv = async (): Promise<TestEnv> => {
   return testEnv;
 };
 
-export const setMigrateTestEnv = async (testEnv:TestEnv): Promise<MigrateTestEnv> => {
+export const setMigrateStaking = async (testEnv:TestEnv): Promise<MigrateTestEnv> => {
   const migrateTestEnv: MigrateTestEnv = {
     ...(<TestEnv>testEnv),
     ...(<MigrateTestEnv>{}),
@@ -88,16 +88,3 @@ export const setMigrateTestEnv = async (testEnv:TestEnv): Promise<MigrateTestEnv
   return migrateTestEnv;
 }
 
-// export const setMigrateTestEnv = async (): Promise<MigrateTestEnv> => {
-//   const migrateTestEnv: MigrateTestEnv = {
-//     ...(<MigrateTestEnv>{}),
-//   };
-
-//   migrateTestEnv.rewardAsset = await setRewardAsset();
-//   migrateTestEnv.stakingAsset = await setStakingAsset();
-
-//   migrateTestEnv.stakingPool = await setStakingPool(migrateTestEnv.stakingAsset, migrateTestEnv.rewardAsset);
-//   migrateTestEnv.newStakingPool = await migrateSetStakingPool(migrateTestEnv.stakingAsset, migrateTestEnv.rewardAsset);
-
-//   return migrateTestEnv;
-// };

@@ -35,7 +35,7 @@ interface IStakingPoolV2 {
     uint256 endTimestamp
   );
 
-  event Migrate(address user);
+  event Migrate(address user, uint256 amount);
 
   function stake(uint256 amount) external;
 

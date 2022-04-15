@@ -152,7 +152,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.totalPrincipal -= amount;
 
     // Migrate
-    _migrateTo(_nextContractAddr, amount);
+    _migrate(_nextContractAddr, amount);
 
     // Call next contract
     INextStakingPool nextContract = INextStakingPool(_nextContractAddr);
@@ -160,7 +160,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     // Migrate next contract of user, total principal
     nextContract.setPreviousPoolData(msg.sender, amount);
 
-    emit Migrate(msg.sender);
+    emit Migrate(msg.sender, amount);
   }
 
   /***************** Internal Functions ******************/
