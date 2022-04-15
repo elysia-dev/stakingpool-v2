@@ -30,8 +30,7 @@ contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
       string(
         abi.encodePacked(
           'Staked',
-          ERC20Metadata.tokenName(address(underlyingToken)),
-          'Token'
+          ERC20Metadata.tokenName(address(underlyingToken))
         )
       )
     )
