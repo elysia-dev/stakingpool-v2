@@ -173,6 +173,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     SafeERC20.safeTransfer(rewardAsset, user, reward);
 
     uint256 rewardLeft = rewardAsset.balanceOf(address(this));
+    if (rewardAsset == stakingAsset) {
+      rewardLeft -= _poolData.totalPrincipal;
+    }
 
     emit Claim(user, reward, rewardLeft);
   }
