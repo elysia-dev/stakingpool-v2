@@ -22,6 +22,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   struct PoolData {
+    uint256 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
     uint256 startTimestamp;
@@ -33,8 +34,10 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     mapping(address => uint256) userPrincipal;
     bool isOpened;
     bool isFinished;
-  }
+  } 
 
+  bool internal emergencyStop = false;
+  address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
@@ -159,6 +162,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   function _claim(address user) internal {
+    if(emergencyStop == true) revert Emergency();
     uint256 reward = _poolData.getUserReward(user);
 
     if (reward == 0) revert ZeroReward();
@@ -169,6 +173,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     SafeERC20.safeTransfer(rewardAsset, user, reward);
 
     uint256 rewardLeft = rewardAsset.balanceOf(address(this));
+    if (rewardAsset == stakingAsset) {
+      rewardLeft -= _poolData.totalPrincipal;
+    }
 
     emit Claim(user, reward, rewardLeft);
   }
@@ -213,8 +220,20 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   function retrieveResidue() external onlyOwner {
-    SafeERC20.safeTransfer(rewardAsset, _msgSender(), rewardAsset.balanceOf(address(this)));
+    uint256 residueAmount;
+
+    if (stakingAsset == rewardAsset) {
+      residueAmount = rewardAsset.balanceOf(address(this)) - _poolData.totalPrincipal;
+    } else {
+      residueAmount = rewardAsset.balanceOf(address(this));
+    }
+
+    SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
   }
+
+  function setEmergency(bool stop) external onlyOwner {
+    emergencyStop = stop;
+  } 
 
   /***************** Modifier ******************/
 
@@ -222,5 +241,4 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
     _;
   }
-
 }
