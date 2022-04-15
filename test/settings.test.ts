@@ -100,7 +100,7 @@ describe('StakingPool.settings', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
-      advanceTimeTo(startTimestamp);
+      await advanceTimeTo(startTimestamp);
     });
 
     it('revert if a person not admin try extend the pool', async () => {
