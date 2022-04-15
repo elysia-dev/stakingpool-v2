@@ -40,13 +40,11 @@ describe('StakingPool.stake', () => {
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);
-
-    await actions.faucetAndApproveReward(deployer, RAY)
-    await actions.faucetAndApproveTarget(alice, RAY)
+    await actions.faucetAndApproveReward(deployer, RAY);
+    await actions.faucetAndApproveTarget(alice, RAY);
   });
 
   it('reverts if the pool has not initiated', async () => {
-    await actions.faucetAndApproveTarget(alice, RAY);
     await expect(actions.stake(alice, utils.parseEther('100')))
       .to.be.revertedWith('StakingNotInitiated');
   });
@@ -113,10 +111,7 @@ describe('StakingPool.stake', () => {
 
   context('staking scenario', async () => {
     beforeEach('init the pool and time passes', async () => {
-      await actions.faucetAndApproveReward(deployer, RAY);
       await actions.initNewPool(deployer, rewardPersecond, startTimestamp, duration);
-
-      await actions.faucetAndApproveTarget(alice, RAY);
       const tx = actions.faucetAndApproveTarget(bob, RAY);
       await advanceTimeTo(await getTimestamp(tx), startTimestamp);
     });

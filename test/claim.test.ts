@@ -5,7 +5,7 @@ import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim, updatePoolData, expectDataAfterStake } from './utils/expect';
-import { getPoolData, getUserData } from './utils/helpers';
+import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
 import TestEnv from './types/TestEnv';
 
 const { loadFixture } = waffle;
@@ -14,7 +14,7 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.claim', () => {
   let testEnv: TestEnv;
-
+  let actions: TestHelperActions;
 
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
@@ -48,9 +48,9 @@ describe('StakingPool.claim', () => {
 
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
-    await testEnv.rewardAsset.connect(deployer).faucet();
-    await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-    await testEnv.stakingAsset.connect(alice).faucet();
+    actions = createTestActions(testEnv);
+    await actions.faucetAndApproveReward(deployer, RAY);
+    await actions.faucetAndApproveTarget(alice, RAY);
   });
 
   it('reverts if the pool has not initiated', async () => {
