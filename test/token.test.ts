@@ -22,7 +22,7 @@ describe('StakingPool.token', () => {
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
   const year = BigNumber.from(2022);
   const month = BigNumber.from(7);
-  const day = BigNumber.from(7);
+  const day = BigNumber.from(8);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));

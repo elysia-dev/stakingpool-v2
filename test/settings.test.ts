@@ -92,4 +92,18 @@ describe('StakingPool.settings', () => {
         .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
     });
   });
+
+  context('reset the pool', async () => {
+    it('revert if a person not admin try reset the pool', async () => {
+      await testEnv.rewardAsset.connect(deployer).faucet();
+      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingPool
+        .connect(deployer)
+        .initNewPool(rewardPerSecond, startTimestamp, duration);
+
+      await expect(
+        testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('1')), BigNumber.from(30).mul(SECONDSPERDAY))
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+    })
+  })
 });

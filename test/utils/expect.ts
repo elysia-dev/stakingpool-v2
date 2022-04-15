@@ -34,7 +34,7 @@ export function expectDataAfterWithdraw(
   poolData: PoolData,
   userData: UserData,
   txTimeStamp: BigNumber,
-  amount: BigNumber
+  amount: BigNumber,
 ): [PoolData, UserData] {
   const [newPoolData, newUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
     poolData,
@@ -156,4 +156,24 @@ export function expectDataAfterMigrate(
     [newFromPoolData, newFromUserData],
     [newToPoolData, newToUserData],
   ];
+}
+
+
+export function updatePoolData(
+  poolData: PoolData,
+  userData: UserData,
+  txTimeStamp: BigNumber,
+  duration : BigNumber,
+  rewardPerSecond: BigNumber
+): [PoolData, UserData] {
+  const [newPoolData, newUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
+    poolData,
+    userData,
+    txTimeStamp
+  );
+  newPoolData.startTimestamp = poolData.lastUpdateTimestamp = txTimeStamp;
+  newPoolData.endTimestamp = txTimeStamp.add(duration);
+  newPoolData.rewardPerSecond = rewardPerSecond;
+
+  return [newPoolData, newUserData];
 }

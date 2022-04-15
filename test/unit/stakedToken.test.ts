@@ -23,8 +23,8 @@ describe('StakedToken', () => {
       stakedElysiaToken = await stakedTokenFactory.deploy(elysiaToken.address) as StakedElyfiToken
     })
 
-    it('is named Staked${underlyingTokenName}Token', async () => {
-      expect(await stakedElysiaToken.name()).to.equal('StakedElysiaToken')
+    it('is named Staked${underlyingTokenName}', async () => {
+      expect(await stakedElysiaToken.name()).to.equal('StakedElysia')
     });
 
     it("has a symbol with a prefix 's'", async () => {

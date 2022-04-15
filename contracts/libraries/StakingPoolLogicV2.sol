@@ -58,6 +58,15 @@ library StakingPoolLogicV2 {
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal);
   }
 
+  function resetPool(
+    StakingPoolV2.PoolData storage poolData,
+    uint256 duration
+  ) internal {
+    poolData.rewardIndex = getRewardIndex(poolData);
+    poolData.startTimestamp = poolData.lastUpdateTimestamp = block.timestamp;
+    poolData.endTimestamp = block.timestamp + duration;
+  }
+
   function initRound(
     StakingPoolV2.PoolData storage poolData,
     uint256 rewardPerSecond,
