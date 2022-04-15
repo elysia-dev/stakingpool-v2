@@ -1,7 +1,7 @@
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
-import TestEnv from './types/TestEnv';
+import { TestEnv } from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';

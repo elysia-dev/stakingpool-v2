@@ -5,7 +5,6 @@ import './interface/IStakingPoolV2.sol';
 import './interface/INextStakingPool.sol';
 import './token/StakedElyfiToken.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import "hardhat/console.sol";
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -153,7 +152,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken {
     _poolData.totalPrincipal -= amount;
 
     // Migrate
-    bool result = _migrateTo(_nextContractAddr, amount);
+    _migrateTo(_nextContractAddr, amount);
 
     // Call next contract
     INextStakingPool nextContract = INextStakingPool(_nextContractAddr);
