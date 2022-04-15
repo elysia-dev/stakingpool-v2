@@ -29,7 +29,7 @@ describe('StakingPool.stake', () => {
   const day_end = BigNumber.from(20);
 
   const month_2 = BigNumber.from(8);
-  const day_2 = BigNumber.from(6);
+  const day_2 = BigNumber.from(4);
 
   const firstTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
   const secondTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
@@ -215,7 +215,7 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPersecond, firstTimestamp, duration);
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(firstTimestamp);
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
@@ -295,37 +295,70 @@ describe('StakingPool.stake', () => {
       expect(userDataAfter_2).to.be.equalUserData(expectedUserData_3);
     });
 
-    // FIXME!!
-    it('bob becomes manager and call extend pool and alice stakes', async () => {
-      await actions.faucetAndApproveTarget(bob, RAY);
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
-      
-      const setManagertx = await testEnv.stakingPool.setManager(bob.address);
-      advanceTimeTo(secondTimestamp)
-      const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
+    context('amdin set bob as manager', async () => {
+      it('bob becomes manager and call extend pool and alice stakes', async () => {
+        await actions.faucetAndApproveTarget(bob, RAY);
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        await testEnv.stakingPool.setManager(bob.address);
   
-      const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
-        poolDataBefore,
-        userDataBefore,
-        await getTimestamp(tx),
-        duration,
-        newRewardPersecond
-      );
+        advanceTimeTo(secondTimestamp)
+        const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          newRewardPersecond
+        );
+        
+        const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(stakeTx),
+          stakeAmount
+        );
+   
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
   
-      const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-      const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
-        expectedPoolData_1,
-        expectedUserData_1,
-        await getTimestamp(stakeTx),
-        stakeAmount
-      );
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
+
+      it('alice action and bob becomes manager and call extend pool ', async () => {
+        await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        await actions.faucetAndApproveTarget(bob, RAY);
+        await testEnv.stakingPool.setManager(bob.address);
   
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
+        advanceTimeTo(secondTimestamp);
+        await testEnv.stakingPool.connect(alice).withdraw(stakeAmount);
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          newRewardPersecond
+        );
+        
+        const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(stakeTx),
+          stakeAmount
+        );
+   
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
   
-      expect(poolDataAfter).eql(expectedPoolData_2);
-      expect(userDataAfter).eql(expectedUserData_2);
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
     });
   });
 

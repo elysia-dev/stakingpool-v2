@@ -171,7 +171,8 @@ export function updatePoolData(
     userData,
     txTimeStamp
   );
-  newPoolData.startTimestamp = poolData.lastUpdateTimestamp = txTimeStamp;
+
+  newPoolData.startTimestamp = newPoolData.lastUpdateTimestamp = txTimeStamp;
   newPoolData.endTimestamp = txTimeStamp.add(duration);
   newPoolData.rewardPerSecond = rewardPerSecond;
 
