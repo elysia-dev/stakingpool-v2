@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -52,7 +52,7 @@ describe('StakingPool.settings', () => {
         testEnv.stakingPool
           .connect(depositor)
           .initNewPool(rewardPerSecond, startTimestamp, duration)
-      ).to.be.revertedWith('OnlyAdmin');
+      ).to.be.revertedWith('Ownable: caller is not the owner');
     });
 
     it('success', async () => {
@@ -70,7 +70,7 @@ describe('StakingPool.settings', () => {
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
     });
-     
+
   });
 
   context('retrieveResidue', async () => {
@@ -81,7 +81,7 @@ describe('StakingPool.settings', () => {
 
     it('reverts if general account call', async () => {
       await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
-        'OnlyAdmin'
+        'Ownable: caller is not the owner'
       );
     });
 
@@ -100,10 +100,10 @@ describe('StakingPool.settings', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
-  
+
       await expect(
         testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('1')), BigNumber.from(30).mul(SECONDSPERDAY))
-      ).to.be.revertedWith('OnlyAdmin');
+      ).to.be.revertedWith('Ownable: caller is not the owner');
     })
   })
 });

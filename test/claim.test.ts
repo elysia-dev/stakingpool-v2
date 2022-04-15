@@ -68,8 +68,7 @@ describe('StakingPool.claim', () => {
           firstRoundStartTimestamp,
           duration
         );
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+      await advanceTimeTo(firstRoundStartTimestamp);
     });
 
     it('reverts if user reward is 0', async () => {
@@ -114,15 +113,15 @@ describe('StakingPool.claim', () => {
           firstRoundStartTimestamp,
           duration
         );
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await advanceTimeTo(firstRoundStartTimestamp);
       await testEnv.stakingPool.connect(alice).stake(amount);
     });
 
     context('the pool is closed', async () => {
       it('alice claim reward', async () => {
         const tx = await testEnv.stakingPool.connect(deployer).closePool();
-        await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
+        await advanceTimeTo(secondRoundStartTimestamp);
 
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
@@ -147,7 +146,7 @@ describe('StakingPool.claim', () => {
         const userDataBefore = await getUserData(testEnv, alice);
 
         const claimTx = await testEnv.stakingPool.connect(alice).claim();
-        await advanceTimeTo(await getTimestamp(claimTx), thirdRoundStartTimestamp);
+        await advanceTimeTo(thirdRoundStartTimestamp);
 
         const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
           poolDataBefore,
@@ -186,7 +185,7 @@ describe('StakingPool.claim', () => {
 
       await testEnv.stakingAsset.connect(alice).faucet();
       const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
+      await advanceTimeTo(firstRoundStartTimestamp);
       await testEnv.stakingPool.connect(alice).stake(amount);
 
       await testEnv.rewardAsset.connect(deployer).faucet();

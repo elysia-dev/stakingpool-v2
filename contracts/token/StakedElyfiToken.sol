@@ -5,13 +5,35 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol';
 import '@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol';
+import '../libraries/ERC20Metadata.sol';
 
 contract StakedElyfiToken is ERC20, ERC20Permit, ERC20Votes {
   IERC20 public immutable underlying;
 
   constructor(IERC20 underlyingToken)
-    ERC20('StakedElyfiToken', 'SELFI')
-    ERC20Permit('StakedElyfiToken')
+    ERC20(
+      string(
+        abi.encodePacked(
+          'Staked',
+          ERC20Metadata.tokenName(address(underlyingToken)),
+          'Token'
+        )
+      ),
+      string(
+        abi.encodePacked(
+          's',
+          ERC20Metadata.tokenSymbol(address(underlyingToken))
+        )
+      )
+    )
+    ERC20Permit(
+      string(
+        abi.encodePacked(
+          'Staked',
+          ERC20Metadata.tokenName(address(underlyingToken))
+        )
+      )
+    )
   {
     underlying = underlyingToken;
   }

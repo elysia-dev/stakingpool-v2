@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD, MAX_UINT_AMOUNT } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTime, advanceTimeTo, advanceTimeTo2, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -48,12 +48,12 @@ describe('StakingPool.closePool', () => {
     beforeEach(async () => {
       const tx = await actions.initNewPool(
         deployer, rewardPerSecond, startTimestamp, duration);
-      await advanceTimeTo(await getTimestamp(tx), startTimestamp);
+      await advanceTimeTo(startTimestamp);
     });
 
     it('the index does not increase after the pool is closed.', async () => {
       await actions.stake(alice, stakeAmount); // t: start + 1
-      await advanceTimeTo2(startTimestamp.add(BigNumber.from('10'))); // t: start + 10
+      await advanceTimeTo(startTimestamp.add(BigNumber.from('10'))); // t: start + 10
       await actions.closePool(deployer); // t: start + 11, so alice staked for 10 secs
 
       await advanceTime(10); // t: start + 20
