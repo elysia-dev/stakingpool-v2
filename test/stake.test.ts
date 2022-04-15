@@ -117,7 +117,7 @@ describe('StakingPool.stake', () => {
   context('staking scenario', async () => {
     beforeEach('init the pool and time passes', async () => {
       await actions.initNewPool(deployer, rewardPersecond, firstTimestamp, duration);
-      const tx = actions.faucetAndApproveTarget(bob, RAY);
+      actions.faucetAndApproveTarget(bob, RAY);
       await advanceTimeTo(firstTimestamp);
     });
 
@@ -302,7 +302,7 @@ describe('StakingPool.stake', () => {
         const userDataBefore = await getUserData(testEnv, alice);
         await testEnv.stakingPool.setManager(bob.address);
   
-        advanceTimeTo(secondTimestamp)
+        await advanceTimeTo(secondTimestamp)
         const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
         const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
           poolDataBefore,
@@ -332,7 +332,7 @@ describe('StakingPool.stake', () => {
         await actions.faucetAndApproveTarget(bob, RAY);
         await testEnv.stakingPool.setManager(bob.address);
   
-        advanceTimeTo(secondTimestamp);
+        await advanceTimeTo(secondTimestamp);
         await testEnv.stakingPool.connect(alice).withdraw(stakeAmount);
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
@@ -374,7 +374,7 @@ describe('StakingPool.stake', () => {
           duration
         );
       await testEnv.stakingAsset.connect(alice).faucet();
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(firstTimestamp);
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
     });

@@ -264,14 +264,14 @@ describe('StakingPool.claim', () => {
       expect(userDataAfterClaim).to.be.equalUserData(expectedUserDataClaim);
     });
 
-    context('amdin set bob as manager', async () => {
+    context('admin set bob as manager', async () => {
       it('bob becomes manager and call extend pool and alice claim', async () => {
         await actions.faucetAndApproveTarget(bob, RAY);
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
         await testEnv.stakingPool.setManager(bob.address);
   
-        advanceTimeTo(secondRoundStartTimestamp)
+        await advanceTimeTo(secondRoundStartTimestamp)
         const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
         const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
           poolDataBefore,
@@ -300,7 +300,7 @@ describe('StakingPool.claim', () => {
         await actions.faucetAndApproveTarget(bob, RAY);
         await testEnv.stakingPool.setManager(bob.address);
   
-        advanceTimeTo(secondRoundStartTimestamp);
+        await advanceTimeTo(secondRoundStartTimestamp);
         await testEnv.stakingPool.connect(alice).withdraw(amount);
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);

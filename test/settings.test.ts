@@ -97,7 +97,7 @@ describe('StakingPool.settings', () => {
     beforeEach('init pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      const tx = await testEnv.stakingPool
+      await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
       advanceTimeTo(startTimestamp);
