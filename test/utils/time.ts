@@ -54,8 +54,7 @@ export async function resetTimestampTo(targetInput: BigNumber | number) {
 
 export async function advanceTimeTo(targetInput: BigNumber | number) {
   const target = (targetInput instanceof BigNumber) ? targetInput.toNumber() : targetInput;
-  await waffle.provider.send("evm_setNextBlockTimestamp", [target])
-  return await waffle.provider.send('evm_mine', []);
+  return await waffle.provider.send('evm_mine', [target]);
 }
 
 export async function advanceBlockTo(to: number) {
