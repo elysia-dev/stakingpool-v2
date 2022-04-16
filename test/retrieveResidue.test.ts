@@ -64,7 +64,7 @@ describe('StakingPool.retrieveResidue', () => {
         await asset.connect(deployer).faucet();
 
         // This also sends the reward asset which amounts to rewardPerSecond * duration 
-        const initNewPoolTx = await stakingPool
+        await stakingPool
           .connect(deployer)
           .initNewPool(rewardPerSecond, startTimestamp, duration);
 

@@ -73,26 +73,6 @@ describe('StakingPool.settings', () => {
 
   });
 
-  context('retrieveResidue', async () => {
-    beforeEach('set', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-    });
-
-    it('reverts if general account call', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
-        'Ownable: caller is not the owner'
-      );
-    });
-
-    it('success', async () => {
-      const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
-      await expect(tx)
-        .to.emit(testEnv.rewardAsset, 'Transfer')
-        .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
-    });
-  });
-
   context('reset the pool', async () => {
     it('revert if a person not admin try reset the pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();

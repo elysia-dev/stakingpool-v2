@@ -45,9 +45,17 @@ export async function advanceTime(secondsToIncrease: number) {
   return await waffle.provider.send('evm_mine', []);
 }
 
+export async function resetTimestampTo(targetInput: BigNumber | number) {
+  const target = (targetInput instanceof BigNumber) ? targetInput.toNumber() : targetInput;
+  const now = (await waffle.provider.getBlock('latest')).timestamp;
+  await waffle.provider.send("evm_increaseTime", [target - now])
+  return await waffle.provider.send('evm_mine', []);
+}
+
 export async function advanceTimeTo(targetInput: BigNumber | number) {
   const target = (targetInput instanceof BigNumber) ? targetInput.toNumber() : targetInput;
-  return await waffle.provider.send('evm_mine', [target]);
+  await waffle.provider.send("evm_setNextBlockTimestamp", [target])
+  return await waffle.provider.send('evm_mine', []);
 }
 
 export async function advanceBlockTo(to: number) {
