@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTimeTo, resetTimestampTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake, updatePoolData } from './utils/expect';
 import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
 
@@ -56,7 +56,7 @@ describe('StakingPool.stake', () => {
         await testEnv.stakingPool
           .connect(deployer)
           .initNewPool(rewardPersecond, startTimestamp, duration);
-        await advanceTimeTo(startTimestamp);
+        await resetTimestampTo(startTimestamp);
       });
 
       it('reverts if user staking amount is 0', async () => {
@@ -114,7 +114,7 @@ describe('StakingPool.stake', () => {
     beforeEach('init the pool and time passes', async () => {
       await actions.initNewPool(deployer, rewardPersecond, startTimestamp, duration);
       actions.faucetAndApproveTarget(bob, RAY);
-      await advanceTimeTo(startTimestamp);
+      await resetTimestampTo(startTimestamp);
     });
 
     it('first stake and second stake from alice', async () => {
@@ -211,8 +211,8 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPersecond, startTimestamp, duration);
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(startTimestamp);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await resetTimestampTo(startTimestamp);
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
       await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
     });
@@ -304,8 +304,8 @@ describe('StakingPool.stake', () => {
           duration
         );
       await testEnv.stakingAsset.connect(alice).faucet();
-      const tx = await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await advanceTimeTo(startTimestamp);
+      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
+      await resetTimestampTo(startTimestamp);
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
     });
 
