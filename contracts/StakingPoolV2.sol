@@ -229,7 +229,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
       residueAmount = rewardAsset.balanceOf(address(this));
     }
 
-    SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
+    SafeERC20.safeTransfer(rewardAsset, msg.sender, residueAmount);
   }
 
   function setManager(address addr) external onlyOwner {
@@ -241,7 +241,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   function renounceManager(address addr) external {
-    require(addr == _msgSender(), "Can only renounce manager for self");
+    require(addr == msg.sender, "Can only renounce manager for self");
     _revokeManager(addr);
   }
 
