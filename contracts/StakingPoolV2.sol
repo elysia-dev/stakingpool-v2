@@ -211,6 +211,8 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   ) external onlyManager(msg.sender) {
     _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
+
+    emit ExtendPool(msg.sender, duration, rewardPerSecond);
   }
   
   function closePool() external onlyOwner {
@@ -218,6 +220,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;
+    emit ClosePool(msg.sender, true);
   }
 
   function retrieveResidue() external onlyOwner {
@@ -230,6 +233,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     }
 
     SafeERC20.safeTransfer(rewardAsset, msg.sender, residueAmount);
+    emit RetrieveResidue(msg.sender, residueAmount);
   }
 
   function setManager(address addr) external onlyOwner {
@@ -247,6 +251,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
 
   function setEmergency(bool stop) external onlyOwner {
     emergencyStop = stop;
+    emit SetEmergency(msg.sender, stop);
   } 
 
   function isManager(address addr) public view returns (bool) {

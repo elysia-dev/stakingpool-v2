@@ -109,8 +109,10 @@ describe('StakingPool.settings', () => {
     });
 
     it('succeeds when he/she becomes a manager', async () => {
-      await testEnv.stakingPool.connect(deployer).setManager(depositor.address);
-      await testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond, duration);
+      await expect(testEnv.stakingPool.connect(deployer).setManager(depositor.address))
+        .to.emit(testEnv.stakingPool, 'SetManager');
+      await expect(testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond, duration))
+        .to.emit(testEnv.stakingPool, 'ExtendPool');
     });
   });
 });
