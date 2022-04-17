@@ -262,12 +262,14 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   function _setManager(address addr) private {
     if (!isManager(addr)) {
       managers[addr] = true;
+      emit SetManager(msg.sender, addr);
     }
   }
 
   function _revokeManager(address addr) private {
     if (isManager(addr)) {
       managers[addr] = false;
+      emit RevokeManager(msg.sender, addr);
     }
   }
 
