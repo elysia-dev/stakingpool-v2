@@ -20,7 +20,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
-    _admin = msg.sender;
     _setupRole(MANAGER_ROLE, msg.sender);
   }
 
@@ -41,7 +40,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
 
   bool internal emergencyStop = false;
   bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-  address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
