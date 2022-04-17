@@ -21,7 +21,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
     _admin = msg.sender;
-    _setupRole(MANAGER_ROLE, msg.sender);
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }
 
   struct PoolData {
@@ -40,7 +40,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
   } 
 
   bool internal emergencyStop = false;
-  bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
   address internal _admin;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
@@ -211,9 +210,11 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
   function extendPool(
     uint256 rewardPerSecond,
     uint256 duration
-  ) external onlyRole(MANAGER_ROLE) {
+  ) external onlyRole(DEFAULT_ADMIN_ROLE) {
     _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
+
+    emit ExtendPool(msg.sender, duration, rewardPerSecond);
   }
   
   function closePool() external onlyOwner {
@@ -221,6 +222,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;
+    emit ClosePool(msg.sender, true);
   }
 
   function retrieveResidue() external onlyOwner {
@@ -233,14 +235,18 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
     }
 
     SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
+
+    emit RetrieveResidue(msg.sender, residueAmount);
   }
 
   function setManager(address managerAddr) external onlyOwner {
-    _setupRole(MANAGER_ROLE, managerAddr);
+    _setupRole(DEFAULT_ADMIN_ROLE, managerAddr);
+    emit SetManager(msg.sender, managerAddr);
   }
 
   function setEmergency(bool stop) external onlyOwner {
     emergencyStop = stop;
+    emit SetEmergency(msg.sender, stop);
   } 
 
   /***************** Modifier ******************/

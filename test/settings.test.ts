@@ -112,13 +112,15 @@ describe('StakingPool.settings', () => {
       */
     });
 
-    it('success when alice is set up as a manger by amdin and', async () => {
+    it('success when alice is set up as a manger by amdin', async () => {
       await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
       .to.be.revertedWith(
-        'OnlyAdmin'
+        'Ownable: caller is not the owner'
       );
-      await testEnv.stakingPool.connect(deployer).setManager(depositor.address);
-      await testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond,duration);
+      await expect(testEnv.stakingPool.connect(deployer).setManager(depositor.address))
+      .to.emit(testEnv.stakingPool, 'SetManager');
+      await expect(testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond,duration))
+      .to.emit(testEnv.stakingPool, 'ExtendPool');
     });
   });
 });

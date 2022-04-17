@@ -364,7 +364,7 @@ describe('StakingPool.withdraw', () => {
       });
 
 
-      context('amdin set bob as manager', async () => {
+      context('amdin sets bob as manager', async () => {
         it('bob becomes manager and call extend pool and alice withdraw', async () => {
           await actions.faucetAndApproveTarget(bob, RAY);
           const poolDataBefore = await getPoolData(testEnv);
