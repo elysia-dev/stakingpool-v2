@@ -3,7 +3,6 @@ pragma solidity 0.8.4;
 import './libraries/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
@@ -14,13 +13,13 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 /// the difference between the user index and the current index by the user balance. User index and the pool
 /// index is updated and aligned with in the staking and withdrawing action.
 /// @author Elysia
-contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessControl {
+contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   using StakingPoolLogicV2 for PoolData;
 
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
-    _setupRole(MANAGER_ROLE, msg.sender);
+    _setManager(msg.sender);
   }
 
   struct PoolData {
@@ -39,7 +38,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
   } 
 
   bool internal emergencyStop = false;
-  bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+  mapping(address => bool) managers;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
@@ -209,7 +208,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
   function extendPool(
     uint256 rewardPerSecond,
     uint256 duration
-  ) external onlyRole(MANAGER_ROLE) {
+  ) external onlyManager(msg.sender) {
     _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
   }
@@ -233,15 +232,45 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable, AccessContr
     SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
   }
 
-  function setManager(address managerAddr) external onlyOwner {
-    _setupRole(MANAGER_ROLE, managerAddr);
+  function setManager(address addr) external onlyOwner {
+    _setManager(addr);
+  }
+
+  function revokeManager(address addr) external onlyOwner {
+    _revokeManager(addr);
+  }
+
+  function renounceManager(address addr) external {
+    require(addr == _msgSender(), "Can only renounce manager for self");
+    _revokeManager(addr);
   }
 
   function setEmergency(bool stop) external onlyOwner {
     emergencyStop = stop;
   } 
 
+  function isManager(address addr) public view returns (bool) {
+    return managers[addr];
+  }
+
+  /***************** private ******************/
+  function _setManager(address addr) private {
+    if (!isManager(addr)) {
+      managers[addr] = true;
+    }
+  }
+
+  function _revokeManager(address addr) private {
+    if (isManager(addr)) {
+      managers[addr] = false;
+    }
+  }
+
   /***************** Modifier ******************/
+  modifier onlyManager(address addr) {
+    if (!isManager(addr)) revert OnlyManager();
+    _;
+  }
 
   modifier stakingInitiated() {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();

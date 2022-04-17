@@ -5,7 +5,7 @@ interface IStakingPoolV2 {
   error StakingNotInitiated();
   error InvalidAmount();
   error ZeroReward();
-  error OnlyAdmin();
+  error OnlyManager();
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
   error Finished();
