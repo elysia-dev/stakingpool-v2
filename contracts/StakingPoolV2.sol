@@ -208,7 +208,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   function extendPool(
     uint256 rewardPerSecond,
     uint256 duration
-  ) external onlyManager(msg.sender) {
+  ) external onlyManager {
     _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
 
@@ -274,8 +274,8 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   /***************** Modifier ******************/
-  modifier onlyManager(address addr) {
-    if (!isManager(addr)) revert OnlyManager();
+  modifier onlyManager() {
+    if (!isManager(msg.sender)) revert OnlyManager();
     _;
   }
 
