@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, toTimestamp } from './utils/time';
+import { resetTimestampTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -73,34 +73,14 @@ describe('StakingPool.settings', () => {
 
   });
 
-  context('retrieveResidue', async () => {
-    beforeEach('set', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-    });
-
-    it('reverts if general account call', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).retrieveResidue()).to.be.revertedWith(
-        'Ownable: caller is not the owner'
-      );
-    });
-
-    it('success', async () => {
-      const tx = await testEnv.stakingPool.connect(deployer).retrieveResidue();
-      await expect(tx)
-        .to.emit(testEnv.rewardAsset, 'Transfer')
-        .withArgs(testEnv.stakingPool.address, deployer.address, RAY);
-    });
-  });
-
-  context('authority to call extend pool function', async () => {
-    beforeEach('init pool', async () => {
+  context('reset the pool', async () => {
+    beforeEach('revert if a person not admin try reset the pool', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
       await testEnv.stakingPool
         .connect(deployer)
         .initNewPool(rewardPerSecond, startTimestamp, duration);
-      await advanceTimeTo(startTimestamp);
+      await resetTimestampTo(startTimestamp);
     });
 
     it('revert if a person not admin try extend the pool', async () => {
@@ -111,6 +91,7 @@ describe('StakingPool.settings', () => {
       ).to.be.revertedWith('OnlyAdmin');
       */
     });
+
 
     it('success when alice is set up as a manger by amdin', async () => {
       await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
