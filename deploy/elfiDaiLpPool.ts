@@ -15,7 +15,7 @@ const elfiDaiLpPool: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const stakingAssetAddress = '0x8F9a5BD715c553a94Eaf0C67ebd2a8Ae2Ad60F9E';
   const rewardAsset = elfiToken;
 
-  const stakingPool = await deploy('StakingPoolV2_ETH_DAI_LP', {
+  const stakingPool = await deploy('StakingPoolV2_ELFI_DAI_LP', {
     contract: 'StakingPoolV2',
     from: deployer,
     args: [stakingAssetAddress, rewardAsset.address],

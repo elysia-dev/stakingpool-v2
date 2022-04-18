@@ -1,18 +1,18 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const testELFI: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const testEL: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy('ELFI', {
+  await deploy('EL', {
     contract: 'StakingAsset',
     from: deployer,
-    args: ['TEST_ELYFI', 'TEST_ELFI'],
+    args: ['TEST_ELYSIA', 'TEST_EL'],
     log: true,
   });
 }
 
-testELFI.tags = ['testELFI'];
+testEL.tags = ['testEL'];
 
-export default testELFI;
+export default testEL;
