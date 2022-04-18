@@ -1,22 +1,16 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getNamedContracts, getNamedSigners } from '../tasks/utils';
 import { DeployFunction } from 'hardhat-deploy/types';
-import {
-  StakingPoolV2,
-  ERC20Metadata,
-  StakingPoolV2__factory,
-  ERC20Metadata__factory,
-} from '../typechain';
-import { getElyfi, getDai } from '../utils/getDependencies';
 
 const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
-  const { elToken, elfiToken } = getNamedContracts(hre.ethers.provider);
+  const elfiToken = await hre.deployments.get('ELFI');
   const { deploy } = hre.deployments;
 
   const erc20MetadataLibrary = await deploy('ERC20Metadata', {
     from: deployer,
   });
+
+  console.log(erc20MetadataLibrary);
 
   const stakingAsset = elfiToken;
   const rewardAsset = elfiToken;

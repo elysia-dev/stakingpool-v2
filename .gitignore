@@ -140,9 +140,6 @@ workspace.code-workspace
 # deploy file
 .openzeppelin/
 
-# Deployement files
-deployments/
-
 # xml, xlsx file
 *.xlsx
 *.xml

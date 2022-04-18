@@ -20,8 +20,8 @@ task('prepare-staking-eth', 'Initiate 4 pools in eth')
 
     const durationInSeconds = 3600 * 24 * 28
 
-    const elStakingPoolAddress = "0x2776a888F6eC5513d84cb0e1aA3396B8750170A8";
-    const elfiStakingPoolAddress = "0x7d22b5A6Cf5dc27AC96a085FB49B67ddC3Aa6C77";
+    const elStakingPoolAddress = (await hre.deployments.get('StakingPoolV2_EL')).address;
+    const elfiStakingPoolAddress = "";
     const daiLpStakingPoolAddress = "";
     const ethLpStakingPoolAddress = "";
     // *************************** //
@@ -83,12 +83,117 @@ task('prepare-staking-eth', 'Initiate 4 pools in eth')
     console.log("initialized stakingpools in eth")
   });
 
-task('prepare-staking-bsc', 'Initiate staking round in bsc')
+task('prepare-staking-eth-lp', 'Initiate staking round EL')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
     // **********PARAMS*********** //
-    const rewardForElFI = utils.parseEther('1000')
+    const rewardForElFI = utils.parseEther('210000').add(utils.parseEther('265755.5'))
+    console.log(rewardForElFI.toString());
     const durationInSeconds = 3600 * 24 * 28
-    const elfiStakingPoolAddress = "0x7d22b5A6Cf5dc27AC96a085FB49B67ddC3Aa6C77";
+    const address = (await hre.deployments.get('StakingPoolV2_ELFI_ETH_LP')).address;
+    console.log(address);
+    // *************************** //
+
+    const provider = hre.ethers.provider;
+    const { deployer } = await hre.getNamedAccounts();
+    const deployerSigner = provider.getSigner(deployer);
+
+    // const { elfiRich } = getNamedSigners(provider);
+    const { elfiToken } = getNamedContracts(provider);
+
+    const contract = (await hre.ethers.getContractAt('StakingPoolV2', address)) as StakingPoolV2;
+
+    // const tx1 = await elfiToken.connect(deployerSigner).transfer(elfiStakingPoolV2.address, rewardForElFI)
+    // await tx1.wait()
+
+    const format = 'YYYY.MM.DD hh:mm:ss Z';
+    const startAt = moment("2022.04.18 19:00:00", format).tz('Asia/Seoul', true)
+    console.log(startAt.unix())
+
+    const tx5 = await contract
+      .connect(deployerSigner)
+      .initNewPool(rewardForElFI.div(durationInSeconds), startAt.unix(), durationInSeconds)
+
+    await tx5.wait();
+
+    console.log("initialized stakingpool in bsc")
+  });
+
+task('prepare-staking-dai-lp', 'Initiate staking round EL')
+  .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    // **********PARAMS*********** //
+    const rewardForElFI = utils.parseEther('210000').add(utils.parseEther('265755.5'))
+    console.log(rewardForElFI.toString());
+    const durationInSeconds = 3600 * 24 * 28
+    const address = (await hre.deployments.get('StakingPoolV2_ETH_DAI_LP')).address;
+    console.log(address);
+    // *************************** //
+
+    const provider = hre.ethers.provider;
+    const { deployer } = await hre.getNamedAccounts();
+    const deployerSigner = provider.getSigner(deployer);
+
+    // const { elfiRich } = getNamedSigners(provider);
+    const { elfiToken } = getNamedContracts(provider);
+
+    const contract = (await hre.ethers.getContractAt('StakingPoolV2', address)) as StakingPoolV2;
+
+    // const tx1 = await elfiToken.connect(deployerSigner).transfer(elfiStakingPoolV2.address, rewardForElFI)
+    // await tx1.wait()
+
+    const format = 'YYYY.MM.DD hh:mm:ss Z';
+    const startAt = moment("2022.04.18 19:00:00", format).tz('Asia/Seoul', true)
+    console.log(startAt.unix())
+
+    const tx5 = await contract
+      .connect(deployerSigner)
+      .initNewPool(rewardForElFI.div(durationInSeconds), startAt.unix(), durationInSeconds)
+
+    await tx5.wait();
+
+    console.log("initialized stakingpool in bsc")
+  });
+
+task('prepare-staking-el', 'Initiate staking round EL')
+  .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    // **********PARAMS*********** //
+    const rewardForElFI = utils.parseEther('10633450')
+    const durationInSeconds = 3600 * 24 * 28
+    const elStakingPoolAddress = (await hre.deployments.get('StakingPoolV2_EL')).address;
+    console.log(elStakingPoolAddress);
+    // *************************** //
+
+    const provider = hre.ethers.provider;
+    const { deployer } = await hre.getNamedAccounts();
+    const deployerSigner = provider.getSigner(deployer);
+
+    // const { elfiRich } = getNamedSigners(provider);
+    const { elfiToken } = getNamedContracts(provider);
+
+    const contract = (await hre.ethers.getContractAt('StakingPoolV2', elStakingPoolAddress)) as StakingPoolV2;
+
+    // const tx1 = await elfiToken.connect(deployerSigner).transfer(elfiStakingPoolV2.address, rewardForElFI)
+    // await tx1.wait()
+
+    const format = 'YYYY.MM.DD hh:mm:ss Z';
+    const startAt = moment("2022.04.18 19:00:00", format).tz('Asia/Seoul', true)
+    console.log(startAt.unix())
+
+    const tx5 = await contract
+      .connect(deployerSigner)
+      .initNewPool(rewardForElFI.div(durationInSeconds), startAt.unix(), durationInSeconds)
+
+    await tx5.wait();
+
+    console.log("initialized stakingpool in bsc")
+  });
+
+task('prepare-staking-elfi', 'Initiate staking round ELFI')
+  .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    // **********PARAMS*********** //
+    const rewardForElFI = utils.parseEther('531511')
+    const durationInSeconds = 3600 * 24 * 28
+    const elfiStakingPoolAddress = (await hre.deployments.get('StakingPoolV2')).address;
+    console.log(elfiStakingPoolAddress);
     // *************************** //
 
     const provider = hre.ethers.provider;
@@ -100,12 +205,16 @@ task('prepare-staking-bsc', 'Initiate staking round in bsc')
 
     const elfiStakingPoolV2 = (await hre.ethers.getContractAt('StakingPoolV2', elfiStakingPoolAddress)) as StakingPoolV2;
 
-    const tx1 = await elfiToken.connect(deployerSigner).transfer(elfiStakingPoolV2.address, rewardForElFI)
-    await tx1.wait()
+    // const tx1 = await elfiToken.connect(deployerSigner).transfer(elfiStakingPoolV2.address, rewardForElFI)
+    // await tx1.wait()
+
+    const format = 'YYYY.MM.DD hh:mm:ss Z';
+    const startAt = moment("2022.04.18 19:00:00", format).tz('Asia/Seoul', true)
+    console.log(startAt.unix())
 
     const tx5 = await elfiStakingPoolV2
       .connect(deployerSigner)
-      .initNewPool(rewardForElFI.div(durationInSeconds), moment().unix(), durationInSeconds)
+      .initNewPool(rewardForElFI.div(durationInSeconds), startAt.unix(), durationInSeconds)
 
     await tx5.wait();
 

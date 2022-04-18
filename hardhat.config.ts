@@ -41,6 +41,7 @@ const config: HardhatUserConfig = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [process.env.ADMIN || ''],
       chainId: 1,
+      gasPrice: 30000000000,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -52,6 +53,11 @@ const config: HardhatUserConfig = {
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [process.env.ADMIN || ''],
+      /*
+      accounts: {
+        mnemonic: process.env.TEST_MNEMONIC,
+      },
+      */
       chainId: 4,
     },
     kovan: {
@@ -61,15 +67,15 @@ const config: HardhatUserConfig = {
       },
       chainId: 42,
     },
-    bscTest: {
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-      chainId: 97,
-      gasPrice: 20000000000,
-      accounts: [process.env.ADMIN || ''],
-    },
     bscMain: {
       url: 'https://bsc-dataseed.binance.org/',
       chainId: 56,
+      gasPrice: 20000000000,
+      accounts: [process.env.ADMIN || ''],
+    },
+    bscTest: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      chainId: 97,
       gasPrice: 20000000000,
       accounts: {
         mnemonic: process.env.TEST_MNEMONIC,

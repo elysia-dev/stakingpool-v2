@@ -4,7 +4,7 @@ import { DeployFunction } from 'hardhat-deploy/types';
 
 const elfiEthLpPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
-  const { elfiToken } = getNamedContracts(hre.ethers.provider);
+  const elfiToken = await hre.deployments.get('ELFI');
   const { deploy } = hre.deployments;
 
   const erc20MetadataLibrary = await deploy('ERC20Metadata', {
@@ -15,7 +15,8 @@ const elfiEthLpPool: DeployFunction = async function (hre: HardhatRuntimeEnviron
   const stakingAssetAddress = '0x727E501dDAbf9AB1888abC5042EF4d0569F0C162';
   const rewardAsset = elfiToken;
 
-  const stakingPool = await deploy('StakingPoolV2', {
+  const stakingPool = await deploy('StakingPoolV2_ELFI_ETH_LP', {
+    contract: 'StakingPoolV2',
     from: deployer,
     args: [stakingAssetAddress, rewardAsset.address],
     libraries: {
