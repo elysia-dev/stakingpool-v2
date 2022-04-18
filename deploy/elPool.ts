@@ -7,7 +7,6 @@ import {
   StakingPoolV2__factory,
   ERC20Metadata__factory,
 } from '../typechain';
-import { getElyfi, getDai } from '../utils/getDependencies';
 
 const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();

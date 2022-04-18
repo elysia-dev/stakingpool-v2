@@ -1,29 +1,23 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getNamedContracts, getNamedSigners } from '../tasks/utils';
+import { getNamedContracts } from '../tasks/utils';
 import { DeployFunction } from 'hardhat-deploy/types';
-import {
-  StakingPoolV2,
-  ERC20Metadata,
-  StakingPoolV2__factory,
-  ERC20Metadata__factory,
-} from '../typechain';
-import { getElyfi, getDai } from '../utils/getDependencies';
 
-const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const elfiDaiLpPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
-  const { elToken, elfiToken } = getNamedContracts(hre.ethers.provider);
+  const { elfiToken } = getNamedContracts(hre.ethers.provider);
   const { deploy } = hre.deployments;
 
   const erc20MetadataLibrary = await deploy('ERC20Metadata', {
     from: deployer,
   });
 
-  const stakingAsset = elfiToken;
+  // ELFI-DAI Lp token
+  const stakingAssetAddress = '0x8F9a5BD715c553a94Eaf0C67ebd2a8Ae2Ad60F9E';
   const rewardAsset = elfiToken;
 
   const stakingPool = await deploy('StakingPoolV2', {
     from: deployer,
-    args: [stakingAsset.address, rewardAsset.address],
+    args: [stakingAssetAddress, rewardAsset.address],
     libraries: {
       ERC20Metadata: erc20MetadataLibrary.address,
     },
@@ -34,6 +28,6 @@ const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment
     network: hre.network.name,
   });
 };
-elyfiPool.tags = ['elyfiPool'];
+elfiDaiLpPool.tags = ['daiLpPool'];
 
-export default elyfiPool;
+export default elfiDaiLpPool;
