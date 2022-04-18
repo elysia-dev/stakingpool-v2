@@ -10,7 +10,7 @@ import 'solidity-coverage';
 
 import { HardhatUserConfig } from 'hardhat/types';
 
-import './tasks/deploy';
+import './tasks/prepareStaking';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -48,6 +48,11 @@ const config: HardhatUserConfig = {
         mnemonic: process.env.TEST_MNEMONIC,
       },
       chainId: 3,
+    },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.ADMIN || ''],
+      chainId: 4,
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
