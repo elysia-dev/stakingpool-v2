@@ -19,7 +19,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
     stakingAsset = stakingAsset_;
     rewardAsset = rewardAsset_;
-    _setManager(msg.sender);
   }
 
   struct PoolData {
@@ -255,7 +254,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   } 
 
   function isManager(address addr) public view returns (bool) {
-    return managers[addr];
+    return managers[addr] || addr == owner();
   }
 
   /***************** private ******************/

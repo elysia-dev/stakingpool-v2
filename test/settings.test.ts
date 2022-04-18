@@ -77,6 +77,12 @@ describe('StakingPool.settings', () => {
     });
   });
 
+  describe('isManager', async () => {
+    it('always returns true for the owner', async () => {
+      expect(await testEnv.stakingPool.isManager(deployer.address)).to.equal(true);
+    })
+  });
+
   describe('.revokeManager', async () => {
     it('is onlyOwner', async () => {
       await expect(testEnv.stakingPool.connect(depositor).revokeManager(depositor.address))
