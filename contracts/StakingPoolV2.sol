@@ -37,7 +37,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   } 
 
   bool internal emergencyStop = false;
-  address internal _admin;
+  mapping(address => bool) managers;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
@@ -207,9 +207,11 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   function extendPool(
     uint256 rewardPerSecond,
     uint256 duration
-  ) external onlyOwner {
-    _poolData.resetPool(duration);
+  ) external onlyManager {
+    _poolData.extendPool(duration);
     _poolData.rewardPerSecond = rewardPerSecond;
+
+    emit ExtendPool(msg.sender, duration, rewardPerSecond);
   }
   
   function closePool() external onlyOwner {
@@ -217,6 +219,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     _poolData.endTimestamp = block.timestamp;
     _poolData.isOpened = false;
     _poolData.isFinished = true;
+    emit ClosePool(msg.sender, true);
   }
 
   function retrieveResidue() external onlyOwner {
@@ -228,14 +231,52 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
       residueAmount = rewardAsset.balanceOf(address(this));
     }
 
-    SafeERC20.safeTransfer(rewardAsset, _msgSender(), residueAmount);
+    SafeERC20.safeTransfer(rewardAsset, msg.sender, residueAmount);
+    emit RetrieveResidue(msg.sender, residueAmount);
+  }
+
+  function setManager(address addr) external onlyOwner {
+    _setManager(addr);
+  }
+
+  function revokeManager(address addr) external onlyOwner {
+    _revokeManager(addr);
+  }
+
+  function renounceManager(address addr) external {
+    require(addr == msg.sender, "Can only renounce manager for self");
+    _revokeManager(addr);
   }
 
   function setEmergency(bool stop) external onlyOwner {
     emergencyStop = stop;
+    emit SetEmergency(msg.sender, stop);
   } 
 
+  function isManager(address addr) public view returns (bool) {
+    return managers[addr] || addr == owner();
+  }
+
+  /***************** private ******************/
+  function _setManager(address addr) private {
+    if (!isManager(addr)) {
+      managers[addr] = true;
+      emit SetManager(msg.sender, addr);
+    }
+  }
+
+  function _revokeManager(address addr) private {
+    if (isManager(addr)) {
+      managers[addr] = false;
+      emit RevokeManager(msg.sender, addr);
+    }
+  }
+
   /***************** Modifier ******************/
+  modifier onlyManager() {
+    if (!isManager(msg.sender)) revert OnlyManager();
+    _;
+  }
 
   modifier stakingInitiated() {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();

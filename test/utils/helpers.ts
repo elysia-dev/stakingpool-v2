@@ -1,11 +1,12 @@
+import { MAX_UINT_AMOUNT } from './constants';
 import { BigNumber, Wallet, ethers } from 'ethers';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
 
 export type TestHelperActions = {
-  faucetAndApproveTarget: (wallet: Wallet, amount: string) => Promise<void>
-  faucetAndApproveReward: (wallet: Wallet, amount: string) => Promise<void>
+  faucetAndApproveTarget: (wallet: Wallet, amount?: string) => Promise<void>
+  faucetAndApproveReward: (wallet: Wallet, amount?: string) => Promise<void>
   stake: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   withdraw: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   claim: (wallet: Wallet) => Promise<ethers.ContractTransaction>
@@ -26,16 +27,22 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   // A target is the token staked.
   const faucetAndApproveTarget = async (
     wallet: Wallet,
-    amount: string,
+    amount?: string,
   ) => {
+    if (amount === undefined) {
+      amount = MAX_UINT_AMOUNT;
+    }
     await testEnv.stakingAsset.connect(wallet).faucet();
     await testEnv.stakingAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
   }
 
   const faucetAndApproveReward = async (
     wallet: Wallet,
-    amount: string,
+    amount?: string,
   ) => {
+    if (amount === undefined) {
+      amount = MAX_UINT_AMOUNT;
+    }
     await testEnv.rewardAsset.connect(wallet).faucet();
     await testEnv.rewardAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
   }

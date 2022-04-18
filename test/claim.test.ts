@@ -49,8 +49,8 @@ describe('StakingPool.claim', () => {
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);
-    await actions.faucetAndApproveReward(deployer, RAY);
-    await actions.faucetAndApproveTarget(alice, RAY);
+    await actions.faucetAndApproveReward(deployer);
+    await actions.faucetAndApproveTarget(alice);
   });
 
   it('reverts if the pool has not initiated', async () => {
@@ -262,6 +262,70 @@ describe('StakingPool.claim', () => {
 
       expect(poolDataAfterClaim).to.be.equalPoolData(expectedPoolDataClaim);
       expect(userDataAfterClaim).to.be.equalUserData(expectedUserDataClaim);
+    });
+
+    context('admin set bob as manager', async () => {
+      it('bob becomes manager and call extend pool and alice claim', async () => {
+        await actions.faucetAndApproveTarget(bob, RAY);
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        await testEnv.stakingPool.setManager(bob.address);
+  
+        await advanceTimeTo(secondRoundStartTimestamp)
+        const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          newRewardPersecond
+        );
+        
+        const claimTx = await testEnv.stakingPool.connect(alice).claim();
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterClaim(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(claimTx)
+        );
+   
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
+
+      it('alice action and bob becomes manager and call extend pool ', async () => {
+        await testEnv.stakingPool.connect(alice).stake(amount);
+        await actions.faucetAndApproveTarget(bob, RAY);
+        await testEnv.stakingPool.setManager(bob.address);
+  
+        await advanceTimeTo(secondRoundStartTimestamp);
+        await testEnv.stakingPool.connect(alice).withdraw(amount);
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
+        const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(tx),
+          duration,
+          newRewardPersecond
+        );
+        
+        const stakeTx = await testEnv.stakingPool.connect(alice).claim();
+        const [expectedPoolData_2, expectedUserData_2] = expectDataAfterClaim(
+          expectedPoolData_1,
+          expectedUserData_1,
+          await getTimestamp(stakeTx)
+        );
+   
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
+  
+        expect(poolDataAfter).eql(expectedPoolData_2);
+        expect(userDataAfter).eql(expectedUserData_2);
+      });
     });
   });
 

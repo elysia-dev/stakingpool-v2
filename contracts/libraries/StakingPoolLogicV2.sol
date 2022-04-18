@@ -58,7 +58,7 @@ library StakingPoolLogicV2 {
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal);
   }
 
-  function resetPool(
+  function extendPool(
     StakingPoolV2.PoolData storage poolData,
     uint256 duration
   ) internal {

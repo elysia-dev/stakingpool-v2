@@ -5,7 +5,7 @@ interface IStakingPoolV2 {
   error StakingNotInitiated();
   error InvalidAmount();
   error ZeroReward();
-  error OnlyAdmin();
+  error OnlyManager();
   error NotEnoughPrincipal(uint256 principal);
   error ZeroPrincipal();
   error Finished();
@@ -33,6 +33,23 @@ interface IStakingPoolV2 {
     uint256 startTimestamp,
     uint256 endTimestamp
   );
+
+  event ExtendPool(
+    address indexed manager,
+    uint256 duration,
+    uint256 rewardPerSecond
+  );
+
+  event ClosePool(address admin, bool close);
+
+  event RetrieveResidue(address manager, uint256 residueAmount);
+
+  event SetManager(address admin, address manager);
+
+  /// @param requester owner or the manager himself/herself
+  event RevokeManager(address requester, address manager);
+
+  event SetEmergency(address admin, bool emergency);
 
   function stake(uint256 amount) external;
 
