@@ -49,8 +49,8 @@ describe('StakingPool.claim', () => {
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);
-    await actions.faucetAndApproveReward(deployer, RAY);
-    await actions.faucetAndApproveTarget(alice, RAY);
+    await actions.faucetAndApproveReward(deployer);
+    await actions.faucetAndApproveTarget(alice);
   });
 
   it('reverts if the pool has not initiated', async () => {

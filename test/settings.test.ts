@@ -6,6 +6,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { resetTimestampTo, toTimestamp } from './utils/time';
+import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
 
 const { loadFixture } = waffle;
 
@@ -13,6 +14,7 @@ require('./utils/matchers.ts');
 
 describe('StakingPool.settings', () => {
   let testEnv: TestEnv;
+  let actions: TestHelperActions;
 
   const provider = waffle.provider;
   const [deployer, depositor] = provider.getWallets();
@@ -36,7 +38,8 @@ describe('StakingPool.settings', () => {
 
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
-    await testEnv.stakingAsset.connect(depositor).faucet();
+    actions = createTestActions(testEnv);
+    await actions.faucetAndApproveTarget(depositor);
   });
 
   it('staking pool deployed', async () => {
@@ -44,64 +47,78 @@ describe('StakingPool.settings', () => {
     expect(await testEnv.stakingPool.rewardAsset()).to.be.equal(testEnv.rewardAsset.address);
   });
 
-  context('when the staking pool deployed', async () => {
-    it('reverts if general account initiate the pool', async () => {
-      await testEnv.rewardAsset.connect(depositor).faucet();
-      await testEnv.rewardAsset.connect(depositor).approve(testEnv.stakingPool.address, RAY);
-      await expect(
-        testEnv.stakingPool
-          .connect(depositor)
-          .initNewPool(rewardPerSecond, startTimestamp, duration)
-      ).to.be.revertedWith('Ownable: caller is not the owner');
+  describe('.initNewPool', () => {
+    context('when the staking pool is deployed', async () => {
+      it('reverts if general account initiates the pool', async () => {
+        await testEnv.rewardAsset.connect(depositor).faucet();
+        await testEnv.rewardAsset.connect(depositor).approve(testEnv.stakingPool.address, RAY);
+        await expect(
+          testEnv.stakingPool
+            .connect(depositor)
+            .initNewPool(rewardPerSecond, startTimestamp, duration)
+        ).to.be.revertedWith('Ownable: caller is not the owner');
+      });
+
+      it('succeeds if an owner initates the pool', async () => {
+        await testEnv.rewardAsset.connect(deployer).faucet();
+        await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
+        await testEnv.stakingPool
+          .connect(deployer)
+          .initNewPool(rewardPerSecond, startTimestamp, duration);
+
+        const poolData = await testEnv.stakingPool.getPoolData();
+
+        expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
+        expect(poolData.rewardIndex).to.be.equal(WAD);
+        expect(poolData.startTimestamp).to.be.equal(startTimestamp);
+        expect(poolData.endTimestamp).to.be.equal(endTimestamp);
+        expect(poolData.totalPrincipal).to.be.equal(0);
+      });
     });
-
-    it('success', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(rewardPerSecond, startTimestamp, duration);
-
-      const poolData = await testEnv.stakingPool.getPoolData();
-
-      expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
-      expect(poolData.rewardIndex).to.be.equal(WAD);
-      expect(poolData.startTimestamp).to.be.equal(startTimestamp);
-      expect(poolData.endTimestamp).to.be.equal(endTimestamp);
-      expect(poolData.totalPrincipal).to.be.equal(0);
-    });
-
   });
 
-  context('reset the pool', async () => {
-    beforeEach('revert if a person not admin try reset the pool', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(rewardPerSecond, startTimestamp, duration);
+  describe('isManager', async () => {
+    it('always returns true for the owner', async () => {
+      expect(await testEnv.stakingPool.isManager(deployer.address)).to.equal(true);
+    })
+  });
+
+  describe('.revokeManager', async () => {
+    it('is onlyOwner', async () => {
+      await expect(testEnv.stakingPool.connect(depositor).revokeManager(depositor.address))
+        .to.be.revertedWith(
+          'Ownable: caller is not the owner'
+        );
+    })
+  });
+
+  describe('.setManager', async () => {
+    it('is onlyOwner', async () => {
+      await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
+        .to.be.revertedWith(
+          'Ownable: caller is not the owner'
+        );
+    })
+  });
+
+  describe('.extendPool', async () => {
+    beforeEach('init a new pool and jump to the start timestamp', async () => {
+      await actions.faucetAndApproveReward(deployer);
+      await actions.initNewPool(deployer, rewardPerSecond, startTimestamp, duration);
       await resetTimestampTo(startTimestamp);
     });
 
-    it('revert if a person not admin try extend the pool', async () => {
-      // TODO 
-      /*
+    it('reverts if the message sender is not a manager', async () => {
       await expect(
         testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('2')), BigNumber.from(30).mul(SECONDSPERDAY))
-      ).to.be.revertedWith('OnlyAdmin');
-      */
+      ).to.be.revertedWith('OnlyManager()');
     });
 
-
-    it('success when alice is set up as a manger by amdin', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
-      .to.be.revertedWith(
-        'Ownable: caller is not the owner'
-      );
+    it('succeeds when he/she becomes a manager', async () => {
       await expect(testEnv.stakingPool.connect(deployer).setManager(depositor.address))
-      .to.emit(testEnv.stakingPool, 'SetManager');
-      await expect(testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond,duration))
-      .to.emit(testEnv.stakingPool, 'ExtendPool');
+        .to.emit(testEnv.stakingPool, 'SetManager');
+      await expect(testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond, duration))
+        .to.emit(testEnv.stakingPool, 'ExtendPool');
     });
   });
 });
