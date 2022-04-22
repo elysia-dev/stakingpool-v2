@@ -47,6 +47,7 @@ describe('StakingPool.stake', () => {
     actions = createTestActions(testEnv);
     await actions.faucetAndApproveReward(deployer, RAY);
     await actions.faucetAndApproveTarget(alice, RAY);
+    await actions.faucetAndApproveTarget(bob, RAY);
   });
 
   it('reverts if the pool has not initiated', async () => {
@@ -55,7 +56,7 @@ describe('StakingPool.stake', () => {
   });
 
   context('when the pool initiated', async () => {
-    context('when the pool has started', async () => {
+    context('and the pool has started', async () => {
       beforeEach(async () => {
         await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
         await resetTimestampTo(firstTimestamp);
@@ -86,7 +87,7 @@ describe('StakingPool.stake', () => {
         expect(userDataAfter).to.eql(expectedUserData);
       });
 
-      context('pool is closed', async () => {
+      context('and the pool is closed', async () => {
         beforeEach('time passes and pool is closed', async () => {
           await actions.stake(alice, stakeAmount);
           await advanceTimeTo(endTimestamp);
@@ -115,7 +116,6 @@ describe('StakingPool.stake', () => {
   context('staking scenario', async () => {
     beforeEach('init the pool and time passes', async () => {
       await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
-      actions.faucetAndApproveTarget(bob, RAY);
       await resetTimestampTo(firstTimestamp);
     });
 
@@ -290,7 +290,7 @@ describe('StakingPool.stake', () => {
       expect(userDataAfter_2).to.be.equalUserData(expectedUserData_3);
     });
 
-    context('amdin set bob as manager', async () => {
+    context('admin set bob as manager', async () => {
       it('bob becomes manager and call extend pool and alice stakes', async () => {
         await actions.faucetAndApproveTarget(bob, RAY);
         const poolDataBefore = await getPoolData(testEnv);
@@ -355,43 +355,29 @@ describe('StakingPool.stake', () => {
         expect(userDataAfter).eql(expectedUserData_2);
       });
     });
-  });
 
-  context('in case of emergency', async () => {
-    beforeEach('init the pool and alice stakes', async () => {
-      await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await actions.initNewPoolAndTransfer(
-        deployer,
-        rewardPersecond,
-        firstTimestamp,
-        duration
-      );
-      await testEnv.stakingAsset.connect(alice).faucet();
-      await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
-      await resetTimestampTo(firstTimestamp);
-      await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-    });
+    context('in case of emergency', async () => {
+      it('sucess if alice stakes in an emergency', async () => {
+        await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        await testEnv.stakingPool.connect(deployer).setEmergency(true);
 
-    it('sucess if alice stakes in an emergency', async () => {
-      await testEnv.stakingPool.connect(deployer).setEmergency(true);
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
+        const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
 
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
-      const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        const [expectedPoolData, expectedUserData] = expectDataAfterStake(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(stakeTx),
+          stakeAmount
+        );
 
-      const [expectedPoolData, expectedUserData] = expectDataAfterStake(
-        poolDataBefore,
-        userDataBefore,
-        await getTimestamp(stakeTx),
-        stakeAmount
-      );
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
 
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
-
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
     });
   });
 });
