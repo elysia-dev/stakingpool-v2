@@ -13,6 +13,7 @@ library StakingPoolLogicV2 {
     uint256 totalPrincipal
   );
 
+  /// @notice Returns the reward per token if it is staked at the startTimestamp and is not claimed.
   function getRewardIndex(StakingPoolV2.PoolData storage poolData) internal view returns (uint256) {
     uint256 currentTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
@@ -32,7 +33,8 @@ library StakingPoolLogicV2 {
     return poolData.rewardIndex + rewardIndexDiff;
   }
 
-  function getUserReward(StakingPoolV2.PoolData storage poolData, address user)
+  /// @notice Returns the user's total unclaimed reward.
+ function getUserReward(StakingPoolV2.PoolData storage poolData, address user)
     internal
     view
     returns (uint256)
@@ -46,6 +48,7 @@ library StakingPoolLogicV2 {
     return result;
   }
 
+  /// @notice Returns the user's total unclaimed reward.
   function updateStakingPool(
     StakingPoolV2.PoolData storage poolData,
     address user
