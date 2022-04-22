@@ -5,6 +5,7 @@ import { MAX_UINT_AMOUNT, RAY, SECONDSPERDAY, ZERO_ADDRESS } from './utils/const
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
+import { createTestActions, TestHelperActions } from './utils/helpers';
 
 const { loadFixture } = waffle;
 
@@ -14,6 +15,7 @@ import { expect } from 'chai';
 
 describe('StakingPool.token', () => {
   let testEnv: TestEnv;
+  let actions: TestHelperActions;
   let chainId: number;
 
   const provider = waffle.provider;
@@ -47,6 +49,7 @@ describe('StakingPool.token', () => {
 
   beforeEach('deploy and init staking pool', async () => {
     testEnv = await loadFixture(fixture);
+    actions = createTestActions(testEnv);
   });
 
   context('ERC20', async () => {
@@ -166,9 +169,7 @@ describe('StakingPool.token', () => {
     beforeEach('init the first round and time passes', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(rewardPersecond, startTimestamp, duration);
+      await actions.initNewPoolAndTransfer(deployer, rewardPersecond, startTimestamp, duration);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);

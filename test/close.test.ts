@@ -46,7 +46,7 @@ describe('StakingPool.closePool', () => {
 
   context('when the pool has started', async () => {
     beforeEach(async () => {
-      const tx = await actions.initNewPool(
+      const tx = await actions.initNewPoolAndTransfer(
         deployer, rewardPerSecond, startTimestamp, duration);
       await advanceTimeTo(startTimestamp);
     });

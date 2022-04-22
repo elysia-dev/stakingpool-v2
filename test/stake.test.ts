@@ -57,9 +57,7 @@ describe('StakingPool.stake', () => {
   context('when the pool initiated', async () => {
     context('when the pool has started', async () => {
       beforeEach(async () => {
-        await testEnv.stakingPool
-          .connect(deployer)
-          .initNewPool(rewardPersecond, firstTimestamp, duration);
+        await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
         await resetTimestampTo(firstTimestamp);
       });
 
@@ -102,7 +100,7 @@ describe('StakingPool.stake', () => {
         it('revert if open the pool already finished', async () => {
           await actions.closePool(deployer);
           await expect(
-            actions.initNewPool(deployer, rewardPersecond, firstTimestamp, duration)
+            actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration)
           ).to.be.revertedWith('Finished');
         });
 
@@ -116,7 +114,7 @@ describe('StakingPool.stake', () => {
 
   context('staking scenario', async () => {
     beforeEach('init the pool and time passes', async () => {
-      await actions.initNewPool(deployer, rewardPersecond, firstTimestamp, duration);
+      await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
       actions.faucetAndApproveTarget(bob, RAY);
       await resetTimestampTo(firstTimestamp);
     });
@@ -212,13 +210,10 @@ describe('StakingPool.stake', () => {
 
   context('rewardPerSecond is changed', async () => {
     beforeEach('init the pool and stake in pool', async () => {
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(rewardPersecond, firstTimestamp, duration);
+      await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await resetTimestampTo(firstTimestamp);
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-      await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
     });
 
     it('rewardPerSecond is changed and stake in pool', async () => {
@@ -366,13 +361,12 @@ describe('StakingPool.stake', () => {
     beforeEach('init the pool and alice stakes', async () => {
       await testEnv.rewardAsset.connect(deployer).faucet();
       await testEnv.rewardAsset.connect(deployer).approve(testEnv.stakingPool.address, RAY);
-      await testEnv.stakingPool
-        .connect(deployer)
-        .initNewPool(
-          rewardPersecond,
-          firstTimestamp,
-          duration
-        );
+      await actions.initNewPoolAndTransfer(
+        deployer,
+        rewardPersecond,
+        firstTimestamp,
+        duration
+      );
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await resetTimestampTo(firstTimestamp);

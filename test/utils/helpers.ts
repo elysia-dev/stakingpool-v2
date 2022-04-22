@@ -10,12 +10,12 @@ export type TestHelperActions = {
   stake: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   withdraw: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   claim: (wallet: Wallet) => Promise<ethers.ContractTransaction>
-  initNewPool: (
+  initNewPoolAndTransfer: (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
     startTimestamp: BigNumber,
     duration: BigNumber,
-  ) => Promise<ethers.ContractTransaction>
+  ) => Promise<void>
   closePool: (wallet: Wallet) => Promise<ethers.ContractTransaction>
 
   // Queries
@@ -24,6 +24,8 @@ export type TestHelperActions = {
 }
 
 export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
+  const { stakingAsset, stakingPool, rewardAsset } = testEnv;
+
   // A target is the token staked.
   const faucetAndApproveTarget = async (
     wallet: Wallet,
@@ -32,8 +34,8 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
     }
-    await testEnv.stakingAsset.connect(wallet).faucet();
-    await testEnv.stakingAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
+    await stakingAsset.connect(wallet).faucet();
+    await stakingAsset.connect(wallet).approve(stakingPool.address, amount);
   }
 
   const faucetAndApproveReward = async (
@@ -43,40 +45,46 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
     }
-    await testEnv.rewardAsset.connect(wallet).faucet();
-    await testEnv.rewardAsset.connect(wallet).approve(testEnv.stakingPool.address, amount);
+    await rewardAsset.connect(wallet).faucet();
+    await rewardAsset.connect(wallet).approve(stakingPool.address, amount);
   }
 
   const stake = (
     wallet: Wallet,
     amount: BigNumber,
   ) => {
-    return testEnv.stakingPool.connect(wallet).stake(amount);
+    return stakingPool.connect(wallet).stake(amount);
   }
 
-  const initNewPool = async (
+  const initNewPoolAndTransfer = async (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
     startTimestamp: BigNumber,
     duration: BigNumber,
-  ) => (
-    testEnv.stakingPool
+  ) => {
+    const totalRewardAmount = rewardPerSecond.mul(duration)
+
+    await stakingPool
       .connect(wallet)
       .initNewPool(rewardPerSecond, startTimestamp, duration)
-  )
+
+    await rewardAsset
+      .connect(wallet)
+      .transfer(stakingPool.address, totalRewardAmount)
+  }
 
   const closePool = (
     wallet: Wallet,
-  ) => testEnv.stakingPool.connect(wallet).closePool();
+  ) => stakingPool.connect(wallet).closePool();
 
   const claim = (
     wallet: Wallet
-  ) => testEnv.stakingPool.connect(wallet).claim();
+  ) => stakingPool.connect(wallet).claim();
 
   const withdraw = (
     wallet: Wallet,
     amount: BigNumber,
-  ) => testEnv.stakingPool.connect(wallet).withdraw(amount);
+  ) => stakingPool.connect(wallet).withdraw(amount);
 
   const getUserData = (wallet: Wallet) => _getUserData(testEnv, wallet);
 
@@ -88,7 +96,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     stake,
     withdraw,
     claim,
-    initNewPool,
+    initNewPoolAndTransfer,
     closePool,
     getUserData,
     getPoolData,

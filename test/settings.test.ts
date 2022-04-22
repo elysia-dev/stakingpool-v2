@@ -47,7 +47,7 @@ describe('StakingPool.settings', () => {
     expect(await testEnv.stakingPool.rewardAsset()).to.be.equal(testEnv.rewardAsset.address);
   });
 
-  describe('.initNewPool', () => {
+  describe('.initNewPoolAndTransfer', () => {
     context('when the staking pool is deployed', async () => {
       it('reverts if general account initiates the pool', async () => {
         await testEnv.rewardAsset.connect(depositor).faucet();
@@ -104,7 +104,7 @@ describe('StakingPool.settings', () => {
   describe('.extendPool', async () => {
     beforeEach('init a new pool and jump to the start timestamp', async () => {
       await actions.faucetAndApproveReward(deployer);
-      await actions.initNewPool(deployer, rewardPerSecond, startTimestamp, duration);
+      await actions.initNewPoolAndTransfer(deployer, rewardPerSecond, startTimestamp, duration);
       await resetTimestampTo(startTimestamp);
     });
 
