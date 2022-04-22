@@ -1,9 +1,9 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const elPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
-  const elfiToken = await hre.deployments.get('ELFI');
+  const elToken = await hre.deployments.get("EL");
   const { deploy } = hre.deployments;
 
   const erc20MetadataLibrary = await deploy('ERC20Metadata', {
@@ -12,10 +12,10 @@ const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment
 
   console.log(erc20MetadataLibrary);
 
-  const stakingAsset = elfiToken;
-  const rewardAsset = elfiToken;
+  const stakingAsset = elToken;
+  const rewardAsset = elToken;
 
-  const stakingPool = await deploy('StakingPoolV2_ELFI', {
+  const stakingPool = await deploy('StakingPoolV2_EL', {
     contract: 'StakingPoolV2',
     from: deployer,
     args: [stakingAsset.address, rewardAsset.address],
@@ -29,6 +29,6 @@ const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment
     network: hre.network.name,
   });
 };
-elyfiPool.tags = ['elyfiPool'];
+elPool.tags = ['elPool'];
 
-export default elyfiPool;
+export default elPool;

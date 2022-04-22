@@ -10,6 +10,8 @@ import 'solidity-coverage';
 
 import { HardhatUserConfig } from 'hardhat/types';
 
+import './tasks/prepareStaking';
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.4',
@@ -28,6 +30,10 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   networks: {
+    ganache: {
+      // 'http://0.0.0.0:8545'
+      url: "https://elyfi-test.elyfi.world:8545",
+    },
     hardhat: {
       mining: {},
     },
@@ -35,6 +41,7 @@ const config: HardhatUserConfig = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: [process.env.ADMIN || ''],
       chainId: 1,
+      gasPrice: 30000000000,
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -43,6 +50,16 @@ const config: HardhatUserConfig = {
       },
       chainId: 3,
     },
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.ADMIN || ''],
+      /*
+      accounts: {
+        mnemonic: process.env.TEST_MNEMONIC,
+      },
+      */
+      chainId: 4,
+    },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts: {
@@ -50,22 +67,19 @@ const config: HardhatUserConfig = {
       },
       chainId: 42,
     },
-    bscTest: {
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-      chainId: 97,
-      gasPrice: 20000000000,
-      accounts: [process.env.ADMIN || ''],
-    },
     bscMain: {
       url: 'https://bsc-dataseed.binance.org/',
       chainId: 56,
       gasPrice: 20000000000,
+      accounts: [process.env.ADMIN || ''],
+    },
+    bscTest: {
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      chainId: 97,
+      gasPrice: 20000000000,
       accounts: {
         mnemonic: process.env.TEST_MNEMONIC,
       },
-    },
-    ganache: {
-      url: 'http://0.0.0.0:8545',
     },
   },
   etherscan: {
