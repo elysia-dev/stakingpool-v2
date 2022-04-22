@@ -22,7 +22,6 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   struct PoolData {
-    uint256 duration;
     uint256 rewardPerSecond;
     uint256 rewardIndex;
     uint256 startTimestamp;
