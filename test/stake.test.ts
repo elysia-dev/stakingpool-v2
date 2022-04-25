@@ -45,64 +45,53 @@ describe('StakingPool.stake', () => {
       .to.be.revertedWith('StakingNotInitiated');
   });
 
-  context('when the pool initiated', async () => {
-    context('and the pool has started', async () => {
-      beforeEach(async () => {
-        await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
-        await resetTimestampTo(firstTimestamp);
-      });
+  context('when the pool is initiated and started', async () => {
+    beforeEach(async () => {
+      await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
+      await resetTimestampTo(firstTimestamp);
+    });
 
-      it('reverts if user staking amount is 0', async () => {
-        await expect(actions.stake(alice, BigNumber.from('0')))
-          .to.be.revertedWith('InvalidAmount');
-      });
+    it('reverts if user staking amount is 0', async () => {
+      await expect(actions.stake(alice, BigNumber.from('0')))
+        .to.be.revertedWith('InvalidAmount');
+    });
 
-      it('success', async () => {
-        const poolDataBefore = await getPoolData(testEnv);
-        const userDataBefore = await getUserData(testEnv, alice);
+    it('increases rewardIndex by rewardPerSecond * seconds_passed_after_init', async () => {
+      const poolDataBefore = await getPoolData(testEnv);
+      const userDataBefore = await getUserData(testEnv, alice);
 
-        const stakeTx = await actions.stake(alice, stakeAmount);
+      const stakeTx = await actions.stake(alice, stakeAmount);
 
-        const [expectedPoolData, expectedUserData] = expectDataAfterStake(
-          poolDataBefore,
-          userDataBefore,
-          await getTimestamp(stakeTx),
-          stakeAmount
-        );
+      const [expectedPoolData, expectedUserData] = expectDataAfterStake(
+        poolDataBefore,
+        userDataBefore,
+        await getTimestamp(stakeTx),
+        stakeAmount
+      );
 
-        const poolDataAfter = await getPoolData(testEnv);
-        const userDataAfter = await getUserData(testEnv, alice);
+      const poolDataAfter = await getPoolData(testEnv);
+      const userDataAfter = await getUserData(testEnv, alice);
 
-        expect(poolDataAfter).to.eql(expectedPoolData);
-        expect(userDataAfter).to.eql(expectedUserData);
-      });
+      expect(poolDataAfter).to.eql(expectedPoolData);
+      expect(userDataAfter).to.eql(expectedUserData);
+    });
 
-      context('and the pool is closed', async () => {
-        beforeEach('time passes and pool is closed', async () => {
-          await actions.stake(alice, stakeAmount);
-          await advanceTimeTo(endTimestamp);
-        });
+    it('', async () => {
 
-        it('revert if general account close the pool', async () => {
-          await expect(testEnv.stakingPool.connect(alice).closePool()
-          ).to.be.revertedWith('Ownable: caller is not the owner');
-        });
+    });
 
-        it('revert if open the pool already finished', async () => {
-          await actions.closePool(deployer);
-          await expect(
-            actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration)
-          ).to.be.revertedWith('Finished');
-        });
+    it('updates the lastUpdateTimestamp', async () => {
 
-        it('revert if staking in the pool finished', async () => {
-          await actions.closePool(deployer);
-          await expect(actions.stake(alice, stakeAmount)).to.be.revertedWith('Closed');
-        });
-      });
+    });
+
+    it('increases the user principal and the total principal of the pool by the staked amount', async () => {
+    });
+
+    it('transfers the staked amount of token from the user to the pool', async () => {
     });
   });
 
+  // TODO: Do we really need this scenario tests?
   context('staking scenario', async () => {
     beforeEach('init the pool and time passes', async () => {
       await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
@@ -313,12 +302,13 @@ describe('StakingPool.stake', () => {
       });
 
       it('alice action and bob becomes manager and call extend pool ', async () => {
-        await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+        await actions.stake(alice, stakeAmount);
         await actions.faucetAndApproveTarget(bob, RAY);
         await testEnv.stakingPool.setManager(bob.address);
 
         await advanceTimeTo(secondTimestamp);
-        await testEnv.stakingPool.connect(alice).withdraw(stakeAmount);
+        await actions.withdraw(alice, stakeAmount);
+
         const poolDataBefore = await getPoolData(testEnv);
         const userDataBefore = await getUserData(testEnv, alice);
         const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
@@ -347,26 +337,11 @@ describe('StakingPool.stake', () => {
     });
 
     context('in case of emergency', async () => {
-      it('sucess if alice stakes in an emergency', async () => {
-        await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-        await testEnv.stakingPool.connect(deployer).setEmergency(true);
+      it('succeeds if alice stakes', async () => {
+        await actions.stake(alice, stakeAmount);
+        await actions.setEmergency(deployer, true);
 
-        const poolDataBefore = await getPoolData(testEnv);
-        const userDataBefore = await getUserData(testEnv, alice);
-        const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
-
-        const [expectedPoolData, expectedUserData] = expectDataAfterStake(
-          poolDataBefore,
-          userDataBefore,
-          await getTimestamp(stakeTx),
-          stakeAmount
-        );
-
-        const poolDataAfter = await getPoolData(testEnv);
-        const userDataAfter = await getUserData(testEnv, alice);
-
-        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+        await actions.stake(alice, stakeAmount); // not reverted
       });
     });
   });

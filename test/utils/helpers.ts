@@ -17,6 +17,7 @@ export type TestHelperActions = {
     duration: BigNumber,
   ) => Promise<void>
   closePool: (wallet: Wallet) => Promise<ethers.ContractTransaction>
+  setEmergency: (wallet: Wallet, stop: boolean) => Promise<ethers.ContractTransaction>
 
   // Queries
   getUserData: (wallet: Wallet) => Promise<UserData>
@@ -77,6 +78,11 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     wallet: Wallet,
   ) => stakingPool.connect(wallet).closePool();
 
+  const setEmergency = (
+    wallet: Wallet,
+    stop: boolean,
+  ) => stakingPool.connect(wallet).setEmergency(stop);
+
   const claim = (
     wallet: Wallet
   ) => stakingPool.connect(wallet).claim();
@@ -98,6 +104,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     claim,
     initNewPoolAndTransfer,
     closePool,
+    setEmergency,
     getUserData,
     getPoolData,
   }

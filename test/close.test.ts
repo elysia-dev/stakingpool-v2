@@ -2,6 +2,7 @@ import { createTestActions, TestHelperActions } from './utils/helpers';
 import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
+import moment from 'moment';
 
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY, WAD, MAX_UINT_AMOUNT } from './utils/constants';
@@ -42,9 +43,29 @@ describe('StakingPool.closePool', () => {
 
   context('when the pool has started', async () => {
     beforeEach(async () => {
-      const tx = await actions.initNewPoolAndTransfer(
+      await actions.initNewPoolAndTransfer(
         deployer, rewardPerSecond, startTimestamp, duration);
       await advanceTimeTo(startTimestamp);
+    });
+
+    it('reverts if a general account closes the pool', async () => {
+      await expect(testEnv.stakingPool.connect(alice).closePool()
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+    });
+
+    it('reverts if open the pool already finished', async () => {
+      const rewardPersecond = BigNumber.from(utils.parseEther('1'));
+      const startAt = BigNumber.from(moment("2022.04.18 19:00:00", 'YYYY.MM.DD hh:mm:ss Z').unix())
+
+      await actions.closePool(deployer);
+      await expect(
+        actions.initNewPoolAndTransfer(deployer, rewardPersecond, startAt, duration)
+      ).to.be.revertedWith('Finished');
+    });
+
+    it('reverts staking request after it is closed', async () => {
+      await actions.closePool(deployer);
+      await expect(actions.stake(alice, stakeAmount)).to.be.revertedWith('Closed');
     });
 
     it('the index does not increase after the pool is closed.', async () => {
