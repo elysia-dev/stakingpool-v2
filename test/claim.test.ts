@@ -20,20 +20,11 @@ describe('StakingPool.claim', () => {
   const [deployer, alice, bob] = provider.getWallets();
 
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month_1 = BigNumber.from(7);
-  const day_1 = BigNumber.from(7);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const month_2 = BigNumber.from(7);
-  const day_2 = BigNumber.from(8);
-
-  const month_3 = BigNumber.from(8);
-  const day_3 = BigNumber.from(20);
-
-  const firstRoundStartTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
-  const secondRoundStartTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
-  const thirdRoundStartTimestamp = toTimestamp(year, month_3, day_3, BigNumber.from(10));
+  const firstRoundStartTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const secondRoundStartTimestamp = toTimestamp("2022.07.08 10:00:00Z");
+  const thirdRoundStartTimestamp = toTimestamp("2022.08.20 10:00:00Z");
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 
   const amount = ethers.utils.parseEther('1');

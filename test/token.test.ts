@@ -22,12 +22,9 @@ describe('StakingPool.token', () => {
   const [deployer, alice, bob, carol] = provider.getWallets();
 
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month = BigNumber.from(7);
-  const day = BigNumber.from(8);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
+  const startTimestamp = toTimestamp("2022.07.08 10:00:00Z");
 
   async function fixture() {
     const testEnv = await setTestEnv();

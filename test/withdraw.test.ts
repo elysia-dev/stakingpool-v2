@@ -20,16 +20,10 @@ describe('StakingPool.withdraw', () => {
   const [deployer, alice, bob] = provider.getWallets();
 
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month_1 = BigNumber.from(7);
-  const day_1 = BigNumber.from(8);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const month_2 = BigNumber.from(7);
-  const day_2 = BigNumber.from(20);
-
-  const firstTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
-  const secondTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
+  const firstTimestamp = toTimestamp("2022.07.08 10:00:00Z");
+  const secondTimestamp = toTimestamp("2022.07.20 10:00:00Z");
   const amount = ethers.utils.parseEther('1');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 

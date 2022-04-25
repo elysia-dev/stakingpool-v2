@@ -1,4 +1,4 @@
-import { BigNumber, utils, ethers } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
@@ -20,20 +20,10 @@ describe('StakingPool.stake', () => {
   const [deployer, alice, bob, carol] = provider.getWallets();
 
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month_1 = BigNumber.from(7);
-  const day_1 = BigNumber.from(7);
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const month_end = BigNumber.from(8);
-  const day_end = BigNumber.from(20);
-
-  const month_2 = BigNumber.from(8);
-  const day_2 = BigNumber.from(4);
-
-  const firstTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
-  const secondTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
-  const endTimestamp = toTimestamp(year, month_end, day_end, BigNumber.from(10));
+  const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const secondTimestamp = toTimestamp("2022.08.04 10:00:00Z")
 
   const stakeAmount = utils.parseEther('10');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
