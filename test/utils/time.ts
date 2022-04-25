@@ -1,19 +1,11 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, ContractReceipt, ContractTransaction } from 'ethers';
 import moment from 'moment';
 import { waffle } from 'hardhat';
-import { InitRoundData } from '../../data/types/InitRoundData';
 
 export function toTimestamp(
   str: string
 ): BigNumber {
   return BigNumber.from(moment(str, 'YYYY.MM.DD hh:mm:ss Z').unix())
-}
-
-export function roundStartTimestamp(roundData: InitRoundData) {
-  return BigNumber.from(
-    Date.UTC(roundData.year, roundData.month - 1, roundData.day, roundData.hour, roundData.minute) /
-    1000
-  );
 }
 
 export async function advanceBlock() {

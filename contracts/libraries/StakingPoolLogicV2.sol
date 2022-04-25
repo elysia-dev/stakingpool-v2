@@ -39,9 +39,6 @@ library StakingPoolLogicV2 {
     view
     returns (uint256)
   {
-    if (poolData.userIndex[user] == 0) {
-      return 0;
-    }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
     uint256 balance = poolData.userPrincipal[user];
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e18;
@@ -80,7 +77,7 @@ library StakingPoolLogicV2 {
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + duration;
     poolData.lastUpdateTimestamp = roundStartTimestamp;
-    poolData.rewardIndex = 1e18;
+    // poolData.rewardIndex = 0;
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }

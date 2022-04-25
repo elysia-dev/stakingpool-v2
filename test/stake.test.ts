@@ -1,10 +1,10 @@
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, utils, ethers } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, resetTimestampTo, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, resetTimestampTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake, updatePoolData } from './utils/expect';
 import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
 
@@ -56,31 +56,23 @@ describe('StakingPool.stake', () => {
         .to.be.revertedWith('InvalidAmount');
     });
 
-    it('increases rewardIndex by rewardPerSecond * seconds_passed_after_init', async () => {
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
+    it('increases rewardIndex by rewardPerSecond * seconds_passed_after_last_update / totalPrincipal', async () => {
+      const tx = await actions.stake(alice, stakeAmount); // t: start + 1
+      await tx.wait();
+      await advanceTime(10); // t: start + 11
 
-      const stakeTx = await actions.stake(alice, stakeAmount);
-
-      const [expectedPoolData, expectedUserData] = expectDataAfterStake(
-        poolDataBefore,
-        userDataBefore,
-        await getTimestamp(stakeTx),
-        stakeAmount
-      );
-
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
-
-      expect(poolDataAfter).to.eql(expectedPoolData);
-      expect(userDataAfter).to.eql(expectedUserData);
+      const rewardIndex = await testEnv.stakingPool.getRewardIndex();
+      const poolData = await getPoolData(testEnv);
+      // timeDiff * rewardPerSecond / totalPrincipal =  10 * 1 / 10
+      expect(rewardIndex).to.equal(ethers.utils.parseEther('1'));
+      expect(poolData.rewardIndex).to.equal(BigNumber.from('0'));
     });
 
-    it('', async () => {
+    it('updates the message sender\'s userIndex equal to the current rewardIndex', async () => {
 
     });
 
-    it('updates the lastUpdateTimestamp', async () => {
+    it('updates the lastUpdateTimestamp equal to the current block timestamp', async () => {
 
     });
 
@@ -89,7 +81,13 @@ describe('StakingPool.stake', () => {
 
     it('transfers the staked amount of token from the user to the pool', async () => {
     });
+
+    context('If it is not the first staking', () => {
+      // TODO: If alice and bob stakes, they receive rewards proportionately
+
+    });
   });
+
 
   // TODO: Do we really need this scenario tests?
   context('staking scenario', async () => {
@@ -187,7 +185,7 @@ describe('StakingPool.stake', () => {
     });
   });
 
-  context('rewardPerSecond is changed', async () => {
+  context('when rewardPerSecond is changed after it began', async () => {
     beforeEach('init the pool and stake in pool', async () => {
       await actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstTimestamp, duration);
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -208,7 +206,7 @@ describe('StakingPool.stake', () => {
         newRewardPersecond
       );
 
-      const stakeTx = await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+      const stakeTx = await actions.stake(alice, stakeAmount);
       const [expectedPoolData_2, expectedUserData_2] = expectDataAfterStake(
         expectedPoolData_1,
         expectedUserData_1,
@@ -219,8 +217,8 @@ describe('StakingPool.stake', () => {
       const poolDataAfter = await getPoolData(testEnv);
       const userDataAfter = await getUserData(testEnv, alice);
 
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData_2);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData_2);
+      expect(poolDataAfter).to.eql(expectedPoolData_2);
+      expect(userDataAfter).to.eql(expectedUserData_2);
     });
 
     it('rewardPerSecond is changed and stake in pool twice', async () => {
@@ -269,6 +267,7 @@ describe('StakingPool.stake', () => {
       expect(userDataAfter_2).to.be.equalUserData(expectedUserData_3);
     });
 
+    // TODO: Extract these to extendPool.test.ts
     context('admin set bob as manager', async () => {
       it('bob becomes manager and call extend pool and alice stakes', async () => {
         await actions.faucetAndApproveTarget(bob, RAY);

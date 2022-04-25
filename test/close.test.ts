@@ -5,9 +5,9 @@ import { expect } from 'chai';
 import moment from 'moment';
 
 import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY, WAD, MAX_UINT_AMOUNT } from './utils/constants';
+import { RAY, SECONDSPERDAY, MAX_UINT_AMOUNT } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -22,7 +22,7 @@ describe('StakingPool.closePool', () => {
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
-  const initialIndex = utils.parseEther('1');
+  const initialIndex = BigNumber.from('0');
 
   const stakeAmount = utils.parseEther('1');
 
@@ -92,7 +92,7 @@ describe('StakingPool.closePool', () => {
 
       // After a user claims, userIndex changes, but the rewardIndex remains the same.
       expect(aliceDataAfterClaim.userReward).to.equal(utils.parseEther('0'));
-      expect(aliceDataAfterClaim.userIndex).to.equal(utils.parseEther('11'));
+      expect(aliceDataAfterClaim.userIndex).to.equal(utils.parseEther('10'));
 
       expect(poolDataAfterClaim.rewardIndex).to.equal(initialIndex);
     });

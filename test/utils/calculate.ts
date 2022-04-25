@@ -31,10 +31,6 @@ export function calculateUserReward(
   userData: UserData,
   txTimeStamp: BigNumber
 ): BigNumber {
-  if (userData.userIndex.eq(0)) {
-    return BigNumber.from(0);
-  }
-
   const indexDiff = calculateRewardIndex(poolData, txTimeStamp).sub(userData.userIndex);
   const balance = userData.userPrincipal;
   const rewardAdded = balance.mul(indexDiff).div(WAD);

@@ -66,7 +66,7 @@ describe('StakingPool.settings', () => {
         const poolData = await testEnv.stakingPool.getPoolData();
 
         expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
-        expect(poolData.rewardIndex).to.be.equal(WAD);
+        expect(poolData.rewardIndex).to.be.equal(BigNumber.from('0'));
         expect(poolData.startTimestamp).to.be.equal(startTimestamp);
         expect(poolData.endTimestamp).to.be.equal(endTimestamp);
         expect(poolData.totalPrincipal).to.be.equal(0);
