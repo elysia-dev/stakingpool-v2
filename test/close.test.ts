@@ -75,7 +75,7 @@ describe('StakingPool.closePool', () => {
 
       // After a user claims, userIndex changes, but the rewardIndex remains the same.
       expect(aliceDataAfterClaim.userReward).to.equal(utils.parseEther('0'));
-      expect(aliceDataAfterClaim.userIndex).to.equal(BigNumber.from('1000000010000000000'));
+      expect(aliceDataAfterClaim.userIndex).to.equal(utils.parseEther('11'));
 
       expect(poolDataAfterClaim.rewardIndex).to.equal(initialIndex);
     });
