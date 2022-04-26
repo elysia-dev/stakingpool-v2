@@ -3,6 +3,7 @@ pragma solidity 0.8.4;
 import '../StakingPoolV2.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import './WadMath.sol';
 
 library StakingPoolLogicV2 {
   using StakingPoolLogicV2 for StakingPoolV2.PoolData;
@@ -29,7 +30,7 @@ library StakingPoolLogicV2 {
       return poolData.rewardIndex;
     }
 
-    uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e18) / totalPrincipal;
+    uint256 rewardIndexDiff = WadMath.div(timeDiff * poolData.rewardPerSecond, totalPrincipal);
     return poolData.rewardIndex + rewardIndexDiff;
   }
 
@@ -44,7 +45,7 @@ library StakingPoolLogicV2 {
     }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
     uint256 balance = poolData.userPrincipal[user];
-    uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e18;
+    uint256 result = poolData.userReward[user] + WadMath.mul(balance, indexDiff);
     return result;
   }
 
