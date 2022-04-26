@@ -1,5 +1,5 @@
 import { createTestActions, TestHelperActions } from './utils/helpers';
-import { BigNumber, utils } from 'ethers';
+import { BigNumber, constants, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { expect } from 'chai';
 import moment from 'moment';
@@ -37,7 +37,7 @@ describe('StakingPool.closePool', () => {
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);
-    await actions.faucetAndApproveReward(deployer, MAX_UINT_AMOUNT);
+    await actions.faucetAndApproveReward(deployer, constants.MaxUint256.toString());
     await actions.faucetAndApproveTarget(alice, RAY);
   });
 

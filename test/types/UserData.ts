@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers';
 
-interface UserData {
+export interface UserData {
   userIndex: BigNumber;
   userReward: BigNumber;
   userPreviousReward: BigNumber;

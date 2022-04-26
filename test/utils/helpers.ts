@@ -1,8 +1,11 @@
 import { MAX_UINT_AMOUNT } from './constants';
 import { BigNumber, Wallet, ethers } from 'ethers';
+import { expect } from 'chai';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
+import { expectDataAfterStake } from '../utils/expect';
+import { getTimestamp } from '../utils/time';
 
 export type TestHelperActions = {
   faucetAndApproveTarget: (wallet: Wallet, amount?: string) => Promise<void>
@@ -22,6 +25,9 @@ export type TestHelperActions = {
   // Queries
   getUserData: (wallet: Wallet) => Promise<UserData>
   getPoolData: () => Promise<PoolData>
+
+  // Assertions
+  checkAfterStake: (wallet: Wallet, amount: BigNumber) => Promise<void>
 }
 
 export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
@@ -96,6 +102,29 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const getPoolData = () => _getPoolData(testEnv);
 
+  // assertions
+  const checkAfterStake = async (
+    wallet: Wallet,
+    amount: BigNumber,
+  ) => {
+    const poolDataBefore = await getPoolData();
+    const userDataBefore = await getUserData(wallet);
+    const stakeTx = await stake(wallet, amount);
+
+    const [expectedPoolData, expectedUserData] = expectDataAfterStake(
+      poolDataBefore,
+      userDataBefore,
+      await getTimestamp(stakeTx),
+      amount
+    );
+
+    const poolDataAfter = await getPoolData();
+    const userDataAfter = await getUserData(wallet);
+
+    expect(poolDataAfter).to.eql(expectedPoolData);
+    expect(userDataAfter).to.eql(expectedUserData);
+  }
+
   return {
     faucetAndApproveReward,
     faucetAndApproveTarget,
@@ -107,23 +136,25 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     setEmergency,
     getUserData,
     getPoolData,
+    checkAfterStake,
   }
 }
 
 const _getUserData = async (
   testEnv: TestEnv,
-  user: Wallet,
+  user: Wallet | string,
 ): Promise<UserData> => {
   const userData = <UserData>{};
+  const address = typeof user === 'string' ? user : user.address;
 
-  const contractUserData = await testEnv.stakingPool.getUserData(user.address);
+  const contractUserData = await testEnv.stakingPool.getUserData(address);
 
-  userData.rewardAssetBalance = await testEnv.rewardAsset.balanceOf(user.address);
-  userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(user.address);
+  userData.rewardAssetBalance = await testEnv.rewardAsset.balanceOf(address);
+  userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(address);
   userData.userPrincipal = contractUserData.userPrincipal;
   userData.userIndex = contractUserData.userIndex;
   userData.userPreviousReward = contractUserData.userReward;
-  userData.userReward = await testEnv.stakingPool.getUserReward(user.address);
+  userData.userReward = await testEnv.stakingPool.getUserReward(address);
 
   return userData;
 };

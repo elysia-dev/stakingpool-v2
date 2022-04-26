@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers';
 
-interface PoolData {
+export interface PoolData {
   rewardPerSecond: BigNumber;
   rewardIndex: BigNumber;
   startTimestamp: BigNumber;
