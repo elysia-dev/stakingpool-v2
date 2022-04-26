@@ -3,7 +3,7 @@ import { waffle, ethers } from 'hardhat';
 import { expect } from 'chai';
 
 import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
-import { advanceTimeTo, toTimestamp } from './utils/time';
+import { advanceTimeTo, resetTimestampTo, toTimestamp } from './utils/time';
 import { setERC20Metadata } from './utils/testEnv';
 import { StakingAsset, StakingPoolV2 } from '../typechain';
 
@@ -68,7 +68,7 @@ describe('StakingPool.retrieveResidue', () => {
         const stakeAmount = BigNumber.from(utils.parseEther('100'));
 
         // The staking starts
-        await advanceTimeTo(startTimestamp);
+        await resetTimestampTo(startTimestamp);
 
         // deployer stakes
         await stakingPool.connect(deployer).stake(stakeAmount);

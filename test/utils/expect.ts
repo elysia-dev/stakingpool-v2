@@ -115,7 +115,7 @@ export function expectDataAfterMigrate(
   newFromUserData.userPreviousReward =
     newFromUserData.userPrincipal =
     newFromUserData.userReward =
-      BigNumber.from(0);
+    BigNumber.from(0);
 
   // update user index for claim
   const newUserIndexInFromPool = calculateRewardIndex(fromPoolData, txTimeStamp);
@@ -163,13 +163,15 @@ export function updatePoolData(
   poolData: PoolData,
   userData: UserData,
   txTimeStamp: BigNumber,
-  duration : BigNumber,
-  rewardPerSecond: BigNumber
+  duration: BigNumber,
+  rewardPerSecond: BigNumber,
+  skipUpdateUser: boolean = false,
 ): [PoolData, UserData] {
   const [newPoolData, newUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
     poolData,
     userData,
-    txTimeStamp
+    txTimeStamp,
+    skipUpdateUser,
   );
 
   newPoolData.startTimestamp = newPoolData.lastUpdateTimestamp = txTimeStamp;

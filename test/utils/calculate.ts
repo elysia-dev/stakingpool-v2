@@ -40,25 +40,28 @@ export function calculateUserReward(
   return result;
 }
 
+
 export function calculateDataAfterUpdate(
   poolData: PoolData,
   userData: UserData,
-  txTimestamp: BigNumber
+  txTimestamp: BigNumber,
+  skipUpdateUser: boolean = false,
 ): [PoolData, UserData] {
   const newPoolData = { ...poolData } as PoolData;
   const newUserData = { ...userData } as UserData;
 
-  const newUserReward = calculateUserReward(poolData, userData, txTimestamp);
   const newIndex = calculateRewardIndex(poolData, txTimestamp);
-
-  newUserData.userPreviousReward = newUserData.userReward = newUserReward;
-
   newPoolData.rewardIndex = newIndex;
-  newUserData.userIndex = newIndex;
-
   newPoolData.lastUpdateTimestamp = txTimestamp.lt(poolData.endTimestamp)
     ? txTimestamp
     : poolData.endTimestamp;
+
+  const newUserReward = calculateUserReward(poolData, userData, txTimestamp);
+  newUserData.userReward = newUserReward;
+  if (!skipUpdateUser) {
+    newUserData.userPreviousReward = newUserReward;
+    newUserData.userIndex = newIndex;
+  }
 
   return [newPoolData, newUserData];
 }

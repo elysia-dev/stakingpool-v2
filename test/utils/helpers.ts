@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
-import { expectDataAfterStake } from '../utils/expect';
+import { expectDataAfterStake, updatePoolData } from '../utils/expect';
 import { getTimestamp } from '../utils/time';
 
 export type TestHelperActions = {
@@ -27,7 +27,8 @@ export type TestHelperActions = {
   getPoolData: () => Promise<PoolData>
 
   // Assertions
-  checkAfterStake: (wallet: Wallet, amount: BigNumber) => Promise<void>
+  stakeAndCheck: (wallet: Wallet, amount: BigNumber) => Promise<void>
+  extendPoolAndCheck: (deployer: Wallet, wallet: Wallet, rewardPerSecond: BigNumber, duration: BigNumber) => Promise<void>
 }
 
 export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
@@ -98,12 +99,19 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     amount: BigNumber,
   ) => stakingPool.connect(wallet).withdraw(amount);
 
+  const extendPool = (
+    wallet: Wallet,
+    rewardPerSecond: BigNumber,
+    duration: BigNumber,
+  ) => stakingPool.connect(wallet).extendPool(rewardPerSecond, duration);
+
+  // Queries
   const getUserData = (wallet: Wallet) => _getUserData(testEnv, wallet);
 
   const getPoolData = () => _getPoolData(testEnv);
 
   // assertions
-  const checkAfterStake = async (
+  const stakeAndCheck = async (
     wallet: Wallet,
     amount: BigNumber,
   ) => {
@@ -125,6 +133,33 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     expect(userDataAfter).to.eql(expectedUserData);
   }
 
+  const extendPoolAndCheck = async (
+    deployer: Wallet,
+    wallet: Wallet,
+    rewardPerSecond: BigNumber,
+    duration: BigNumber,
+  ) => {
+    const poolDataBefore = await getPoolData();
+    const userDataBefore = await getUserData(wallet);
+    const tx = await extendPool(deployer, rewardPerSecond, duration);
+
+    // extendPool does not update userIndex
+    const [expectedPoolData, expectedUserData] = updatePoolData(
+      poolDataBefore,
+      userDataBefore,
+      await getTimestamp(tx),
+      duration,
+      rewardPerSecond,
+      true,
+    );
+
+    const poolDataAfter = await getPoolData();
+    const userDataAfter = await getUserData(wallet);
+
+    expect(poolDataAfter).to.eql(expectedPoolData);
+    expect(userDataAfter).to.eql(expectedUserData);
+  }
+
   return {
     faucetAndApproveReward,
     faucetAndApproveTarget,
@@ -136,7 +171,8 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     setEmergency,
     getUserData,
     getPoolData,
-    checkAfterStake,
+    stakeAndCheck,
+    extendPoolAndCheck,
   }
 }
 

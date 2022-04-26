@@ -42,35 +42,35 @@ describe('StakingPool.stake', () => {
     });
 
     it('first stake and second stake from alice', async () => {
-      const { stake, checkAfterStake } = actions;
+      const { stake, stakeAndCheck } = actions;
 
       await stake(alice, stakeAmount);
-      await checkAfterStake(alice, stakeAmount);
+      await stakeAndCheck(alice, stakeAmount);
     });
 
     it('first stake, second stake and third stake from alice', async () => {
-      const { stake, checkAfterStake } = actions;
+      const { stake, stakeAndCheck } = actions;
 
       await stake(alice, stakeAmount);
       await stake(alice, stakeAmount);
-      await checkAfterStake(alice, stakeAmount);
+      await stakeAndCheck(alice, stakeAmount);
     });
 
     it('first stake, second stake from alice, third stake from bob', async () => {
-      const { stake, checkAfterStake } = actions;
+      const { stake, stakeAndCheck } = actions;
 
       await stake(alice, stakeAmount);
       await stake(alice, stakeAmount);
-      await checkAfterStake(bob, stakeAmount);
+      await stakeAndCheck(bob, stakeAmount);
     });
 
     it('first stake, second stake from alice, third stake and fourth stake from bob', async () => {
-      const { stake, checkAfterStake } = actions;
+      const { stake, stakeAndCheck } = actions;
 
       await stake(alice, stakeAmount);
       await stake(alice, stakeAmount);
       await stake(bob, stakeAmount);
-      await checkAfterStake(bob, stakeAmount);
+      await stakeAndCheck(bob, stakeAmount);
     });
   });
 });
