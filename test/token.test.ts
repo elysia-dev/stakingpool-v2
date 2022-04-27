@@ -1,17 +1,17 @@
+import { expect } from 'chai';
 import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
 import { MAX_UINT_AMOUNT, RAY, SECONDSPERDAY, ZERO_ADDRESS } from './utils/constants';
-import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
 import { createTestActions, TestHelperActions } from './utils/helpers';
+import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
+import { setTestEnv } from './utils/testEnv';
+import { advanceTimeTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
-import { expect } from 'chai';
 
 describe('StakingPool.token', () => {
   let testEnv: TestEnv;

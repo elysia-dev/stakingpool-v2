@@ -1,5 +1,5 @@
 import { MAX_UINT_AMOUNT } from './constants';
-import { BigNumber, Wallet, ethers } from 'ethers';
+import { BigNumber, Wallet, ethers, BigNumberish } from 'ethers';
 import { expect } from 'chai';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
@@ -9,7 +9,7 @@ import { getTimestamp } from '../utils/time';
 
 export type TestHelperActions = {
   faucetAndApproveTarget: (wallet: Wallet, amount?: string) => Promise<void>
-  faucetAndApproveReward: (wallet: Wallet, amount?: string) => Promise<void>
+  faucetAndApproveReward: (wallet: Wallet, amount?: BigNumberish) => Promise<void>
   stake: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   withdraw: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
   claim: (wallet: Wallet) => Promise<ethers.ContractTransaction>

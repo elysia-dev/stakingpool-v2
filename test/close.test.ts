@@ -1,11 +1,10 @@
-import { createTestActions, TestHelperActions } from './utils/helpers';
+import { expect } from 'chai';
 import { BigNumber, constants, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import { expect } from 'chai';
 import moment from 'moment';
-
 import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY, MAX_UINT_AMOUNT } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
+import { createTestActions, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTime, advanceTimeTo, toTimestamp } from './utils/time';
 

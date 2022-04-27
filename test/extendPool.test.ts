@@ -3,8 +3,8 @@ import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { TestEnv } from './types';
 import { RAY, SECONDSPERDAY } from './utils/constants';
-import { setTestEnv } from './utils/testEnv';
 import { createTestActions, TestHelperActions } from './utils/helpers';
+import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, resetTimestampTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;

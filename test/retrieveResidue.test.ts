@@ -1,11 +1,11 @@
-import { BigNumber, utils } from 'ethers';
-import { waffle, ethers } from 'hardhat';
 import { expect } from 'chai';
-
-import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
-import { advanceTimeTo, resetTimestampTo, toTimestamp } from './utils/time';
-import { setERC20Metadata } from './utils/testEnv';
+import { BigNumber, utils } from 'ethers';
+import { ethers, waffle } from 'hardhat';
 import { StakingAsset, StakingPoolV2 } from '../typechain';
+import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
+import { setERC20Metadata } from './utils/testEnv';
+import { resetTimestampTo, toTimestamp } from './utils/time';
+
 
 const { loadFixture } = waffle;
 

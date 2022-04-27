@@ -1,12 +1,12 @@
-import { BigNumber, ethers, utils } from 'ethers';
-import { waffle } from 'hardhat';
 import { expect } from 'chai';
-
+import { BigNumber, utils } from 'ethers';
+import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
+import { createTestActions, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
 import { resetTimestampTo, toTimestamp } from './utils/time';
-import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
+
 
 const { loadFixture } = waffle;
 
@@ -119,4 +119,3 @@ describe('StakingPool.settings', () => {
     });
   });
 });
-
