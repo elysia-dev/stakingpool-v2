@@ -1,12 +1,12 @@
-import { BigNumber, ethers, utils } from 'ethers';
-import { waffle } from 'hardhat';
 import { expect } from 'chai';
-
+import { BigNumber, utils } from 'ethers';
+import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
+import { RAY, SECONDSPERDAY } from './utils/constants';
+import { createTestActions, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
 import { resetTimestampTo, toTimestamp } from './utils/time';
-import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
+
 
 const { loadFixture } = waffle;
 
@@ -20,13 +20,10 @@ describe('StakingPool.settings', () => {
   const [deployer, depositor] = provider.getWallets();
 
   const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month = BigNumber.from(7);
-  const day = BigNumber.from(7);
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const duration = 30 * SECONDSPERDAY;
 
-  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
-  const endTimestamp = startTimestamp.add(duration);
+  const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const endTimestamp = startTimestamp + duration;
 
   async function fixture() {
     return await setTestEnv();
@@ -69,7 +66,7 @@ describe('StakingPool.settings', () => {
         const poolData = await testEnv.stakingPool.getPoolData();
 
         expect(poolData.rewardPerSecond).to.be.equal(rewardPerSecond);
-        expect(poolData.rewardIndex).to.be.equal(WAD);
+        expect(poolData.rewardIndex).to.be.equal(BigNumber.from('0'));
         expect(poolData.startTimestamp).to.be.equal(startTimestamp);
         expect(poolData.endTimestamp).to.be.equal(endTimestamp);
         expect(poolData.totalPrincipal).to.be.equal(0);
@@ -122,4 +119,3 @@ describe('StakingPool.settings', () => {
     });
   });
 });
-

@@ -22,11 +22,7 @@ library StakingPoolLogicV2 {
     uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
-    if (timeDiff == 0) {
-      return poolData.rewardIndex;
-    }
-
-    if (totalPrincipal == 0) {
+    if (timeDiff == 0 || totalPrincipal == 0) {
       return poolData.rewardIndex;
     }
 
@@ -40,9 +36,6 @@ library StakingPoolLogicV2 {
     view
     returns (uint256)
   {
-    if (poolData.userIndex[user] == 0) {
-      return 0;
-    }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
     uint256 balance = poolData.userPrincipal[user];
     uint256 result = poolData.userReward[user] + WadMath.mul(balance, indexDiff);
@@ -81,9 +74,7 @@ library StakingPoolLogicV2 {
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + duration;
     poolData.lastUpdateTimestamp = roundStartTimestamp;
-    poolData.rewardIndex = 1e18;
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
-
 }

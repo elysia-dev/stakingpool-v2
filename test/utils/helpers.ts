@@ -1,26 +1,34 @@
-import { MAX_UINT_AMOUNT } from './constants';
-import { BigNumber, Wallet, ethers } from 'ethers';
+import { expect } from 'chai';
+import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
+import { expectDataAfterStake, updatePoolData } from '../utils/expect';
+import { getTimestamp } from '../utils/time';
+import { MAX_UINT_AMOUNT } from './constants';
 
 export type TestHelperActions = {
-  faucetAndApproveTarget: (wallet: Wallet, amount?: string) => Promise<void>
-  faucetAndApproveReward: (wallet: Wallet, amount?: string) => Promise<void>
-  stake: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
-  withdraw: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
+  faucetAndApproveTarget: (wallet: Wallet, amount?: BigNumberish) => Promise<void>
+  faucetAndApproveReward: (wallet: Wallet, amount?: BigNumberish) => Promise<void>
+  stake: (wallet: Wallet, amount: BigNumberish) => Promise<ethers.ContractTransaction>
+  withdraw: (wallet: Wallet, amount: BigNumberish) => Promise<ethers.ContractTransaction>
   claim: (wallet: Wallet) => Promise<ethers.ContractTransaction>
   initNewPoolAndTransfer: (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    startTimestamp: BigNumber,
-    duration: BigNumber,
+    startTimestamp: BigNumberish,
+    duration: BigNumberish,
   ) => Promise<void>
   closePool: (wallet: Wallet) => Promise<ethers.ContractTransaction>
+  setEmergency: (wallet: Wallet, stop: boolean) => Promise<ethers.ContractTransaction>
 
   // Queries
   getUserData: (wallet: Wallet) => Promise<UserData>
   getPoolData: () => Promise<PoolData>
+
+  // Assertions
+  stakeAndCheck: (wallet: Wallet, amount: BigNumber) => Promise<void>
+  extendPoolAndCheck: (deployer: Wallet, wallet: Wallet, rewardPerSecond: BigNumber, duration: BigNumberish) => Promise<void>
 }
 
 export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
@@ -29,7 +37,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   // A target is the token staked.
   const faucetAndApproveTarget = async (
     wallet: Wallet,
-    amount?: string,
+    amount?: BigNumberish,
   ) => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
@@ -40,7 +48,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const faucetAndApproveReward = async (
     wallet: Wallet,
-    amount?: string,
+    amount?: BigNumberish,
   ) => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
@@ -51,7 +59,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const stake = (
     wallet: Wallet,
-    amount: BigNumber,
+    amount: BigNumberish,
   ) => {
     return stakingPool.connect(wallet).stake(amount);
   }
@@ -59,8 +67,8 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   const initNewPoolAndTransfer = async (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    startTimestamp: BigNumber,
-    duration: BigNumber,
+    startTimestamp: BigNumberish,
+    duration: BigNumberish,
   ) => {
     const totalRewardAmount = rewardPerSecond.mul(duration)
 
@@ -77,18 +85,80 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     wallet: Wallet,
   ) => stakingPool.connect(wallet).closePool();
 
+  const setEmergency = (
+    wallet: Wallet,
+    stop: boolean,
+  ) => stakingPool.connect(wallet).setEmergency(stop);
+
   const claim = (
     wallet: Wallet
   ) => stakingPool.connect(wallet).claim();
 
   const withdraw = (
     wallet: Wallet,
-    amount: BigNumber,
+    amount: BigNumberish,
   ) => stakingPool.connect(wallet).withdraw(amount);
 
+  const extendPool = (
+    wallet: Wallet,
+    rewardPerSecond: BigNumber,
+    duration: BigNumberish,
+  ) => stakingPool.connect(wallet).extendPool(rewardPerSecond, duration);
+
+  // Queries
   const getUserData = (wallet: Wallet) => _getUserData(testEnv, wallet);
 
   const getPoolData = () => _getPoolData(testEnv);
+
+  // assertions
+  const stakeAndCheck = async (
+    wallet: Wallet,
+    amount: BigNumber,
+  ) => {
+    const poolDataBefore = await getPoolData();
+    const userDataBefore = await getUserData(wallet);
+    const stakeTx = await stake(wallet, amount);
+
+    const [expectedPoolData, expectedUserData] = expectDataAfterStake(
+      poolDataBefore,
+      userDataBefore,
+      await getTimestamp(stakeTx),
+      amount
+    );
+
+    const poolDataAfter = await getPoolData();
+    const userDataAfter = await getUserData(wallet);
+
+    expect(poolDataAfter).to.eql(expectedPoolData);
+    expect(userDataAfter).to.eql(expectedUserData);
+  }
+
+  const extendPoolAndCheck = async (
+    deployer: Wallet,
+    wallet: Wallet,
+    rewardPerSecond: BigNumber,
+    duration: BigNumberish,
+  ) => {
+    const poolDataBefore = await getPoolData();
+    const userDataBefore = await getUserData(wallet);
+    const tx = await extendPool(deployer, rewardPerSecond, duration);
+
+    // extendPool does not update userIndex
+    const [expectedPoolData, expectedUserData] = updatePoolData(
+      poolDataBefore,
+      userDataBefore,
+      await getTimestamp(tx),
+      duration,
+      rewardPerSecond,
+      true,
+    );
+
+    const poolDataAfter = await getPoolData();
+    const userDataAfter = await getUserData(wallet);
+
+    expect(poolDataAfter).to.eql(expectedPoolData);
+    expect(userDataAfter).to.eql(expectedUserData);
+  }
 
   return {
     faucetAndApproveReward,
@@ -98,25 +168,29 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     claim,
     initNewPoolAndTransfer,
     closePool,
+    setEmergency,
     getUserData,
     getPoolData,
+    stakeAndCheck,
+    extendPoolAndCheck,
   }
 }
 
 const _getUserData = async (
   testEnv: TestEnv,
-  user: Wallet,
+  user: Wallet | string,
 ): Promise<UserData> => {
   const userData = <UserData>{};
+  const address = typeof user === 'string' ? user : user.address;
 
-  const contractUserData = await testEnv.stakingPool.getUserData(user.address);
+  const contractUserData = await testEnv.stakingPool.getUserData(address);
 
-  userData.rewardAssetBalance = await testEnv.rewardAsset.balanceOf(user.address);
-  userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(user.address);
+  userData.rewardAssetBalance = await testEnv.rewardAsset.balanceOf(address);
+  userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(address);
   userData.userPrincipal = contractUserData.userPrincipal;
   userData.userIndex = contractUserData.userIndex;
   userData.userPreviousReward = contractUserData.userReward;
-  userData.userReward = await testEnv.stakingPool.getUserReward(user.address);
+  userData.userReward = await testEnv.stakingPool.getUserReward(address);
 
   return userData;
 };

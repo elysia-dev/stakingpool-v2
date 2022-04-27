@@ -1,12 +1,12 @@
+import { expect } from 'chai';
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import { expect } from 'chai';
 import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
-import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake, expectDataAfterWithdraw, updatePoolData } from './utils/expect';
 import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
+import { setTestEnv } from './utils/testEnv';
+import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -19,17 +19,11 @@ describe('StakingPool.withdraw', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month_1 = BigNumber.from(7);
-  const day_1 = BigNumber.from(8);
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPersecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
-  const month_2 = BigNumber.from(7);
-  const day_2 = BigNumber.from(20);
-
-  const firstTimestamp = toTimestamp(year, month_1, day_1, BigNumber.from(10));
-  const secondTimestamp = toTimestamp(year, month_2, day_2, BigNumber.from(10));
+  const firstTimestamp = toTimestamp("2022.07.08 10:00:00Z");
+  const secondTimestamp = toTimestamp("2022.07.20 10:00:00Z");
   const amount = ethers.utils.parseEther('1');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 
@@ -346,74 +340,6 @@ describe('StakingPool.withdraw', () => {
 
         expect(poolDataAfterWithdraw).eql(expectedPoolDataWithdraw);
         expect(userDataAfterWithdraw).eql(expectedUserDataWithdraw);
-      });
-
-
-      context('when admin sets bob as a manager', async () => {
-        it('bob becomes a manager and extend the pool and alice withdraw', async () => {
-          await actions.faucetAndApproveTarget(bob, RAY);
-          const poolDataBefore = await getPoolData(testEnv);
-          const userDataBefore = await getUserData(testEnv, alice);
-          await testEnv.stakingPool.setManager(bob.address);
-
-          await advanceTimeTo(secondTimestamp)
-          const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
-          const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
-            poolDataBefore,
-            userDataBefore,
-            await getTimestamp(tx),
-            duration,
-            newRewardPersecond
-          );
-
-          const withdrawTx = await testEnv.stakingPool.connect(alice).withdraw(amount);
-          const [expectedPoolData_2, expectedUserData_2] = expectDataAfterWithdraw(
-            expectedPoolData_1,
-            expectedUserData_1,
-            await getTimestamp(withdrawTx),
-            amount
-          );
-
-          const poolDataAfter = await getPoolData(testEnv);
-          const userDataAfter = await getUserData(testEnv, alice);
-
-          expect(poolDataAfter).eql(expectedPoolData_2);
-          expect(userDataAfter).eql(expectedUserData_2);
-        });
-
-        it('alice action and bob becomes manager and call extend pool ', async () => {
-          await testEnv.stakingPool.connect(alice).stake(amount);
-          await actions.faucetAndApproveTarget(bob, RAY);
-          await testEnv.stakingPool.setManager(bob.address);
-
-          await advanceTimeTo(secondTimestamp);
-          await testEnv.stakingPool.connect(alice).claim();
-          const poolDataBefore = await getPoolData(testEnv);
-          const userDataBefore = await getUserData(testEnv, alice);
-
-          const tx = await testEnv.stakingPool.connect(bob).extendPool(newRewardPersecond, duration);
-          const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
-            poolDataBefore,
-            userDataBefore,
-            await getTimestamp(tx),
-            duration,
-            newRewardPersecond
-          );
-
-          const stakeTx = await testEnv.stakingPool.connect(alice).withdraw(amount);
-          const [expectedPoolData_2, expectedUserData_2] = expectDataAfterWithdraw(
-            expectedPoolData_1,
-            expectedUserData_1,
-            await getTimestamp(stakeTx),
-            amount
-          );
-
-          const poolDataAfter = await getPoolData(testEnv);
-          const userDataAfter = await getUserData(testEnv, alice);
-
-          expect(poolDataAfter).eql(expectedPoolData_2);
-          expect(userDataAfter).eql(expectedUserData_2);
-        });
       });
     });
 

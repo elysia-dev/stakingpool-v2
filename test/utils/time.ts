@@ -1,39 +1,11 @@
 import { BigNumber } from 'ethers';
 import { waffle } from 'hardhat';
-import { InitRoundData } from '../../data/types/InitRoundData';
+import moment from 'moment';
 
 export function toTimestamp(
-  year: BigNumber,
-  month: BigNumber,
-  day: BigNumber,
-  hour?: BigNumber,
-  minute?: BigNumber
-) {
-  if (hour == undefined) {
-    return BigNumber.from(
-      Date.UTC(year.toNumber(), month.sub(1).toNumber(), day.toNumber()) / 1000
-    );
-  } else if (hour != undefined && minute == undefined) {
-    return BigNumber.from(
-      Date.UTC(year.toNumber(), month.sub(1).toNumber(), day.toNumber(), hour.toNumber()) / 1000
-    );
-  }
-  return BigNumber.from(
-    Date.UTC(
-      year.toNumber(),
-      month.sub(1).toNumber(),
-      day.toNumber(),
-      hour.toNumber(),
-      minute?.toNumber()
-    ) / 1000
-  );
-}
-
-export function roundStartTimestamp(roundData: InitRoundData) {
-  return BigNumber.from(
-    Date.UTC(roundData.year, roundData.month - 1, roundData.day, roundData.hour, roundData.minute) /
-    1000
-  );
+  str: string
+): number {
+  return moment(str, 'YYYY.MM.DD hh:mm:ss Z').unix()
 }
 
 export async function advanceBlock() {

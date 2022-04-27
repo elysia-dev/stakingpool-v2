@@ -1,17 +1,17 @@
-import { BigNumber, utils } from 'ethers';
+import { expect } from 'chai';
+import { utils } from 'ethers';
 import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
 import { MAX_UINT_AMOUNT, RAY, SECONDSPERDAY, ZERO_ADDRESS } from './utils/constants';
-import { setTestEnv } from './utils/testEnv';
-import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
 import { createTestActions, TestHelperActions } from './utils/helpers';
+import { buildDelegationData, getSignatureFromTypedData } from './utils/signature';
+import { setTestEnv } from './utils/testEnv';
+import { advanceTimeTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
 
-import { expect } from 'chai';
 
 describe('StakingPool.token', () => {
   let testEnv: TestEnv;
@@ -21,13 +21,10 @@ describe('StakingPool.token', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month = BigNumber.from(7);
-  const day = BigNumber.from(8);
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPersecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
-  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
+  const startTimestamp = toTimestamp("2022.07.08 10:00:00Z");
 
   async function fixture() {
     const testEnv = await setTestEnv();
@@ -147,7 +144,7 @@ describe('StakingPool.token', () => {
         testEnv.stakingPool.address,
         alice.address,
         nonce,
-        MAX_UINT_AMOUNT
+        MAX_UINT_AMOUNT.toString()
       );
       const signature = getSignatureFromTypedData(alice.privateKey, data);
 

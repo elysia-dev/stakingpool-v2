@@ -21,6 +21,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     rewardAsset = rewardAsset_;
   }
 
+  /// @dev rewardIndex and userIndex are WAD.
   struct PoolData {
     uint256 rewardPerSecond;
     uint256 rewardIndex;

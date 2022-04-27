@@ -1,13 +1,10 @@
-import { BigNumber, utils } from 'ethers';
-import { waffle, ethers } from 'hardhat';
 import { expect } from 'chai';
-
-import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
-import { advanceTimeTo, toTimestamp } from './utils/time';
-import { setERC20Metadata } from './utils/testEnv';
+import { BigNumber, utils } from 'ethers';
+import { ethers, waffle } from 'hardhat';
 import { StakingAsset, StakingPoolV2 } from '../typechain';
-
-const { loadFixture } = waffle;
+import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
+import { setERC20Metadata } from './utils/testEnv';
+import { resetTimestampTo, toTimestamp } from './utils/time';
 
 require('./utils/matchers.ts');
 
@@ -15,13 +12,10 @@ describe('StakingPool.retrieveResidue', () => {
   const provider = waffle.provider;
   const [deployer, staker] = provider.getWallets();
 
-  const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
-  const year = BigNumber.from(2022);
-  const month = BigNumber.from(7);
-  const day = BigNumber.from(7);
-  const duration = BigNumber.from(1).mul(SECONDSPERDAY);
+  const rewardPerSecond = utils.parseEther('1');
+  const duration = SECONDSPERDAY;
 
-  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
+  const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
 
   // TODO: Test when the reward != staking asset
 
@@ -63,7 +57,7 @@ describe('StakingPool.retrieveResidue', () => {
         await asset.connect(deployer).approve(stakingPool.address, MAX_UINT_AMOUNT);
         await asset.connect(deployer).faucet();
 
-        // This also sends the reward asset which amounts to rewardPerSecond * duration 
+        // This also sends the reward asset which amounts to rewardPerSecond * duration
         await stakingPool
           .connect(deployer)
           .initNewPool(rewardPerSecond, startTimestamp, duration);
@@ -71,7 +65,7 @@ describe('StakingPool.retrieveResidue', () => {
         const stakeAmount = BigNumber.from(utils.parseEther('100'));
 
         // The staking starts
-        await advanceTimeTo(startTimestamp);
+        await resetTimestampTo(startTimestamp);
 
         // deployer stakes
         await stakingPool.connect(deployer).stake(stakeAmount);
