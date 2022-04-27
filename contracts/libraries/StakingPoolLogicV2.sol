@@ -74,7 +74,6 @@ library StakingPoolLogicV2 {
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + duration;
     poolData.lastUpdateTimestamp = roundStartTimestamp;
-    // poolData.rewardIndex = 0;
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }
