@@ -18,8 +18,8 @@ describe('StakingPool.stake', () => {
   let poolDataAfter: PoolData;
 
   const fetchDataBeforeAction = async (wallet: Wallet) => {
-    userDataBefore = await actions.getUserData(alice);
     poolDataBefore = await actions.getPoolData();
+    userDataBefore = await actions.getUserData(wallet);
   }
 
   const fetchDataAfterAction = async (wallet: Wallet) => {
