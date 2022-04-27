@@ -1,4 +1,4 @@
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { TestEnv } from './types';
 import { RAY, SECONDSPERDAY } from './utils/constants';
@@ -15,13 +15,13 @@ describe('StakingPool.extendPool', () => {
   const [deployer, alice, bob, carol] = waffle.provider.getWallets();
 
   const rewardPersecond = utils.parseEther('1');
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const duration = 30 * SECONDSPERDAY;
 
   const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")
   const secondTimestamp = toTimestamp("2022.08.04 10:00:00Z")
 
   const stakeAmount = utils.parseEther('10');
-  const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
+  const newRewardPersecond = utils.parseEther('2');
 
   async function fixture() {
     return await setTestEnv();

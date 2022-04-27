@@ -17,8 +17,8 @@ describe('StakingPool.closePool', () => {
   const provider = waffle.provider;
   const [deployer, alice] = provider.getWallets();
 
-  const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPerSecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
   const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
   const initialIndex = BigNumber.from('0');

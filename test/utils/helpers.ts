@@ -28,7 +28,7 @@ export type TestHelperActions = {
 
   // Assertions
   stakeAndCheck: (wallet: Wallet, amount: BigNumber) => Promise<void>
-  extendPoolAndCheck: (deployer: Wallet, wallet: Wallet, rewardPerSecond: BigNumber, duration: BigNumber) => Promise<void>
+  extendPoolAndCheck: (deployer: Wallet, wallet: Wallet, rewardPerSecond: BigNumber, duration: BigNumberish) => Promise<void>
 }
 
 export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
@@ -102,7 +102,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   const extendPool = (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    duration: BigNumber,
+    duration: BigNumberish,
   ) => stakingPool.connect(wallet).extendPool(rewardPerSecond, duration);
 
   // Queries
@@ -137,7 +137,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
     deployer: Wallet,
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    duration: BigNumber,
+    duration: BigNumberish,
   ) => {
     const poolDataBefore = await getPoolData();
     const userDataBefore = await getUserData(wallet);

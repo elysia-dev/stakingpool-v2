@@ -6,17 +6,14 @@ import { MAX_UINT_AMOUNT, SECONDSPERDAY } from './utils/constants';
 import { setERC20Metadata } from './utils/testEnv';
 import { resetTimestampTo, toTimestamp } from './utils/time';
 
-
-const { loadFixture } = waffle;
-
 require('./utils/matchers.ts');
 
 describe('StakingPool.retrieveResidue', () => {
   const provider = waffle.provider;
   const [deployer, staker] = provider.getWallets();
 
-  const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(1).mul(SECONDSPERDAY);
+  const rewardPerSecond = utils.parseEther('1');
+  const duration = SECONDSPERDAY;
 
   const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
 
@@ -60,7 +57,7 @@ describe('StakingPool.retrieveResidue', () => {
         await asset.connect(deployer).approve(stakingPool.address, MAX_UINT_AMOUNT);
         await asset.connect(deployer).faucet();
 
-        // This also sends the reward asset which amounts to rewardPerSecond * duration 
+        // This also sends the reward asset which amounts to rewardPerSecond * duration
         await stakingPool
           .connect(deployer)
           .initNewPool(rewardPerSecond, startTimestamp, duration);

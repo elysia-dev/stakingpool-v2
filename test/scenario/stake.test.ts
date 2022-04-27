@@ -1,11 +1,10 @@
-import { BigNumber, utils, Wallet } from 'ethers';
+import { utils } from 'ethers';
 import { waffle } from 'hardhat';
-import { expect } from 'chai';
-import { TestEnv, UserData, PoolData } from '../types';
+import { TestEnv } from '../types';
 import { RAY, SECONDSPERDAY } from '../utils/constants';
+import { createTestActions, TestHelperActions } from '../utils/helpers';
 import { setTestEnv } from '../utils/testEnv';
-import { resetTimestampTo, getTimestamp, toTimestamp } from '../utils/time';
-import { createTestActions, getPoolData, getUserData, TestHelperActions } from '../utils/helpers';
+import { resetTimestampTo, toTimestamp } from '../utils/time';
 
 const { loadFixture } = waffle;
 
@@ -16,8 +15,8 @@ describe('StakingPool.stake', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPersecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
   const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")
 

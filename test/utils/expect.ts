@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers';
+import { BigNumber, BigNumberish, ethers } from 'ethers';
 import PoolData from '../types/PoolData';
 import UserData from '../types/UserData';
 import { calculateDataAfterUpdate, calculateRewardIndex, calculateUserReward } from './calculate';
@@ -163,7 +163,7 @@ export function updatePoolData(
   poolData: PoolData,
   userData: UserData,
   txTimeStamp: BigNumber,
-  duration: BigNumber,
+  duration: BigNumberish,
   rewardPerSecond: BigNumber,
   skipUpdateUser: boolean = false,
 ): [PoolData, UserData] {

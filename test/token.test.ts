@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { BigNumber, utils } from 'ethers';
+import { utils } from 'ethers';
 import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
 import { MAX_UINT_AMOUNT, RAY, SECONDSPERDAY, ZERO_ADDRESS } from './utils/constants';
@@ -21,8 +21,8 @@ describe('StakingPool.token', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPersecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
   const startTimestamp = toTimestamp("2022.07.08 10:00:00Z");
 

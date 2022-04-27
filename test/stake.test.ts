@@ -1,11 +1,11 @@
-import { BigNumber, utils, ethers, Wallet } from 'ethers';
-import { waffle } from 'hardhat';
 import { expect } from 'chai';
-import { UserData, PoolData, TestEnv } from './types';
+import { BigNumber, ethers, utils, Wallet } from 'ethers';
+import { waffle } from 'hardhat';
+import { PoolData, TestEnv, UserData } from './types';
 import { RAY, SECONDSPERDAY } from './utils/constants';
-import { setTestEnv } from './utils/testEnv';
-import { advanceTime, resetTimestampTo, getTimestamp, toTimestamp } from './utils/time';
 import { createTestActions, TestHelperActions } from './utils/helpers';
+import { setTestEnv } from './utils/testEnv';
+import { advanceTime, getTimestamp, resetTimestampTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -30,11 +30,10 @@ describe('StakingPool.stake', () => {
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const rewardPersecond = utils.parseEther('1');
+  const duration = 30 * SECONDSPERDAY;
 
   const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")
-  const secondTimestamp = toTimestamp("2022.08.04 10:00:00Z")
 
   const stakeAmount = utils.parseEther('10');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
