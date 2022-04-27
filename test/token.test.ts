@@ -144,7 +144,7 @@ describe('StakingPool.token', () => {
         testEnv.stakingPool.address,
         alice.address,
         nonce,
-        MAX_UINT_AMOUNT
+        MAX_UINT_AMOUNT.toString()
       );
       const signature = getSignatureFromTypedData(alice.privateKey, data);
 

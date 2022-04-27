@@ -20,10 +20,10 @@ describe('StakingPool.settings', () => {
   const [deployer, depositor] = provider.getWallets();
 
   const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
-  const duration = BigNumber.from(30).mul(SECONDSPERDAY);
+  const duration = 30 * SECONDSPERDAY;
 
   const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
-  const endTimestamp = startTimestamp.add(duration);
+  const endTimestamp = startTimestamp + duration;
 
   async function fixture() {
     return await setTestEnv();

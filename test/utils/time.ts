@@ -1,11 +1,11 @@
-import { BigNumber, ContractReceipt, ContractTransaction } from 'ethers';
-import moment from 'moment';
+import { BigNumber } from 'ethers';
 import { waffle } from 'hardhat';
+import moment from 'moment';
 
 export function toTimestamp(
   str: string
-): BigNumber {
-  return BigNumber.from(moment(str, 'YYYY.MM.DD hh:mm:ss Z').unix())
+): number {
+  return moment(str, 'YYYY.MM.DD hh:mm:ss Z').unix()
 }
 
 export async function advanceBlock() {

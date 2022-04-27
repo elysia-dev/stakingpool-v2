@@ -1,23 +1,23 @@
-import { MAX_UINT_AMOUNT } from './constants';
-import { BigNumber, Wallet, ethers, BigNumberish } from 'ethers';
 import { expect } from 'chai';
+import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
 import PoolData from '../types/PoolData';
 import TestEnv from '../types/TestEnv';
 import UserData from '../types/UserData';
 import { expectDataAfterStake, updatePoolData } from '../utils/expect';
 import { getTimestamp } from '../utils/time';
+import { MAX_UINT_AMOUNT } from './constants';
 
 export type TestHelperActions = {
-  faucetAndApproveTarget: (wallet: Wallet, amount?: string) => Promise<void>
+  faucetAndApproveTarget: (wallet: Wallet, amount?: BigNumberish) => Promise<void>
   faucetAndApproveReward: (wallet: Wallet, amount?: BigNumberish) => Promise<void>
-  stake: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
-  withdraw: (wallet: Wallet, amount: BigNumber) => Promise<ethers.ContractTransaction>
+  stake: (wallet: Wallet, amount: BigNumberish) => Promise<ethers.ContractTransaction>
+  withdraw: (wallet: Wallet, amount: BigNumberish) => Promise<ethers.ContractTransaction>
   claim: (wallet: Wallet) => Promise<ethers.ContractTransaction>
   initNewPoolAndTransfer: (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    startTimestamp: BigNumber,
-    duration: BigNumber,
+    startTimestamp: BigNumberish,
+    duration: BigNumberish,
   ) => Promise<void>
   closePool: (wallet: Wallet) => Promise<ethers.ContractTransaction>
   setEmergency: (wallet: Wallet, stop: boolean) => Promise<ethers.ContractTransaction>
@@ -37,7 +37,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   // A target is the token staked.
   const faucetAndApproveTarget = async (
     wallet: Wallet,
-    amount?: string,
+    amount?: BigNumberish,
   ) => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
@@ -48,7 +48,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const faucetAndApproveReward = async (
     wallet: Wallet,
-    amount?: string,
+    amount?: BigNumberish,
   ) => {
     if (amount === undefined) {
       amount = MAX_UINT_AMOUNT;
@@ -59,7 +59,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const stake = (
     wallet: Wallet,
-    amount: BigNumber,
+    amount: BigNumberish,
   ) => {
     return stakingPool.connect(wallet).stake(amount);
   }
@@ -67,8 +67,8 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
   const initNewPoolAndTransfer = async (
     wallet: Wallet,
     rewardPerSecond: BigNumber,
-    startTimestamp: BigNumber,
-    duration: BigNumber,
+    startTimestamp: BigNumberish,
+    duration: BigNumberish,
   ) => {
     const totalRewardAmount = rewardPerSecond.mul(duration)
 
@@ -96,7 +96,7 @@ export const createTestActions = (testEnv: TestEnv): TestHelperActions => {
 
   const withdraw = (
     wallet: Wallet,
-    amount: BigNumber,
+    amount: BigNumberish,
   ) => stakingPool.connect(wallet).withdraw(amount);
 
   const extendPool = (

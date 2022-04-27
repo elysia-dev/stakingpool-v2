@@ -1,4 +1,3 @@
-
 import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import { TestEnv } from './types';
@@ -15,7 +14,7 @@ describe('StakingPool.extendPool', () => {
 
   const [deployer, alice, bob, carol] = waffle.provider.getWallets();
 
-  const rewardPersecond = BigNumber.from(utils.parseEther('1'));
+  const rewardPersecond = utils.parseEther('1');
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
   const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")

@@ -36,7 +36,7 @@ describe('StakingPool.closePool', () => {
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);
-    await actions.faucetAndApproveReward(deployer, constants.MaxUint256.toString());
+    await actions.faucetAndApproveReward(deployer, constants.MaxUint256);
     await actions.faucetAndApproveTarget(alice, RAY);
   });
 
@@ -53,8 +53,8 @@ describe('StakingPool.closePool', () => {
     });
 
     it('reverts if open the pool already finished', async () => {
-      const rewardPersecond = BigNumber.from(utils.parseEther('1'));
-      const startAt = BigNumber.from(moment("2022.04.18 19:00:00", 'YYYY.MM.DD hh:mm:ss Z').unix())
+      const rewardPersecond = utils.parseEther('1');
+      const startAt = moment("2022.04.18 19:00:00", 'YYYY.MM.DD hh:mm:ss Z').unix()
 
       await actions.closePool(deployer);
       await expect(
@@ -69,7 +69,7 @@ describe('StakingPool.closePool', () => {
 
     it('the index does not increase after the pool is closed.', async () => {
       await actions.stake(alice, stakeAmount); // t: start + 1
-      await advanceTimeTo(startTimestamp.add(BigNumber.from('10'))); // t: start + 10
+      await advanceTimeTo(startTimestamp + 10); // t: start + 10
       await actions.closePool(deployer); // t: start + 11, so alice staked for 10 secs
 
       await advanceTime(10); // t: start + 20
