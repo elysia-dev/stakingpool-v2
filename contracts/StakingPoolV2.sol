@@ -3,8 +3,8 @@ pragma solidity 0.8.4;
 import './libraries/StakingPoolLogicV2.sol';
 import './interface/IStakingPoolV2.sol';
 import './token/StakedElyfiToken.sol';
+import './Manageable.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
 
 /// @title Elyfi StakingPool contract
 /// @notice Users can stake their asset and earn reward for their staking.
@@ -13,7 +13,7 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 /// the difference between the user index and the current index by the user balance. User index and the pool
 /// index is updated and aligned with in the staking and withdrawing action.
 /// @author Elysia
-contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
+contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Manageable {
   using StakingPoolLogicV2 for PoolData;
 
   constructor(IERC20 stakingAsset_, IERC20 rewardAsset_) StakedElyfiToken(stakingAsset_) {
@@ -34,10 +34,9 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     mapping(address => uint256) userPrincipal;
     bool isOpened;
     bool isFinished;
-  } 
+  }
 
   bool internal emergencyStop = false;
-  mapping(address => bool) managers;
   IERC20 public stakingAsset;
   IERC20 public rewardAsset;
   PoolData internal _poolData;
@@ -133,7 +132,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
   }
 
   // TODO Implement `migrate` function to send an asset to the next staking contract
-  
+
   /***************** Internal Functions ******************/
 
   function _withdraw(uint256 amount) internal {
@@ -142,7 +141,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     if (amount == type(uint256).max) {
       amountToWithdraw = _poolData.userPrincipal[msg.sender];
     }
-    
+
     if (_poolData.userPrincipal[msg.sender] < amountToWithdraw)
       revert NotEnoughPrincipal(_poolData.userPrincipal[msg.sender]);
 
@@ -197,7 +196,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
       startTimestamp,
       duration
     );
-    
+
     _poolData.isOpened = true;
 
     emit InitPool(rewardPerSecond, newRoundStartTimestamp, newRoundEndTimestamp);
@@ -212,7 +211,7 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
 
     emit ExtendPool(msg.sender, duration, rewardPerSecond);
   }
-  
+
   function closePool() external onlyOwner {
     if (_poolData.isOpened == false) revert Closed();
     _poolData.endTimestamp = block.timestamp;
@@ -234,48 +233,12 @@ contract StakingPoolV2 is IStakingPoolV2, StakedElyfiToken, Ownable {
     emit RetrieveResidue(msg.sender, residueAmount);
   }
 
-  function setManager(address addr) external onlyOwner {
-    _setManager(addr);
-  }
-
-  function revokeManager(address addr) external onlyOwner {
-    _revokeManager(addr);
-  }
-
-  function renounceManager(address addr) external {
-    require(addr == msg.sender, "Can only renounce manager for self");
-    _revokeManager(addr);
-  }
-
   function setEmergency(bool stop) external onlyOwner {
     emergencyStop = stop;
     emit SetEmergency(msg.sender, stop);
-  } 
-
-  function isManager(address addr) public view returns (bool) {
-    return managers[addr] || addr == owner();
-  }
-
-  /***************** private ******************/
-  function _setManager(address addr) private {
-    if (!isManager(addr)) {
-      managers[addr] = true;
-      emit SetManager(msg.sender, addr);
-    }
-  }
-
-  function _revokeManager(address addr) private {
-    if (isManager(addr)) {
-      managers[addr] = false;
-      emit RevokeManager(msg.sender, addr);
-    }
   }
 
   /***************** Modifier ******************/
-  modifier onlyManager() {
-    if (!isManager(msg.sender)) revert OnlyManager();
-    _;
-  }
 
   modifier stakingInitiated() {
     if (_poolData.startTimestamp == 0) revert StakingNotInitiated();
