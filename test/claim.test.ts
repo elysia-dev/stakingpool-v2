@@ -1,12 +1,12 @@
+import { expect } from 'chai';
 import { BigNumber, ethers, utils } from 'ethers';
 import { waffle } from 'hardhat';
-import { expect } from 'chai';
+import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
+import { expectDataAfterClaim, expectDataAfterStake, updatePoolData } from './utils/expect';
+import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTime, advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterClaim, updatePoolData, expectDataAfterStake } from './utils/expect';
-import { createTestActions, getPoolData, getUserData, TestHelperActions } from './utils/helpers';
-import TestEnv from './types/TestEnv';
 
 const { loadFixture } = waffle;
 
@@ -22,9 +22,9 @@ describe('StakingPool.claim', () => {
   const rewardPersecond = BigNumber.from(utils.parseEther('1'));
   const duration = BigNumber.from(30).mul(SECONDSPERDAY);
 
-  const firstRoundStartTimestamp = toTimestamp("2022.07.07 10:00:00Z")
-  const secondRoundStartTimestamp = toTimestamp("2022.07.08 10:00:00Z");
-  const thirdRoundStartTimestamp = toTimestamp("2022.08.20 10:00:00Z");
+  const firstRoundStartTimestamp = toTimestamp('2022.07.07 10:00:00Z');
+  const secondRoundStartTimestamp = toTimestamp('2022.07.08 10:00:00Z');
+  const thirdRoundStartTimestamp = toTimestamp('2022.08.20 10:00:00Z');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
 
   const amount = ethers.utils.parseEther('1');
@@ -62,9 +62,7 @@ describe('StakingPool.claim', () => {
     });
 
     it('reverts if user reward is 0', async () => {
-      await expect(testEnv.stakingPool.connect(alice).claim()).to.be.revertedWith(
-        'ZeroReward'
-      );
+      await expect(testEnv.stakingPool.connect(alice).claim()).to.be.revertedWith('ZeroReward');
     });
 
     context('user stakes ', async () => {
@@ -93,14 +91,13 @@ describe('StakingPool.claim', () => {
     });
   });
 
-
   context('when a new pool starts and Alice stakes', async () => {
     beforeEach('init the pool', async () => {
       await actions.initNewPoolAndTransfer(
         deployer,
         rewardPersecond,
         firstRoundStartTimestamp,
-        duration,
+        duration
       );
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(firstRoundStartTimestamp);
@@ -168,13 +165,8 @@ describe('StakingPool.claim', () => {
 
   context('rewardPerSecond is changed', async () => {
     beforeEach('init the pool and stake in pool', async () => {
-      await testEnv.stakingPool
-      actions.initNewPoolAndTransfer(
-        deployer,
-        rewardPersecond,
-        firstRoundStartTimestamp,
-        duration,
-      )
+      await testEnv.stakingPool;
+      actions.initNewPoolAndTransfer(deployer, rewardPersecond, firstRoundStartTimestamp, duration);
 
       await testEnv.stakingAsset.connect(alice).faucet();
       await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
@@ -182,13 +174,17 @@ describe('StakingPool.claim', () => {
       await testEnv.stakingPool.connect(alice).stake(amount);
 
       await testEnv.rewardAsset.connect(deployer).faucet();
-      await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
+      await testEnv.rewardAsset
+        .connect(deployer)
+        .transfer(testEnv.stakingPool.address, ethers.utils.parseEther('100'));
     });
 
     it('rewardPerSecond is changed and claim', async () => {
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
+      const tx = await testEnv.stakingPool
+        .connect(deployer)
+        .extendPool(newRewardPersecond, duration);
 
       const [expectedPoolData_1, expectedUserData_1] = updatePoolData(
         poolDataBefore,
@@ -215,7 +211,9 @@ describe('StakingPool.claim', () => {
     it('rewardPerSecond is changed and stake and claim', async () => {
       const poolDataBeforeStake = await getPoolData(testEnv);
       const userDataBeforeStake = await getUserData(testEnv, alice);
-      const tx = await testEnv.stakingPool.connect(deployer).extendPool(newRewardPersecond, duration);
+      const tx = await testEnv.stakingPool
+        .connect(deployer)
+        .extendPool(newRewardPersecond, duration);
 
       // stake test
       const [expectedPoolData, expectedUserData] = updatePoolData(
@@ -231,7 +229,7 @@ describe('StakingPool.claim', () => {
         expectedPoolData,
         expectedUserData,
         await getTimestamp(stakeTx),
-        amount,
+        amount
       );
 
       const poolDataAfterStake = await getPoolData(testEnv);
@@ -260,13 +258,13 @@ describe('StakingPool.claim', () => {
 
   context('in case of emergency', async () => {
     beforeEach('init the pool and alice stakes', async () => {
-      await actions.faucetAndApproveTarget(deployer, RAY)
-      await actions.faucetAndApproveTarget(alice, RAY)
+      await actions.faucetAndApproveTarget(deployer, RAY);
+      await actions.faucetAndApproveTarget(alice, RAY);
       await actions.initNewPoolAndTransfer(
         deployer,
         rewardPersecond,
         firstRoundStartTimestamp,
-        duration,
+        duration
       );
       await advanceTimeTo(firstRoundStartTimestamp);
       await actions.stake(alice, amount);
@@ -274,9 +272,7 @@ describe('StakingPool.claim', () => {
 
     it('revert if alice claims in an emergency', async () => {
       await testEnv.stakingPool.connect(deployer).setEmergency(true);
-      await expect(
-        testEnv.stakingPool.connect(alice).claim()
-      ).to.be.revertedWith('Emergency');
+      await expect(testEnv.stakingPool.connect(alice).claim()).to.be.revertedWith('Emergency');
     });
   });
 });
