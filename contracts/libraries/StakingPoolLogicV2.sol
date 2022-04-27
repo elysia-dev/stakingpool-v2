@@ -22,11 +22,7 @@ library StakingPoolLogicV2 {
     uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
-    if (timeDiff == 0) {
-      return poolData.rewardIndex;
-    }
-
-    if (totalPrincipal == 0) {
+    if (timeDiff == 0 || totalPrincipal == 0) {
       return poolData.rewardIndex;
     }
 
