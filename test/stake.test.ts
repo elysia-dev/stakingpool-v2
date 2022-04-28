@@ -20,12 +20,12 @@ describe('StakingPool.stake', () => {
   const fetchDataBeforeAction = async (wallet: Wallet) => {
     poolDataBefore = await actions.getPoolData();
     userDataBefore = await actions.getUserData(wallet);
-  }
+  };
 
   const fetchDataAfterAction = async (wallet: Wallet) => {
     poolDataAfter = await actions.getPoolData();
     userDataAfter = await actions.getUserData(wallet);
-  }
+  };
 
   const provider = waffle.provider;
   const [deployer, alice, bob, carol] = provider.getWallets();
@@ -33,7 +33,7 @@ describe('StakingPool.stake', () => {
   const rewardPersecond = utils.parseEther('1');
   const duration = 30 * SECONDSPERDAY;
 
-  const firstTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const firstTimestamp = toTimestamp('2022.07.07 10:00:00Z');
 
   const stakeAmount = utils.parseEther('10');
   const newRewardPersecond = BigNumber.from(utils.parseEther('2'));
@@ -51,8 +51,9 @@ describe('StakingPool.stake', () => {
   });
 
   it('reverts if the pool has not initiated', async () => {
-    await expect(actions.stake(alice, utils.parseEther('100')))
-      .to.be.revertedWith('StakingNotInitiated');
+    await expect(actions.stake(alice, utils.parseEther('100'))).to.be.revertedWith(
+      'StakingNotInitiated'
+    );
   });
 
   context('when the pool is initiated and started', async () => {
@@ -63,8 +64,7 @@ describe('StakingPool.stake', () => {
     });
 
     it('reverts if user staking amount is 0', async () => {
-      await expect(actions.stake(alice, BigNumber.from('0')))
-        .to.be.revertedWith('InvalidAmount');
+      await expect(actions.stake(alice, BigNumber.from('0'))).to.be.revertedWith('InvalidAmount');
     });
 
     it('increases rewardIndex by rewardPerSecond * seconds_passed_after_last_update / totalPrincipal', async () => {
@@ -80,7 +80,7 @@ describe('StakingPool.stake', () => {
       expect(poolDataAfter.rewardIndex).to.equal(BigNumber.from('0'));
     });
 
-    it('updates the message sender\'s userIndex equal to the current rewardIndex', async () => {
+    it("updates the message sender's userIndex equal to the current rewardIndex", async () => {
       await actions.stake(alice, stakeAmount); // t: start + 1
       await fetchDataAfterAction(alice);
 
@@ -89,10 +89,9 @@ describe('StakingPool.stake', () => {
 
     it('updates the lastUpdateTimestamp equal to the current block timestamp', async () => {
       const tx = await actions.stake(alice, stakeAmount);
-      const receipt = await tx.wait();
       await fetchDataAfterAction(alice);
 
-      expect(poolDataAfter.lastUpdateTimestamp).to.equal(await getTimestamp(receipt));
+      expect(poolDataAfter.lastUpdateTimestamp).to.equal(await getTimestamp(tx));
     });
 
     it('increases the user principal and the total principal of the pool by the staked amount', async () => {
@@ -107,15 +106,17 @@ describe('StakingPool.stake', () => {
       await actions.stake(alice, stakeAmount);
       await fetchDataAfterAction(alice);
 
-      expect(poolDataAfter.stakingAssetBalance.sub(poolDataBefore.stakingAssetBalance)).to.equal(stakeAmount);
-      expect(userDataBefore.stakingAssetBalance.sub(userDataAfter.stakingAssetBalance)).to.equal(stakeAmount);
+      expect(poolDataAfter.stakingAssetBalance.sub(poolDataBefore.stakingAssetBalance)).to.equal(
+        stakeAmount
+      );
+      expect(userDataBefore.stakingAssetBalance.sub(userDataAfter.stakingAssetBalance)).to.equal(
+        stakeAmount
+      );
     });
 
     context('If it is not the first staking', () => {
       // TODO: If alice and bob stakes, their index increases proportionately
-      it('', async () => {
-
-      });
+      it('', async () => {});
     });
   });
 
@@ -152,4 +153,3 @@ describe('StakingPool.stake', () => {
     });
   });
 });
-
