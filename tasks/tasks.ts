@@ -1,12 +1,10 @@
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import * as rounds from '../data/rounds';
 import { StakingPoolV2 } from '../typechain';
 import { getDai } from '../utils/getDependencies';
 import { getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
 
 interface Args {
-  round: keyof typeof rounds;
   amount: string;
 }
 
@@ -47,7 +45,6 @@ task('testnet:stake', 'Stake asset')
 
 task('testnet:withdraw', 'Unstake asset')
   .addParam('amount', 'The amount to withdraw')
-  .addParam('round', 'The round to withdraw')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
     let stakingPool: StakingPoolV2;
     const [deployer] = await hre.ethers.getSigners();
