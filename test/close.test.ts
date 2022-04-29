@@ -6,7 +6,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { createTestActions, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
-import { advanceTime, advanceTimeTo, toTimestamp } from './utils/time';
+import { advanceTime, advanceTimeTo, resetTimestampTo, toTimestamp } from './utils/time';
 
 const { loadFixture } = waffle;
 
@@ -20,7 +20,7 @@ describe('StakingPool.closePool', () => {
   const rewardPerSecond = utils.parseEther('1');
   const duration = 30 * SECONDSPERDAY;
 
-  const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const startTimestamp = toTimestamp('2022.07.07 10:00:00Z');
   const initialIndex = BigNumber.from('0');
 
   const stakeAmount = utils.parseEther('1');
@@ -28,10 +28,6 @@ describe('StakingPool.closePool', () => {
   async function fixture() {
     return await setTestEnv();
   }
-
-  after(async () => {
-    await loadFixture(fixture);
-  });
 
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
@@ -42,19 +38,19 @@ describe('StakingPool.closePool', () => {
 
   context('when the pool has started', async () => {
     beforeEach(async () => {
-      await actions.initNewPoolAndTransfer(
-        deployer, rewardPerSecond, startTimestamp, duration);
-      await advanceTimeTo(startTimestamp);
+      await actions.initNewPoolAndTransfer(deployer, rewardPerSecond, startTimestamp, duration);
+      await resetTimestampTo(startTimestamp);
     });
 
     it('reverts if a general account closes the pool', async () => {
-      await expect(testEnv.stakingPool.connect(alice).closePool()
-      ).to.be.revertedWith('Ownable: caller is not the owner');
+      await expect(testEnv.stakingPool.connect(alice).closePool()).to.be.revertedWith(
+        'Ownable: caller is not the owner'
+      );
     });
 
     it('reverts if open the pool already finished', async () => {
       const rewardPersecond = utils.parseEther('1');
-      const startAt = moment("2022.04.18 19:00:00", 'YYYY.MM.DD hh:mm:ss Z').unix()
+      const startAt = moment('2022.04.18 19:00:00', 'YYYY.MM.DD hh:mm:ss Z').unix();
 
       await actions.closePool(deployer);
       await expect(

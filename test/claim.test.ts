@@ -33,10 +33,6 @@ describe('StakingPool.claim', () => {
     return await setTestEnv();
   }
 
-  after(async () => {
-    await loadFixture(fixture);
-  });
-
   beforeEach('deploy staking pool', async () => {
     testEnv = await loadFixture(fixture);
     actions = createTestActions(testEnv);

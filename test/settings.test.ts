@@ -7,7 +7,6 @@ import { createTestActions, TestHelperActions } from './utils/helpers';
 import { setTestEnv } from './utils/testEnv';
 import { resetTimestampTo, toTimestamp } from './utils/time';
 
-
 const { loadFixture } = waffle;
 
 require('./utils/matchers.ts');
@@ -22,16 +21,12 @@ describe('StakingPool.settings', () => {
   const rewardPerSecond = BigNumber.from(utils.parseEther('1'));
   const duration = 30 * SECONDSPERDAY;
 
-  const startTimestamp = toTimestamp("2022.07.07 10:00:00Z")
+  const startTimestamp = toTimestamp('2022.07.07 10:00:00Z');
   const endTimestamp = startTimestamp + duration;
 
   async function fixture() {
     return await setTestEnv();
   }
-
-  after(async () => {
-    await loadFixture(fixture);
-  });
 
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
@@ -77,25 +72,23 @@ describe('StakingPool.settings', () => {
   describe('isManager', async () => {
     it('always returns true for the owner', async () => {
       expect(await testEnv.stakingPool.isManager(deployer.address)).to.equal(true);
-    })
+    });
   });
 
   describe('.revokeManager', async () => {
     it('is onlyOwner', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).revokeManager(depositor.address))
-        .to.be.revertedWith(
-          'Ownable: caller is not the owner'
-        );
-    })
+      await expect(
+        testEnv.stakingPool.connect(depositor).revokeManager(depositor.address)
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+    });
   });
 
   describe('.setManager', async () => {
     it('is onlyOwner', async () => {
-      await expect(testEnv.stakingPool.connect(depositor).setManager(depositor.address))
-        .to.be.revertedWith(
-          'Ownable: caller is not the owner'
-        );
-    })
+      await expect(
+        testEnv.stakingPool.connect(depositor).setManager(depositor.address)
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+    });
   });
 
   describe('.extendPool', async () => {
@@ -107,15 +100,20 @@ describe('StakingPool.settings', () => {
 
     it('reverts if the message sender is not a manager', async () => {
       await expect(
-        testEnv.stakingPool.connect(depositor).extendPool(BigNumber.from(utils.parseEther('2')), BigNumber.from(30).mul(SECONDSPERDAY))
+        testEnv.stakingPool
+          .connect(depositor)
+          .extendPool(BigNumber.from(utils.parseEther('2')), BigNumber.from(30).mul(SECONDSPERDAY))
       ).to.be.revertedWith('OnlyManager()');
     });
 
     it('succeeds when he/she becomes a manager', async () => {
-      await expect(testEnv.stakingPool.connect(deployer).setManager(depositor.address))
-        .to.emit(testEnv.stakingPool, 'SetManager');
-      await expect(testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond, duration))
-        .to.emit(testEnv.stakingPool, 'ExtendPool');
+      await expect(testEnv.stakingPool.connect(deployer).setManager(depositor.address)).to.emit(
+        testEnv.stakingPool,
+        'SetManager'
+      );
+      await expect(
+        testEnv.stakingPool.connect(depositor).extendPool(rewardPerSecond, duration)
+      ).to.emit(testEnv.stakingPool, 'ExtendPool');
     });
   });
 });
