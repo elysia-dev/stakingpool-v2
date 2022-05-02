@@ -13,10 +13,6 @@ describe('time utils', () => {
     return await setTestEnv();
   }
 
-  after(async () => {
-    await loadFixture(fixture);
-  });
-
   beforeEach(async () => {
     testEnv = await loadFixture(fixture);
   });
