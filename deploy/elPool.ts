@@ -29,6 +29,6 @@ const elPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     network: hre.network.name,
   });
 };
-elPool.tags = ['elPool'];
+elPool.tags = ['ELPool'];
 
 export default elPool;
